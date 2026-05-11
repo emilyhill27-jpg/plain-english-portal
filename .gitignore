@@ -1,0 +1,28 @@
+# Accidentally-created files with API key in filename
+.ensk-ant-*
+.envsk-ant-*
+.envapi0*
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads / temp files
+uploads/
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.webp

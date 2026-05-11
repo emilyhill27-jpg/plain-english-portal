@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plain English — Understand Any Document</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-mark">PE</span>
+        <span class="logo-name">Plain English</span>
+      </div>
+      <button id="dyslexia-btn" class="btn-ghost" title="Toggle dyslexia-friendly font">
+        Aa  Dyslexia Mode
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Upload Section ───────────────────────────────────── -->
+  <main id="upload-section">
+    <div class="hero">
+      <h1>Understand any document — instantly</h1>
+      <p class="hero-sub">Upload a government form, contract, or business plan.<br>
+        We'll explain every question in plain English with real examples.</p>
+    </div>
+
+    <div class="upload-card">
+
+      <!-- Tabs -->
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="file" role="tab">Upload PDF</button>
+        <button class="tab" data-tab="text" role="tab">Paste Text</button>
+        <button class="tab" data-tab="url" role="tab">Enter URL</button>
+      </div>
+
+      <!-- File upload -->
+      <div class="tab-pane active" id="pane-file">
+        <div class="drop-zone" id="drop-zone">
+          <div class="drop-icon">📄</div>
+          <p class="drop-label">Drag & drop your PDF here</p>
+          <p class="drop-or">or</p>
+          <label class="btn-primary" for="file-input">Choose File</label>
+          <input type="file" id="file-input" accept=".pdf,.txt" hidden>
+        </div>
+        <p class="hint">PDF or text file · Government forms, contracts, business plans</p>
+      </div>
+
+      <!-- Text paste -->
+      <div class="tab-pane" id="pane-text">
+        <textarea id="text-input" rows="10"
+          placeholder="Paste your document text here…&#10;&#10;For example, copy text from a government website, a contract email, or any document you want explained."></textarea>
+        <button class="btn-primary full" id="text-submit">Explain This Text</button>
+      </div>
+
+      <!-- URL -->
+      <div class="tab-pane" id="pane-url">
+        <div class="url-row">
+          <input type="url" id="url-input" placeholder="https://…  (direct link to a PDF)">
+          <button class="btn-primary" id="url-submit">Load</button>
+        </div>
+        <p class="hint">Enter a direct link to a PDF document on the internet.</p>
+      </div>
+
+      <!-- Quick-access common forms -->
+      <div class="quick-access">
+        <span class="quick-label">Common NZ forms:</span>
+        <button class="chip" data-url="https://www.workandincome.govt.nz/documents/forms/application-for-sole-parent-support.pdf">Sole Parent Support</button>
+        <button class="chip" data-url="https://www.ird.govt.nz/resources/8/7/87b1e8804ba3bfb89632bf2e3b68b0bf/ir3.pdf">IR3 Tax Return</button>
+        <button class="chip" data-url="">MSD Self-Employment Grant</button>
+        <button class="chip" data-url="">Tenancy Agreement</button>
+      </div>
+    </div>
+
+    <!-- What it does -->
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">💬</div>
+        <h3>Plain English explanations</h3>
+        <p>Every question explained simply — like a helpful friend, not a lawyer.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📝</div>
+        <h3>Real examples</h3>
+        <p>See exactly what to write, not just "enter your details here."</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔍</div>
+        <h3>Hover to understand</h3>
+        <p>Hover over any question to get an instant explanation and example.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📋</div>
+        <h3>Government · Contracts · Business plans</h3>
+        <p>Different document types get different expert prompts — not one-size-fits-all.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── Results Section ──────────────────────────────────── -->
+  <div id="results-section" class="hidden">
+
+    <div class="results-bar">
+      <div class="results-bar-left">
+        <button class="btn-ghost" id="back-btn">← New document</button>
+        <div id="doc-type-badge" class="badge">Document</div>
+      </div>
+      <button class="btn-summary-toggle" id="summary-toggle">📄 Plain English Summary</button>
+    </div>
+
+    <!-- Status bar -->
+    <div class="status-bar" id="status-bar">
+      <div class="status-bar-fill" id="status-bar-fill"></div>
+    </div>
+    <p id="loading-msg" class="loading-msg">Reading your document…</p>
+
+    <!-- Main split view -->
+    <div class="split-view">
+
+      <!-- Left: question cards -->
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-head">
+          <span id="sidebar-title">Finding questions…</span>
+        </div>
+        <div class="sidebar-body" id="sidebar-body">
+          <div class="spinner-wrap" id="sidebar-loading">
+            <div class="spinner"></div>
+            <p>Reading your document…</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: PDF or text -->
+      <div class="doc-panel" id="doc-panel">
+        <div class="pdf-viewer" id="pdf-viewer">
+          <div class="spinner-wrap">
+            <div class="spinner"></div>
+            <p>Rendering document…</p>
+          </div>
+        </div>
+        <div class="text-viewer hidden" id="text-viewer"></div>
+      </div>
+
+    </div>
+
+    <!-- Plain English summary panel -->
+    <div class="summary-panel hidden" id="summary-panel">
+      <div class="summary-panel-head">
+        <h3>📄 Plain English Summary</h3>
+        <button class="btn-ghost" id="summary-close">Close ✕</button>
+      </div>
+      <div id="summary-content" class="prose"></div>
+      <div id="summary-loading" class="spinner-wrap">
+        <div class="spinner"></div>
+        <p>Writing plain English summary…</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Question detail modal ────────────────────────────── -->
+  <div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal">
+      <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+      <div class="modal-badge" id="modal-badge"></div>
+      <h3 class="modal-original" id="modal-original"></h3>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
