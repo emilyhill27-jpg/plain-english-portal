@@ -22,3 +22,12 @@ A running log of major changes, sessions, and project state.
 - `POST /translate` with sample legalese + `tier: ELEMENTARY` returns child-friendly rewrite.
 - Both servers run cleanly side-by-side inside the virtual environment directory.
 
+
+---
+
+## Session: 2026-05-15 (cleanup) — Orphan removal
+
+Removed `frontend/src/components/` and `frontend/src/prompts.js` after confirming no live imports remain.
+Frontend source tree is now: App.jsx, StateStore.js, main.jsx, index.css, assets/.
+Committed separately from the wiring change for a clean revert path.
+
