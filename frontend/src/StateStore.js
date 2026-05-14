@@ -2,8 +2,11 @@
 // Zero-dependency, Zustand-style hook built on useSyncExternalStore.
 import { useSyncExternalStore } from "react";
 
-const API_BASE =
-  import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000";
+// In production (single-service Render deploy), API_BASE is empty string,
+// so fetch uses the same origin as the frontend.
+// In local dev, frontend/.env.development sets VITE_API_BASE to
+// http://127.0.0.1:8000 (Vite on :5173, FastAPI on :8000).
+const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 const initialState = {
   inputText: "",
@@ -46,7 +49,7 @@ export const actions = {
     }
     setState({ loading: true, error: null, result: "" });
     try {
-      const res = await fetch(`${API_BASE}/translate`, {
+      const res = await fetch(`${API_BASE}/api/translate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: inputText, tier }),
