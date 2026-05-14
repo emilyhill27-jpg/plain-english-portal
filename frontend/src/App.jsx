@@ -1,152 +1,170 @@
-import { useState, useRef } from 'react'
-import PdfViewer from './components/PdfViewer'
-import TextPanel from './components/TextPanel'
-import { resetAll, killSpeech } from './StateStore'
-import './App.css'
+import { useStore, actions } from "./StateStore";
+import "./index.css";
+
+const TIERS = [
+  { id: "ELEMENTARY", label: "Elementary (age ~9)" },
+  { id: "HIGHSCHOOL", label: "High school" },
+  { id: "ADULT", label: "Adult plain English" },
+];
 
 export default function App() {
-  const [sessionId, setSessionId]       = useState(null)
-  const [blocks, setBlocks]             = useState([])
-  const [uploadedImage, setUploadedImage] = useState(null)
-  const [documentType, setDocumentType] = useState('government')
-  const [sourceText, setSourceText]     = useState('')
-  const rightColRef = useRef(null)
-  const [loading, setLoading]           = useState(false)
-  const [ocrLoading, setOcrLoading]     = useState(false)
-  const [error, setError]               = useState('')
-
-  // ── Single source of truth for clearing everything ──────────
-  function resetAppState() {
-    killSpeech()                     // line 1: kill before anything else
-    resetAll({ setSessionId, setBlocks, setUploadedImage, setSourceText, setError })
-  }
-
-  // ── Open PDF ─────────────────────────────────────────────────
-  async function handleFileChange(e) {
-    const file = e.target.files[0]
-    if (!file || file.type !== 'application/pdf') return
-    e.target.value = ''
-
-    resetAppState()
-    setDocumentType('government')   // always plain-English mode for PDFs
-    setLoading(true)
-
-    try {
-      const form = new FormData()
-      form.append('file', file)
-      const res = await fetch('/api/upload', { method: 'POST', body: form })
-      if (!res.ok) {
-        const { detail } = await res.json().catch(() => ({}))
-        throw new Error(detail || `Server error ${res.status}`)
-      }
-      const data = await res.json()
-      setSessionId(data.session_id)
-      setBlocks(data.blocks || [])
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // ── Upload Worksheet (JPG) ────────────────────────────────────
-  async function handleImageChange(e) {
-    const file = e.target.files[0]
-    if (!file) return
-    e.target.value = ''
-
-    resetAppState()
-    setDocumentType('academic')     // always homework-tutor mode for worksheets
-    setOcrLoading(true)
-
-    // Show image immediately — OCR result arrives shortly after
-    setUploadedImage(URL.createObjectURL(file))
-
-    try {
-      const form = new FormData()
-      form.append('file', file)
-      const res = await fetch('/api/ocr', { method: 'POST', body: form })
-      if (!res.ok) {
-        const { detail } = await res.json().catch(() => ({}))
-        throw new Error(detail || `Server error ${res.status}`)
-      }
-      const { text } = await res.json()
-      setSourceText(text)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setOcrLoading(false)
-    }
-  }
-
-  // ── Left column ───────────────────────────────────────────────
-  function renderLeftColumn() {
-    if (uploadedImage) {
-      return (
-        <div className="image-viewer">
-          {ocrLoading && (
-            <div className="image-ocr-banner">
-              Reading worksheet… text will appear on the right shortly.
-            </div>
-          )}
-          <img src={uploadedImage} alt="Uploaded worksheet" style={{ width: '100%' }} />
-        </div>
-      )
-    }
-    if (sessionId) {
-      return (
-        <PdfViewer
-          sessionId={sessionId}
-          blocks={blocks}
-          onTextSelect={setSourceText}
-        />
-      )
-    }
-    return (
-      <div className="pdf-empty">
-        <p>Open a PDF or upload a worksheet image to get started.</p>
-      </div>
-    )
-  }
+  const { inputText, tier, result, loading, error } = useStore();
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <span className="logo-mark">PE</span>
-        <span className="logo-name">Plain English</span>
-        {error && <span className="header-error">{error}</span>}
-
-        <label className={`upload-btn upload-btn-secondary ${ocrLoading ? 'upload-btn-loading' : ''}`}>
-          {ocrLoading ? 'Reading image…' : 'Upload Worksheet (JPG)'}
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={handleImageChange}
-            disabled={ocrLoading || loading}
-            hidden
-          />
-        </label>
-
-        <label className={`upload-btn ${loading ? 'upload-btn-loading' : ''}`}>
-          {loading ? 'Reading PDF…' : 'Open PDF'}
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={handleFileChange}
-            disabled={loading || ocrLoading}
-            hidden
-          />
-        </label>
+    <main
+      style={{
+        maxWidth: 880,
+        margin: "0 auto",
+        padding: "2rem 1rem",
+        fontFamily:
+          "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        color: "#1a1a1a",
+        lineHeight: 1.6,
+      }}
+    >
+      <header style={{ marginBottom: "1.5rem" }}>
+        <h1 style={{ fontSize: "2rem", margin: "0 0 .25rem 0" }}>
+          Plain English Portal
+        </h1>
+        <p style={{ color: "#555", margin: 0 }}>
+          Paste any contract, policy, or legal text. Choose a reading level.
+          We rewrite it in plain English using Claude 3.5 Sonnet.
+        </p>
       </header>
 
-      <div className="split">
-        <section className="split-left">
-          {renderLeftColumn()}
-        </section>
-        <section className="split-right" ref={rightColRef}>
-          <TextPanel sourceText={sourceText} documentType={documentType} scrollRef={rightColRef} />
-        </section>
+      <label
+        htmlFor="source"
+        style={{ display: "block", fontWeight: 600, marginBottom: ".5rem" }}
+      >
+        Text to translate
+      </label>
+      <textarea
+        id="source"
+        value={inputText}
+        onChange={(e) => actions.setInputText(e.target.value)}
+        placeholder="Paste a clause, contract, or policy here..."
+        rows={10}
+        aria-describedby="source-hint"
+        style={{
+          width: "100%",
+          padding: "0.75rem",
+          fontSize: "1rem",
+          fontFamily: "inherit",
+          borderRadius: 8,
+          border: "1px solid #ccc",
+          resize: "vertical",
+          boxSizing: "border-box",
+        }}
+      />
+      <p
+        id="source-hint"
+        style={{ fontSize: ".875rem", color: "#666", margin: ".25rem 0 0" }}
+      >
+        Up to 20,000 characters.
+      </p>
+
+      <fieldset
+        style={{
+          border: "1px solid #ddd",
+          borderRadius: 8,
+          padding: "1rem",
+          margin: "1.25rem 0",
+        }}
+      >
+        <legend style={{ fontWeight: 600, padding: "0 .5rem" }}>
+          Reading level
+        </legend>
+        {TIERS.map((t) => (
+          <label
+            key={t.id}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: ".4rem",
+              marginRight: "1.25rem",
+              cursor: "pointer",
+            }}
+          >
+            <input
+              type="radio"
+              name="tier"
+              value={t.id}
+              checked={tier === t.id}
+              onChange={() => actions.setTier(t.id)}
+            />
+            {t.label}
+          </label>
+        ))}
+      </fieldset>
+
+      <div style={{ display: "flex", gap: ".75rem", alignItems: "center" }}>
+        <button
+          type="button"
+          onClick={() => actions.translate()}
+          disabled={loading || !inputText.trim()}
+          style={{
+            padding: "0.6rem 1.25rem",
+            fontSize: "1rem",
+            fontWeight: 600,
+            color: "white",
+            background: loading ? "#888" : "#0b66ff",
+            border: "none",
+            borderRadius: 8,
+            cursor: loading ? "wait" : "pointer",
+          }}
+        >
+          {loading ? "Translating…" : "Translate"}
+        </button>
+        <button
+          type="button"
+          onClick={() => actions.reset()}
+          style={{
+            padding: "0.6rem 1rem",
+            fontSize: "1rem",
+            background: "transparent",
+            border: "1px solid #ccc",
+            borderRadius: 8,
+            cursor: "pointer",
+          }}
+        >
+          Reset
+        </button>
       </div>
-    </div>
-  )
+
+      {error && (
+        <div
+          role="alert"
+          style={{
+            marginTop: "1.25rem",
+            padding: "0.75rem 1rem",
+            background: "#fff3f3",
+            border: "1px solid #f1b0b0",
+            borderRadius: 8,
+            color: "#7a1f1f",
+          }}
+        >
+          {error}
+        </div>
+      )}
+
+      {result && (
+        <section
+          aria-live="polite"
+          style={{
+            marginTop: "1.5rem",
+            padding: "1rem 1.25rem",
+            background: "#f6fbff",
+            border: "1px solid #cfe4ff",
+            borderRadius: 8,
+            whiteSpace: "pre-wrap",
+          }}
+        >
+          <h2 style={{ margin: "0 0 .5rem", fontSize: "1.15rem" }}>
+            Plain English version
+          </h2>
+          {result}
+        </section>
+      )}
+    </main>
+  );
 }
