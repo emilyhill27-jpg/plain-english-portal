@@ -31,3 +31,29 @@ Removed `frontend/src/components/` and `frontend/src/prompts.js` after confirmin
 Frontend source tree is now: App.jsx, StateStore.js, main.jsx, index.css, assets/.
 Committed separately from the wiring change for a clean revert path.
 
+
+---
+
+## Session: 2026-05-15 (deploy prep) — Single-service Render architecture
+
+Restructured for Option A: one Render web service serving both FastAPI and the built Vite frontend.
+
+**render.yaml**
+- Build now runs pip install plus cd frontend && npm ci && npm run build.
+- Pinned PYTHON_VERSION=3.11.9 and NODE_VERSION=20.11.1.
+- Added healthCheckPath: /api/health.
+
+**app.py**
+- All API routes namespaced under /api/ (/api/health, /api/translate).
+- Mounts /assets to serve Vite's hashed bundles from frontend/dist/assets.
+- Catch-all GET serves frontend/dist/index.html for SPA routing, with /api/* 404 guard.
+
+**frontend/src/StateStore.js**
+- Calls /api/translate (was /translate).
+- API_BASE reads import.meta.env.VITE_API_BASE, empty string in production (same-origin).
+
+**frontend/.env.development**
+- VITE_API_BASE=http://127.0.0.1:8000 for local dev where frontend and backend are on different ports.
+
+**Local prod-build smoke test:** Passed completely with unified routing loop.
+
