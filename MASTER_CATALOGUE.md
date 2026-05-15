@@ -57,3 +57,17 @@ Restructured for Option A: one Render web service serving both FastAPI and the b
 
 **Local prod-build smoke test:** Passed completely with unified routing loop.
 
+
+---
+
+## Session: 2026-05-15 (final) — Render Live Deployment Verified
+
+Successfully deployed the unified Option A single-service container to production.
+Pushed clean source code branch to GitHub: https://github.com
+Live Deployment URL: https://onrender.com
+
+**Production Architecture State Verified:**
+- `GET /api/health` returns status "ok" and verifies compiled frontend dist directory state.
+- `GET /` successfully routes requests directly to the production React Single Page Application (SPA).
+- `POST /api/translate` processes complex terminology requests using the Claude Sonnet 4.6 engine.
+
