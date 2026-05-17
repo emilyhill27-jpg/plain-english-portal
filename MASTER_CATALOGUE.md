@@ -71,3 +71,14 @@ Live Deployment URL: https://onrender.com
 - `GET /` successfully routes requests directly to the production React Single Page Application (SPA).
 - `POST /api/translate` processes complex terminology requests using the Claude Sonnet 4.6 engine.
 
+---
+
+## Session: 2026-05-17 — v2 working end-to-end on MSD Jobseeker form
+
+**Outcome:** Renaming product to Plainform. Core form companion flow with accessible dyslexia output, audio playback, and guiding questions is now functional.
+
+**Notes:**
+- v2 working end-to-end on MSD Jobseeker form.
+- Renaming product to Plainform.
+- Next phase: drag-to-select region, landing page, document categories.
+
