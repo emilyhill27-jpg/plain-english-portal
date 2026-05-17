@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^0.96.0"
+  }
+}

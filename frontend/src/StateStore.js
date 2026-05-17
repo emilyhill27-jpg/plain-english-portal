@@ -1,71 +1,30 @@
-// Plain English Portal — global state store
-// Zero-dependency, Zustand-style hook built on useSyncExternalStore.
-import { useSyncExternalStore } from "react";
+import { create } from "zustand";
 
-// In production (single-service Render deploy), API_BASE is empty string,
-// so fetch uses the same origin as the frontend.
-// In local dev, frontend/.env.development sets VITE_API_BASE to
-// http://127.0.0.1:8000 (Vite on :5173, FastAPI on :8000).
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+export const usePortalStore = create((set, get) => ({
+  fileId: null,
+  contextType: null,
+  isPlaying: false,
+  audioSpeed: 0.7,
+  boundingBoxes: [],
 
-const initialState = {
-  inputText: "",
-  tier: "HIGHSCHOOL",
-  result: "",
-  loading: false,
-  error: null,
-};
-
-let state = { ...initialState };
-const listeners = new Set();
-
-function setState(patch) {
-  state =
-    typeof patch === "function"
-      ? { ...state, ...patch(state) }
-      : { ...state, ...patch };
-  listeners.forEach((l) => l());
-}
-
-function subscribe(listener) {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
-
-function getSnapshot() {
-  return state;
-}
-
-export const actions = {
-  setInputText: (inputText) => setState({ inputText }),
-  setTier: (tier) => setState({ tier }),
-  reset: () => setState({ ...initialState }),
-
-  async translate() {
-    const { inputText, tier } = state;
-    if (!inputText.trim()) {
-      setState({ error: "Please paste some text first.", result: "" });
-      return;
+  switchDocument: (newFileId, newContextType) => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
     }
-    setState({ loading: true, error: null, result: "" });
-    try {
-      const res = await fetch(`${API_BASE}/api/translate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: inputText, tier }),
-      });
-      if (!res.ok) {
-        const detail = await res.text();
-        throw new Error(`Server ${res.status}: ${detail}`);
-      }
-      const data = await res.json();
-      setState({ result: data.result, loading: false });
-    } catch (err) {
-      setState({ error: err.message, loading: false });
+    set({
+      fileId: newFileId,
+      contextType: newContextType,
+      isPlaying: false,
+      audioSpeed: 0.7,
+      boundingBoxes: [],
+    });
+  },
+
+  setAudioSpeed: (speed) => {
+    if (speed >= 0.5 && speed <= 2.0) {
+      set({ audioSpeed: speed });
     }
   },
-};
 
-export function useStore() {
-  return useSyncExternalStore(subscribe, getSnapshot, () => initialState);
-}
+  setIsPlaying: (isPlaying) => set({ isPlaying }),
+}));
