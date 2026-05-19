@@ -147,11 +147,19 @@ function LandingPage({ onGetStarted, onFileUpload }) {
           --hero-bg:   #bf5030;
           --dark-bg:   #3D5C40;
           font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
-          background: var(--warm);
+          background: #ede4d4;
           color: var(--ink);
           font-size: 17px;
           line-height: 1.7;
           -webkit-font-smoothing: antialiased;
+          min-height: 100vh;
+        }
+        .pl-shell {
+          max-width: 1400px;
+          margin: 0 auto;
+          background: #ffffff;
+          box-shadow: 0 0 80px rgba(0,0,0,0.07);
+          overflow: hidden;
         }
         .pl-nav {
           position: sticky; top: 0; z-index: 100;
@@ -640,6 +648,7 @@ function LandingPage({ onGetStarted, onFileUpload }) {
       `}</style>
 
       <div className="pl-root">
+      <div className="pl-shell">
 
         {/* NAV */}
         <nav className="pl-nav">
@@ -937,6 +946,7 @@ function LandingPage({ onGetStarted, onFileUpload }) {
           </div>
         </footer>
 
+      </div>{/* /pl-shell */}
       </div>
     </>
   );
