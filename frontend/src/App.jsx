@@ -118,17 +118,17 @@ function LandingPage({ onGetStarted, onFileUpload }) {
   }, []);
 
   const LP = {
-    heroBg:        "#2E1065",
-    footerBg:      "#1A0844",
+    heroBg:        "#4A0E3A",
+    footerBg:      "#2D0823",
     heroLabel:     "#86EFAC",
-    heroSub:       "#C4B5FD",
-    primary:       "#7C3AED",
-    primaryHover:  "#6D28D9",
-    btnCta:        "#A855F7",
+    heroSub:       "#F9A8D4",
+    primary:       "#9D174D",
+    primaryHover:  "#831843",
+    btnCta:        "#DB2777",
     yellow:        "#FEFCE8",
     yellowBorder:  "#FEF08A",
-    lavender:      "#F5F3FF",
-    lavenderBorder:"#DDD6FE",
+    lavender:      "#FDF2F8",
+    lavenderBorder:"#FBCFE8",
     white:         "#FFFFFF",
     text:          "#111827",
     muted:         "#6B7280",
@@ -209,7 +209,7 @@ function LandingPage({ onGetStarted, onFileUpload }) {
 
           {/* Right — animated demo */}
           <div style={{ flex: 1, minWidth: 280, background: LP.white, borderRadius: 20, padding: 32, boxShadow: "0 8px 48px rgba(0,0,0,0.28)" }}>
-            <AnimatedDemo step={step} accent={LP.primary} accentLight="rgba(124,58,237,0.08)" accentHover={LP.primaryHover} />
+            <AnimatedDemo step={step} accent={LP.primary} accentLight="rgba(157,23,77,0.08)" accentHover={LP.primaryHover} />
           </div>
 
         </div>
@@ -240,11 +240,11 @@ function LandingPage({ onGetStarted, onFileUpload }) {
             <p style={{ fontSize: 13, fontWeight: 700, color: LP.primary, marginBottom: 16, textTransform: "uppercase", letterSpacing: "0.06em" }}>Upload. Select. Simplify.</p>
             <div style={{ background: "#F9FAFB", borderRadius: 10, padding: "16px 14px", marginBottom: 14 }}>
               {[80, 95, 70, 100, 85, 60].map((w, i) => (
-                <div key={i} style={{ height: 10, background: i === 1 || i === 2 ? "#DDD6FE" : "#E5E7EB", borderRadius: 4, width: `${w}%`, marginBottom: 8 }} />
+                <div key={i} style={{ height: 10, background: i === 1 || i === 2 ? "#FBCFE8" : "#E5E7EB", borderRadius: 4, width: `${w}%`, marginBottom: 8 }} />
               ))}
-              <div style={{ border: "2px dashed #A855F7", borderRadius: 6, background: "rgba(168,85,247,0.06)", padding: "12px 10px", marginTop: 4 }}>
+              <div style={{ border: "2px dashed #DB2777", borderRadius: 6, background: "rgba(219,39,119,0.06)", padding: "12px 10px", marginTop: 4 }}>
                 {[95, 70].map((w, i) => (
-                  <div key={i} style={{ height: 10, background: "#DDD6FE", borderRadius: 4, width: `${w}%`, marginBottom: i === 0 ? 8 : 0 }} />
+                  <div key={i} style={{ height: 10, background: "#FBCFE8", borderRadius: 4, width: `${w}%`, marginBottom: i === 0 ? 8 : 0 }} />
                 ))}
               </div>
             </div>
