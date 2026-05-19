@@ -1,4 +1,4 @@
-# Plainform — Project Handover
+# Plainly — Project Handover
 
 ---
 
@@ -19,51 +19,79 @@
 
 ---
 
-## What Plainform Is
+## What Plainly Is
 
-A dyslexia accessibility web app. Upload any PDF or image, draw a box around any section, press Simplify, get a plain-English explanation with bullet points, checklist, and audio playback.
+A web app that turns any confusing document into plain English. Upload a PDF or image, draw a box around any section, press Simplify, get a plain-English explanation with bullet points, checklist, and audio playback.
 
-Built from lived experience — Emily's entire family struggles with complex paperwork.
+Built from lived experience — Emily's entire family struggles with complex paperwork:
+- **Niko, 10** — gets Year 6 worksheets he can't decode. Sits there and falls behind.
+- **Amaya, 13** — dyslexia, won't put her hand up. Quietly struggles through documents she can't process.
+- **Emily** — tried to apply for the WINZ self-employment grant. It's a 50-page business plan. Near impossible to navigate.
 
-**Business model:** Free for individuals. Sell to organisations — WINZ, IRD, insurance companies, schools, councils.
+**Product name:** Plainly (was "Plainform")
+**Domain target:** tryplainly.co.nz
+
+---
+
+## Business Model — Confirmed
+
+- **Free for end users** — always. No premium tier, no upsell.
+- **White-label B2B** — organisations pay a licence fee to put their name on it. Plainly runs the backend.
+- **Target customers:** Schools, community law centres, Citizens Advice Bureau, insurance brokers, immigration advisers, GP practices, small councils — organisations that deal with complex documents daily and can make a buying decision without a committee.
+- **Do NOT lead with WINZ/IRD/big govt** — they have IT teams, procurement red tape, 12–18 month buying cycles. Approach them only after you have proven traction with smaller orgs.
+
+## Investment Strategy — Confirmed
+
+1. Get 2–3 paying customers first (even $200/month) — proof people will pay
+2. Apply for Callaghan Innovation grant (non-dilutive, doesn't take equity)
+3. With revenue + grant, polish the product
+4. Then approach investors from a position of strength
 
 ---
 
 ## Current State — What Is Built and Working
 
-### Landing page (newly added in latest session)
-- Animated demo showing the 4-step flow
-- Hero section with headline, upload dropzone, Get Started button
-- "How it works" 3-step section
-- Dyslexia-friendly design: warm off-white background, Arial font, teal accent, high contrast
-- Drag and drop file upload directly from the landing page takes user straight into the app
+### Landing page
+- Full editorial landing page built from Emily's Canva HTML export
+- Sections: hero with live demo card, scrolling ticker, stats bar (851K / 26% / 1 in 5 / 15–20%), How it works (3 steps), What Plainly reads (3 cards), School module feature, AI/technology section, Promises strip, CTA, Footer
+- Live demo card: tabs for WINZ letter / IRD notice / School form — shows before/after plainification
+- Drag-and-drop file upload on hero goes straight into the app
+- All CTA buttons connect to the app
 
-### Main app (the two-panel tool)
+### App page (the two-panel tool)
 - PDF and image upload (drag & drop or browse)
-- Multi-page PDF with thumbnail sidebar (150px wide, scrollable)
-- Zoom controls (40%–300%) and page navigation arrows
+- Multi-page PDF with thumbnail sidebar
+- Zoom controls and page navigation
 - Rubber-band drag-to-select any region on the document
-- Crop preview shows selected section before simplifying
+- Crop preview shows selected section
 - Bullet-point plain English output
 - Numbered checklist with clickable items
 - Audio: Play All / Pause / Stop + click any word to play from that point + voice selector
-- Three document modes (toggle in right panel):
-  - 📄 General — plain English rewrite for any form, letter, or school work
+- Three document modes:
+  - 📄 General — plain English rewrite for any document
   - 📋 Business plan — coaching mode for WINZ business plan applications
-  - 📚 School — explains at the child's actual reading age (not school year), with age selector: Age 5–6, Age 7–8, Age 9–10, Age 11–12
-- Print (hides left panel, right panel only)
-- New document button resets everything
-- Checklist popup drawer
-- Important Details flags (deadlines, amounts, documents needed)
+  - 📚 School — explains at the child's actual reading age (Age 5–6, 7–8, 9–10, 11–12)
+- Print, New document, Checklist drawer
+
+### Design system (both pages now match)
+- **Fonts:** Playfair Display (headings/logo) + Atkinson Hyperlegible (body)
+- **Accent colour:** Terracotta `#bf5030`
+- **Backgrounds:** Warm cream `#f6f0e6`, warm white `#fdfaf5`
+- **Text:** Near-black `#1c1710`
+- **No black backgrounds** — dark sections use forest sage `#3D5C40`
+- **Square corners** — no pill buttons, no heavy border-radius
+- App page nav matches landing page nav exactly (Playfair Display "Plain**ly**" logo, cream bg, terracotta accent)
 
 ---
 
 ## Tech Stack
 
 - **Backend:** FastAPI + PyMuPDF (fitz) + Anthropic SDK → `app.py`
-- **Frontend:** React + Vite → `frontend/src/App.jsx` (~870 lines)
+- **Frontend:** React + Vite → `frontend/src/App.jsx`
 - **AI model:** Claude Sonnet 4.6 via vision API
 - **API key:** `~/Desktop/plain-english/.env` → `ANTHROPIC_API_KEY`
+- **Deploy:** Render.com — `render.yaml` already configured, auto-deploys from GitHub on push to `main`
+- **GitHub:** `emilyhill27-jpg/plain-english-portal`
 
 **To start the server:**
 ```bash
@@ -76,7 +104,9 @@ python3 -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 ```bash
 cd ~/Desktop/plain-english/frontend && npm run build
 ```
-Then restart the server.
+
+**To deploy:** `git add frontend/src/App.jsx && git commit -m "..." && git push origin main`
+Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 
 **Local address:** http://127.0.0.1:8000
 
@@ -87,71 +117,32 @@ Then restart the server.
 | File | Purpose |
 |------|---------|
 | `app.py` | FastAPI backend, AI prompts, all API routes |
-| `frontend/src/App.jsx` | Entire React UI including landing page (~870 lines) |
+| `frontend/src/App.jsx` | Entire React UI — landing page + app page |
 | `.env` | ANTHROPIC_API_KEY |
 | `frontend/dist/` | Built frontend — rebuild after JSX changes |
 | `HANDOVER.md` | This file — update at end of every session |
 
 ---
 
-## AI Prompts (in app.py)
-
-- `GENERAL_PROMPT` — plain English rewrite for any document
-- `BUSINESS_PLAN_PROMPT` — coaching mode for WINZ/Flexi Wage business plan applications
-
-### Business Plan Prompt
-Rewritten from official WINZ/MSD sources (workandincome.govt.nz). Key facts baked in:
-- Business plan is sent to an independent external assessor who checks viability
-- Assessor looks for: real market demand, realistic financials, genuine understanding of the business, relevant skills, clear plan for getting customers
-- Prompt now gives users the actual viability criteria — not AI roleplay guesses
-
----
-
-## Session Notes — 19 May 2026 (continued)
-
-### What was done (second session)
-- **School mode added** — third mode button "📚 School" in the mode toggle
-  - When selected, a reading age selector appears: Age 5–6, Age 7–8, Age 9–10, Age 11–12
-  - Pick the age the child actually reads at — not their school year
-  - `app.py`: Added `make_school_prompt(reading_age)` function — generates a prompt tuned to that reading level (vocabulary complexity, sentence length, example style)
-  - `app.py`: `/api/simplify` endpoint detects `school_` prefix in audience_profile and calls `make_school_prompt` with the extracted age
-  - `App.jsx`: `readingAge` state, updated mode toggle to 3 buttons, age selector UI, passes `school_7-8` (etc) as audience_profile
-  - CSS updated: `.mode-btn:not(:last-child)` so dividers work for 3 buttons; added `.age-btn` and `.age-active` styles
-- Frontend rebuilt successfully
-
----
-
-## Session Notes — 19 May 2026
-
-### What was done
-- Fixed 4 broken features in `frontend/src/App.jsx`:
-  1. **Thumbnail strip restored** — added JSX back to `renderLeft()` as a sibling to `.doc-viewer`. Only shows for multi-page PDFs. Clicking a thumbnail scrolls the doc viewer to that page.
-  2. **Toolbar fixed at top** — moved `.page-nav` outside the scrollable `.doc-viewer` div. Restructured `renderLeft()` so the outer div uses `flexDirection: "column"`, toolbar sits at the top (never scrolls), and the thumbnail strip + doc viewer sit below in a horizontal flex row.
-  3. **Rubber-band selection fixed** — added `onMouseMove`, `onMouseUp`, `onMouseLeave` to the `.doc-viewer` container div so dragging works even when cursor moves fast off a page.
-  4. **Landing page demo animated** — replaced `const step = 3` with `useState(0)` + `useEffect` that cycles through steps 0→1→2→3 automatically with realistic delays.
-- Frontend rebuilt successfully after changes.
-
-### To start the server (always from Desktop version)
-```bash
-cd ~/Desktop/plain-english
-source venv/bin/activate
-uvicorn app:app --host 127.0.0.1 --port 8000 --reload
-```
-
----
-
 ## Pending Tasks — IN ORDER, ONE AT A TIME
 
-1. **Domain** — check if plainform.co.nz is available
-2. **Deploy** — Render.com config already exists in `render.yaml`
-
----
+1. **App page polish** — Emily noted buttons don't flow properly, app page aesthetic needs to be tighter match to landing page. She's having a think overnight, pick this up next session.
+2. **Push to GitHub / deploy** — not yet pushed since the big redesign. Run build + push when app page polish is done.
+3. **Business Plan prompt** — currently uses AI-generated WINZ criteria, not official. Could mislead vulnerable users. Fix before going public.
+4. **Domain** — check if tryplainly.co.nz is available
+5. **First paying customer** — approach one school, community org, or adviser. Don't wait for it to be perfect.
 
 ---
 
 ## Key Decisions Already Made
 
-- No document type selector — replaced with simple two-button toggle (General / Business Plan)
-- Client-side canvas crop — server-side had coordinate bugs, client-side is always accurate
-- No guiding questions — removed, they asked things users couldn't answer
-- One universal prompt for general documents instead of separate academic/government prompts
+- Product name is **Plainly** (not Plainform)
+- Business model is **white-label B2B** — always free to end users, organisations pay licence
+- Do not sell to big government first — start with small orgs who can decide fast
+- Get paying customers before approaching investors
+- Apply for Callaghan Innovation grant as non-dilutive first funding
+- No black backgrounds anywhere in the UI
+- Design: Playfair Display + Atkinson Hyperlegible, terracotta accent, cream/warm palette, square corners
+- Client-side canvas crop (not server-side — coordinate bugs)
+- No guiding questions — removed
+- One universal general prompt, not separate academic/government prompts
