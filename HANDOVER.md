@@ -49,6 +49,18 @@ Built from lived experience — Emily's entire family struggles with complex pap
 
 ---
 
+## Design Language — Sand Banding (applied everywhere)
+
+All pages and the app share one visual identity:
+- **Body background:** `#ede4d4` (warm sand) — creates top/bottom/side banding
+- **Page content:** sits in a white or cream container — appears to float
+- **App tool page:** `app-shell` is `#ede4d4`, left panel `#fdfaf5`, right panel `#f6f0e6`, drop zone `#ffffff`
+- **B2B landing:** `body` is `#ede4d4`, all content inside `.page-shell` (max-width 1400px, white bg)
+- **Landing page:** full-bleed terracotta hero — intentional, no banding applied here
+- Apply this same pattern to any new page (pitch deck, etc.): `body { background: #ede4d4 }` + white/cream shell
+
+---
+
 ## Current State — What Is Built and Working
 
 ### Landing page
@@ -57,6 +69,14 @@ Built from lived experience — Emily's entire family struggles with complex pap
 - Live demo card: tabs for WINZ letter / IRD notice / School form — shows before/after plainification
 - Drag-and-drop file upload on hero goes straight into the app
 - All CTA buttons connect to the app
+
+### B2B landing page (`b2b-landing.html` / served at `/b2b.html`)
+- Standalone HTML — Pomelo-inspired, clean white + terracotta, big Playfair Display type
+- Hero: "The plain language layer." with terracotta italic on `<em>`
+- Sections: nav → hero → proof bar → value props → how it works (dark) → white-label split → who it's for → pricing → CTA → footer
+- Pricing: Starter $299/mo · Organisation $699/mo · Enterprise custom
+- Sand banding: `body { background: #ede4d4 }` + `.page-shell` (max-width 1400px, white)
+- Stored in `frontend/public/b2b.html` so it survives every `npm run build`
 
 ### App page (the two-panel tool)
 - PDF and image upload (drag & drop or browse)
@@ -80,7 +100,9 @@ Built from lived experience — Emily's entire family struggles with complex pap
 - **Text:** Near-black `#1c1710`
 - **No black backgrounds** — dark sections use forest sage `#3D5C40`
 - **Square corners** — no pill buttons, no heavy border-radius
-- App page nav matches landing page nav exactly (Playfair Display "Plain**ly**" logo, cream bg, terracotta accent)
+- App page header: Playfair Display "Plain**ly**" logo (links to `/`), "Plain language, instantly." tagline, "← Home" always visible, "↩ New document" in terracotta when file loaded
+- When result shows: green sage done-banner appears with "↩ New doc" and "← Home" buttons so user can easily close and go back
+- Sand banding: `app-shell` bg `#ede4d4`, left panel `#fdfaf5`, drop zone `#ffffff`, right panel `#f6f0e6`
 
 ---
 
@@ -126,11 +148,10 @@ Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 
 ## Pending Tasks — IN ORDER, ONE AT A TIME
 
-1. **App page polish** — Emily noted buttons don't flow properly, app page aesthetic needs to be tighter match to landing page. She's having a think overnight, pick this up next session.
-2. **Push to GitHub / deploy** — not yet pushed since the big redesign. Run build + push when app page polish is done.
-3. **Business Plan prompt** — currently uses AI-generated WINZ criteria, not official. Could mislead vulnerable users. Fix before going public.
-4. **Domain** — check if tryplainly.co.nz is available
-5. **First paying customer** — approach one school, community org, or adviser. Don't wait for it to be perfect.
+1. **Pitch deck** — Emily wants a pitch deck with the same sand-banding design language. Build as a standalone HTML presentation or Canva export. To do next session.
+2. **Business Plan prompt** — currently uses AI-generated WINZ criteria, not official. Could mislead vulnerable users. Fix before going public.
+3. **Domain** — check if tryplainly.co.nz is available
+4. **First paying customer** — approach one school, community org, or adviser. Don't wait for it to be perfect.
 
 ---
 
