@@ -22,7 +22,7 @@ const LD = {
   lineH:    1.75,
 };
 
-function AnimatedDemo({ step }) {
+function AnimatedDemo({ step, accent = "#7C3AED", accentLight = "rgba(124,58,237,0.08)", accentHover = "#6D28D9" }) {
   const labels = [
     "Upload your document",
     "Select the confusing part",
@@ -32,17 +32,17 @@ function AnimatedDemo({ step }) {
   const lines = [90, 100, 75, 100, 85, 100, 60, 95, 80];
 
   return (
-    <div style={{ fontFamily: LD.font }}>
-      <p style={{ fontSize: 15, color: LD.accent, fontWeight: 700, marginBottom: 14, minHeight: 22 }}>
+    <div style={{ fontFamily: "Arial, Helvetica, sans-serif" }}>
+      <p style={{ fontSize: 15, color: accent, fontWeight: 700, marginBottom: 14, minHeight: 22 }}>
         {labels[step]}
       </p>
 
       {/* Mock document */}
-      <div style={{ background: LD.bgWhite, borderRadius: 10, padding: "18px 20px", position: "relative", boxShadow: "0 2px 16px rgba(0,0,0,0.07)" }}>
+      <div style={{ background: "#FFFFFF", borderRadius: 10, padding: "18px 20px", position: "relative", boxShadow: "0 2px 16px rgba(0,0,0,0.07)" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
           {lines.map((w, i) => (
             <div key={i} style={{
-              height: 10, background: "#E4E1D9", borderRadius: 4, width: `${w}%`,
+              height: 10, background: "#E5E7EB", borderRadius: 4, width: `${w}%`,
               opacity: step === 0 ? (i < 4 ? 1 : 0.25) : 1,
               transition: "opacity 0.6s ease",
             }} />
@@ -52,9 +52,9 @@ function AnimatedDemo({ step }) {
         {/* Selection box — visible in steps 1, 2, 3 */}
         <div style={{
           position: "absolute", top: 38, left: 16, right: 16, height: 72,
-          border: `2.5px dashed ${LD.accent}`,
+          border: `2.5px dashed ${accent}`,
           borderRadius: 6,
-          background: LD.accentLight,
+          background: accentLight,
           opacity: step >= 1 ? 1 : 0,
           transition: "opacity 0.5s ease",
           pointerEvents: "none",
@@ -65,7 +65,7 @@ function AnimatedDemo({ step }) {
       <div style={{ textAlign: "right", marginTop: 12 }}>
         <span style={{
           display: "inline-block",
-          background: step === 2 ? LD.accentHover : LD.accent,
+          background: step === 2 ? accentHover : accent,
           color: "white",
           padding: "9px 20px",
           borderRadius: 8,
@@ -81,20 +81,20 @@ function AnimatedDemo({ step }) {
       {/* Results — visible in step 3 */}
       <div style={{
         marginTop: 14,
-        background: LD.bgWhite,
+        background: "#FFFFFF",
         borderRadius: 10,
         padding: 16,
         boxShadow: "0 2px 16px rgba(0,0,0,0.07)",
         opacity: step === 3 ? 1 : 0,
         transition: "opacity 0.6s ease",
       }}>
-        <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 10, color: LD.accent }}>Plain English explanation</p>
+        <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 10, color: accent }}>Plain English explanation</p>
         {[
           "This form asks for all the money you receive.",
           "Include wages, benefits, and any other payments.",
           "You must list every source — even small amounts.",
         ].map((t, i) => (
-          <p key={i} style={{ fontSize: 13, color: LD.text, marginBottom: 7, lineHeight: 1.6 }}>• {t}</p>
+          <p key={i} style={{ fontSize: 13, color: "#111827", marginBottom: 7, lineHeight: 1.6 }}>• {t}</p>
         ))}
       </div>
     </div>
@@ -117,153 +117,245 @@ function LandingPage({ onGetStarted, onFileUpload }) {
     return () => clearTimeout(timer);
   }, []);
 
-  const howSteps = [
-    {
-      num: 1,
-      icon: "📄",
-      title: "Upload your document",
-      body: "PDF, photo or image. Any form, letter, or paperwork.",
-    },
-    {
-      num: 2,
-      icon: "✏️",
-      title: "Select the confusing part",
-      body: "Draw a box around any section you need help with.",
-    },
-    {
-      num: 3,
-      icon: "✅",
-      title: "Read it in plain English",
-      body: "Get a clear explanation, a checklist, and audio playback.",
-    },
-  ];
-
-  const nav = {
-    display: "flex", alignItems: "center", justifyContent: "space-between",
-    padding: "16px 40px", background: LD.bgWhite,
-    borderBottom: `1px solid ${LD.border}`,
-    fontFamily: LD.font,
+  const LP = {
+    heroBg:        "#2E1065",
+    footerBg:      "#1A0844",
+    heroLabel:     "#86EFAC",
+    heroSub:       "#C4B5FD",
+    primary:       "#7C3AED",
+    primaryHover:  "#6D28D9",
+    btnCta:        "#A855F7",
+    yellow:        "#FEFCE8",
+    yellowBorder:  "#FEF08A",
+    lavender:      "#F5F3FF",
+    lavenderBorder:"#DDD6FE",
+    white:         "#FFFFFF",
+    text:          "#111827",
+    muted:         "#6B7280",
+    border:        "#E5E7EB",
+    font:          "Arial, Helvetica, sans-serif",
+    lineH:         1.8,
   };
 
-  const btn = {
-    background: LD.accent, color: "white", border: "none",
-    padding: "12px 26px", borderRadius: 9, fontSize: 17,
-    fontWeight: 700, cursor: "pointer", lineHeight: 1,
-  };
+  const fileInput = (id, onChange) => (
+    <input id={id} type="file" style={{ display: "none" }}
+      accept="application/pdf,image/png,image/jpeg,image/webp"
+      onChange={e => { const f = e.target.files?.[0]; if (f) { onFileUpload(f); onGetStarted(); } }} />
+  );
 
-  const outlineBtn = {
-    display: "inline-flex", alignItems: "center",
-    padding: "12px 26px", borderRadius: 9,
-    border: `2px solid ${LD.border}`, fontSize: 17,
-    fontWeight: 600, color: LD.text, textDecoration: "none",
-    background: "transparent", cursor: "pointer",
-  };
+  const ctaBtn = (htmlFor, label) => (
+    <>
+      {fileInput(htmlFor, null)}
+      <label htmlFor={htmlFor} style={{
+        display: "inline-block", background: LP.btnCta, color: "white",
+        padding: "14px 32px", borderRadius: 30, fontWeight: 700,
+        fontSize: 17, cursor: "pointer", letterSpacing: "-0.2px",
+      }}>{label}</label>
+    </>
+  );
+
+  const learnBtn = (href) => (
+    <a href={href} style={{
+      display: "inline-flex", alignItems: "center",
+      background: LP.primary, color: "white",
+      padding: "13px 28px", borderRadius: 30,
+      fontWeight: 700, fontSize: 16, textDecoration: "none",
+    }}>Learn more</a>
+  );
 
   return (
-    <div style={{ fontFamily: LD.font, background: LD.bg, color: LD.text, minHeight: "100vh", lineHeight: LD.lineH }}>
+    <div style={{ fontFamily: LP.font, color: LP.text, minHeight: "100vh", lineHeight: LP.lineH }}>
 
       {/* ── Nav ── */}
-      <nav style={nav} aria-label="Main navigation">
+      <nav style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "18px 64px", background: LP.heroBg,
+      }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ background: LD.accent, color: "white", padding: "4px 10px", borderRadius: 6, fontWeight: 700, fontSize: 15, letterSpacing: "0.02em" }}>PL</span>
-          <span style={{ fontWeight: 800, fontSize: 21, letterSpacing: "-0.3px" }}>Plainly</span>
+          <span style={{ background: LP.btnCta, color: "white", padding: "4px 10px", borderRadius: 6, fontWeight: 700, fontSize: 15 }}>PL</span>
+          <span style={{ fontWeight: 800, fontSize: 21, color: "white", letterSpacing: "-0.3px" }}>Plainly</span>
         </div>
+        {ctaBtn("nav-file", "Try it free")}
       </nav>
 
       {/* ── Hero ── */}
-      <main>
-        <section style={{ background: LD.bgHero, borderBottom: `1px solid ${LD.border}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 64, padding: "72px 64px 64px", maxWidth: 1180, margin: "0 auto" }}>
+      <section style={{ background: LP.heroBg, padding: "80px 64px 100px" }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", alignItems: "center", gap: 72, flexWrap: "wrap" }}>
 
-            {/* Left — headline + CTA */}
-            <div style={{ flex: "0 0 46%" }}>
-              <p style={{ color: LD.accent, fontWeight: 700, fontSize: 16, marginBottom: 18 }}>
-                Free for everyone in New Zealand
-              </p>
-              <h1 style={{ fontSize: 50, fontWeight: 800, lineHeight: 1.15, marginBottom: 24, letterSpacing: "-0.5px" }}>
-                Hard paperwork,<br />made simple.
-              </h1>
-              <p style={{ fontSize: 19, lineHeight: LD.lineH, color: LD.muted, marginBottom: 36, maxWidth: 400 }}>
-                Upload any form or letter.<br />
-                Select the part that confuses you.<br />
-                Get a plain English explanation straight away.
-              </p>
-              {/* Upload dropzone */}
-              <div
-                onDragEnter={e=>e.preventDefault()} onDragOver={e=>e.preventDefault()}
-                onDrop={e=>{ e.preventDefault(); const f=e.dataTransfer.files?.[0]; if(f){onFileUpload(f);onGetStarted();} }}
-                style={{ background: LD.bgHero, border: `2px dashed ${LD.accent}`, borderRadius: 14, padding: "28px 24px", textAlign: "center", cursor: "pointer", maxWidth: 400 }}>
-                <p style={{ fontSize: 17, color: LD.muted, marginBottom: 16, lineHeight: 1.6 }}>
-                  Drag your document here<br />
-                  <span style={{ fontSize: 14 }}>PDF, photo or image</span>
-                </p>
-                <input id="landing-file" type="file" style={{ display:"none" }}
-                  accept="application/pdf,image/png,image/jpeg,image/webp"
-                  onChange={e=>{ const f=e.target.files?.[0]; if(f){onFileUpload(f);onGetStarted();} }} />
-                <label htmlFor="landing-file" style={{ ...btn, fontSize: 17, padding: "13px 28px", display:"inline-block", cursor:"pointer" }}>
-                  Upload a document
-                </label>
-              </div>
-              <a href="#how-it-works" style={{ ...outlineBtn, fontSize: 16, padding: "11px 22px", marginTop: 4, display:"inline-flex" }}>
-                See how it works
-              </a>
-            </div>
-
-            {/* Right — animated demo */}
-            <div style={{ flex: 1, background: LD.bgWhite, borderRadius: 18, padding: 32, boxShadow: "0 4px 32px rgba(0,0,0,0.08)", minHeight: 400 }}>
-              <AnimatedDemo step={step} />
-            </div>
-
-          </div>
-        </section>
-
-        {/* ── How it works ── */}
-        <section id="how-it-works" style={{ background: LD.bgWhite, padding: "72px 64px", borderBottom: `1px solid ${LD.border}` }}>
-          <div style={{ maxWidth: 1180, margin: "0 auto" }}>
-            <h2 style={{ fontSize: 34, fontWeight: 800, textAlign: "center", marginBottom: 16 }}>How it works</h2>
-            <p style={{ textAlign: "center", fontSize: 18, color: LD.muted, marginBottom: 56 }}>Three simple steps. No login needed.</p>
-            <div style={{ display: "flex", gap: 48, flexWrap: "wrap" }}>
-              {howSteps.map(s => (
-                <div key={s.num} style={{ flex: "1 1 240px", textAlign: "center" }}>
-                  <div style={{ fontSize: 46, marginBottom: 14 }}>{s.icon}</div>
-                  <div style={{
-                    background: LD.accent, color: "white",
-                    width: 38, height: 38, borderRadius: "50%",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontWeight: 700, fontSize: 18, margin: "0 auto 16px",
-                  }}>{s.num}</div>
-                  <h3 style={{ fontSize: 21, fontWeight: 700, marginBottom: 10 }}>{s.title}</h3>
-                  <p style={{ fontSize: 17, color: LD.muted, lineHeight: LD.lineH }}>{s.body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Who it helps ── */}
-        <section style={{ padding: "72px 64px", background: LD.bg }}>
-          <div style={{ maxWidth: 1180, margin: "0 auto", textAlign: "center" }}>
-            <h2 style={{ fontSize: 34, fontWeight: 800, marginBottom: 16 }}>Built for everyone</h2>
-            <p style={{ fontSize: 18, color: LD.muted, maxWidth: 620, margin: "0 auto 48px", lineHeight: LD.lineH }}>
-              Plainly was built by a neurodivergent family who know how hard paperwork can be.
-              It is free for individuals and designed to work for everyone.
+          {/* Left */}
+          <div style={{ flex: "0 0 46%", minWidth: 280 }}>
+            <p style={{ color: LP.heroLabel, fontWeight: 700, fontSize: 15, marginBottom: 20, letterSpacing: "0.02em" }}>
+              Free for everyone in New Zealand
             </p>
-            <div>
-              <input id="landing-file2" type="file" style={{ display:"none" }}
-                accept="application/pdf,image/png,image/jpeg,image/webp"
-                onChange={e=>{ const f=e.target.files?.[0]; if(f){onFileUpload(f);onGetStarted();} }} />
-              <label htmlFor="landing-file2" style={{ ...btn, fontSize: 18, padding: "15px 36px", display:"inline-block", cursor:"pointer" }}>
-                Upload a document — no login needed
-              </label>
+            <h1 style={{ fontSize: 58, fontWeight: 800, lineHeight: 1.1, color: "white", marginBottom: 24, letterSpacing: "-1.5px" }}>
+              Big words.<br />Plain English.<br />Finally.
+            </h1>
+            <p style={{ fontSize: 19, color: LP.heroSub, lineHeight: LP.lineH, marginBottom: 40, maxWidth: 420 }}>
+              You made it here. Take a load off — we'll turn the hard-to-read stuff into plain English for you.
+            </p>
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
+              <div
+                onDragEnter={e => e.preventDefault()} onDragOver={e => e.preventDefault()}
+                onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) { onFileUpload(f); onGetStarted(); } }}>
+                {ctaBtn("hero-file", "Upload a document")}
+              </div>
+              <a href="#how-it-works" style={{
+                display: "inline-flex", alignItems: "center", color: "white",
+                border: "2px solid rgba(255,255,255,0.3)", padding: "13px 26px",
+                borderRadius: 30, fontWeight: 600, fontSize: 16, textDecoration: "none",
+              }}>See how it works</a>
             </div>
           </div>
-        </section>
-      </main>
+
+          {/* Right — animated demo */}
+          <div style={{ flex: 1, minWidth: 280, background: LP.white, borderRadius: 20, padding: 32, boxShadow: "0 8px 48px rgba(0,0,0,0.28)" }}>
+            <AnimatedDemo step={step} accent={LP.primary} accentLight="rgba(124,58,237,0.08)" accentHover={LP.primaryHover} />
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── Central pitch ── */}
+      <section style={{ background: LP.lavender, padding: "80px 64px", textAlign: "center" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+          <h2 style={{ fontSize: 42, fontWeight: 800, lineHeight: 1.2, marginBottom: 20, letterSpacing: "-0.5px" }}>
+            Plain English for the paperwork that matters most.
+          </h2>
+          <p style={{ fontSize: 18, color: LP.muted, lineHeight: LP.lineH, marginBottom: 12 }}>
+            WINZ forms, school reports, insurance letters, council notices. If it's confusing — Plainly breaks it down in seconds.
+          </p>
+          <p style={{ fontSize: 18, color: LP.muted, lineHeight: LP.lineH, marginBottom: 44 }}>
+            No login. No jargon. No shame. Just the parts that matter, in plain English.
+          </p>
+          {ctaBtn("mid-file", "Try it free")}
+        </div>
+      </section>
+
+      {/* ── Feature: Draw a box ── */}
+      <section style={{ background: LP.yellow, padding: "80px 64px" }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", alignItems: "center", gap: 72, flexWrap: "wrap" }}>
+
+          {/* Left — mock UI card */}
+          <div style={{ flex: 1, minWidth: 280, background: LP.white, borderRadius: 20, padding: 32, boxShadow: "0 4px 32px rgba(0,0,0,0.08)", border: `1px solid ${LP.yellowBorder}` }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: LP.primary, marginBottom: 16, textTransform: "uppercase", letterSpacing: "0.06em" }}>Upload. Select. Simplify.</p>
+            <div style={{ background: "#F9FAFB", borderRadius: 10, padding: "16px 14px", marginBottom: 14 }}>
+              {[80, 95, 70, 100, 85, 60].map((w, i) => (
+                <div key={i} style={{ height: 10, background: i === 1 || i === 2 ? "#DDD6FE" : "#E5E7EB", borderRadius: 4, width: `${w}%`, marginBottom: 8 }} />
+              ))}
+              <div style={{ border: "2px dashed #A855F7", borderRadius: 6, background: "rgba(168,85,247,0.06)", padding: "12px 10px", marginTop: 4 }}>
+                {[95, 70].map((w, i) => (
+                  <div key={i} style={{ height: 10, background: "#DDD6FE", borderRadius: 4, width: `${w}%`, marginBottom: i === 0 ? 8 : 0 }} />
+                ))}
+              </div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <span style={{ background: LP.primary, color: "white", padding: "9px 18px", borderRadius: 8, fontSize: 14, fontWeight: 700 }}>Simplify ✦</span>
+            </div>
+          </div>
+
+          {/* Right — text */}
+          <div style={{ flex: "0 0 44%", minWidth: 260 }}>
+            <h2 style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.2, marginBottom: 20, letterSpacing: "-0.5px" }}>
+              Draw a box.<br />Get the answer.
+            </h2>
+            <p style={{ fontSize: 18, color: LP.muted, lineHeight: LP.lineH, marginBottom: 36 }}>
+              Drag a box around any section that confuses you — a paragraph, a clause, a table — and Plainly explains it in plain English straight away.
+            </p>
+            {learnBtn("#how-it-works")}
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── Feature: Plain English output (reversed) ── */}
+      <section style={{ background: LP.white, padding: "80px 64px" }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", alignItems: "center", gap: 72, flexWrap: "wrap", flexDirection: "row-reverse" }}>
+
+          {/* Right (visually) — mock output */}
+          <div style={{ flex: 1, minWidth: 280, background: LP.lavender, borderRadius: 20, padding: 32, boxShadow: "0 4px 32px rgba(0,0,0,0.06)", border: `1px solid ${LP.lavenderBorder}` }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: LP.primary, marginBottom: 16, textTransform: "uppercase", letterSpacing: "0.06em" }}>Plain English explanation</p>
+            {[
+              "This form asks for all the money you receive.",
+              "Include wages, benefits, and any other payments.",
+              "You must list every source — even small amounts.",
+            ].map((t, i) => (
+              <div key={i} style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+                <span style={{ color: LP.primary, fontSize: 18, lineHeight: 1.4, flexShrink: 0 }}>•</span>
+                <span style={{ fontSize: 15, color: LP.text, lineHeight: 1.75 }}>{t}</span>
+              </div>
+            ))}
+            <div style={{ marginTop: 20, background: "#FEF9C3", border: "1px solid #FDE047", borderRadius: 8, padding: "10px 14px" }}>
+              <p style={{ fontSize: 13, color: "#854D0E", fontWeight: 600 }}>📅 Deadline: Must be returned by 30 June</p>
+            </div>
+            <div style={{ marginTop: 10, background: "#FEF9C3", border: "1px solid #FDE047", borderRadius: 8, padding: "10px 14px" }}>
+              <p style={{ fontSize: 13, color: "#854D0E", fontWeight: 600 }}>💰 Amount: $487.50 due this week</p>
+            </div>
+          </div>
+
+          {/* Left — text */}
+          <div style={{ flex: "0 0 44%", minWidth: 260 }}>
+            <h2 style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.2, marginBottom: 20, letterSpacing: "-0.5px" }}>
+              Bullet points, checklists, and audio — all in one place.
+            </h2>
+            <p style={{ fontSize: 18, color: LP.muted, lineHeight: LP.lineH, marginBottom: 36 }}>
+              Important deadlines and amounts are flagged automatically. Listen word by word. Print just the plain English summary. Everything a busy family actually needs.
+            </p>
+            {learnBtn("#how-it-works")}
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── How it works ── */}
+      <section id="how-it-works" style={{ background: LP.lavender, padding: "80px 64px" }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto" }}>
+          <h2 style={{ fontSize: 38, fontWeight: 800, textAlign: "center", marginBottom: 14, letterSpacing: "-0.5px" }}>How it works</h2>
+          <p style={{ fontSize: 18, color: LP.muted, textAlign: "center", marginBottom: 56 }}>Three steps. No login. Free forever for individuals.</p>
+          <div style={{ display: "flex", gap: 28, flexWrap: "wrap" }}>
+            {[
+              { num: 1, icon: "📄", title: "Upload your document", body: "PDF, photo or image. Any form, letter, or paperwork — drag and drop or browse." },
+              { num: 2, icon: "✏️", title: "Select the confusing part", body: "Draw a box around any section you need help with. Tables, paragraphs, anything." },
+              { num: 3, icon: "✅", title: "Read it in plain English", body: "Get a clear explanation, a checklist of what to do, and audio you can listen to." },
+            ].map(s => (
+              <div key={s.num} style={{ flex: "1 1 260px", background: LP.white, borderRadius: 16, padding: 32, textAlign: "center", boxShadow: "0 2px 16px rgba(109,40,217,0.08)" }}>
+                <div style={{ fontSize: 40, marginBottom: 16 }}>{s.icon}</div>
+                <div style={{
+                  background: LP.primary, color: "white",
+                  width: 36, height: 36, borderRadius: "50%",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontWeight: 700, fontSize: 17, margin: "0 auto 16px",
+                }}>{s.num}</div>
+                <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 10 }}>{s.title}</h3>
+                <p style={{ fontSize: 16, color: LP.muted, lineHeight: LP.lineH }}>{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Final CTA ── */}
+      <section style={{ background: LP.heroBg, padding: "88px 64px", textAlign: "center" }}>
+        <div style={{ maxWidth: 680, margin: "0 auto" }}>
+          <h2 style={{ fontSize: 42, fontWeight: 800, color: "white", lineHeight: 1.2, marginBottom: 20, letterSpacing: "-0.5px" }}>
+            You're not the only one who finds paperwork hard.
+          </h2>
+          <p style={{ fontSize: 18, color: LP.heroSub, lineHeight: LP.lineH, marginBottom: 44 }}>
+            Plainly was built by a neurodivergent family who know exactly how it feels. It's free. It's simple. And it's here for you.
+          </p>
+          {ctaBtn("cta-file", "Upload a document — it's free")}
+        </div>
+      </section>
 
       {/* ── Footer ── */}
-      <footer style={{ padding: "28px 64px", background: LD.bgWhite, borderTop: `1px solid ${LD.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-        <span style={{ fontWeight: 700, fontSize: 16 }}>Plainly</span>
-        <span style={{ color: LD.muted, fontSize: 15 }}>tryplainly.co.nz — making paperwork accessible for everyone.</span>
+      <footer style={{
+        background: LP.footerBg, padding: "28px 64px",
+        display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ background: LP.btnCta, color: "white", padding: "3px 9px", borderRadius: 5, fontWeight: 700, fontSize: 14 }}>PL</span>
+          <span style={{ fontWeight: 700, fontSize: 16, color: "white" }}>Plainly</span>
+        </div>
+        <span style={{ color: "#A78BFA", fontSize: 14 }}>tryplainly.co.nz — making paperwork accessible for everyone.</span>
       </footer>
 
     </div>
