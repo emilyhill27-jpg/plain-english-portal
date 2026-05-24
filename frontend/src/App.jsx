@@ -38,7 +38,7 @@ const T = {
 };
 
 /* ─── Landing page ─── */
-function LandingPage({ onGetStarted, onFileUpload }) {
+function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize, setReaderTextSize, readerLineSpacing, setReaderLineSpacing, readerFont, setReaderFont, readerBgTint, setReaderBgTint, showReaderSettings, setShowReaderSettings }) {
   const [hovering, setHovering] = useState(false);
 
   return (
@@ -346,9 +346,51 @@ function LandingPage({ onGetStarted, onFileUpload }) {
           font-size: 14px; color: ${T.textSoft};
         }
         .pl-hero-drop input { display: none; }
+
+        /* Reader settings bar (landing page) */
+        .pl-reader-btn {
+          padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+          border: 1.5px solid ${T.border}; background: white; color: ${T.textSoft};
+          cursor: pointer; font-family: inherit; transition: all 0.15s;
+        }
+        .pl-reader-btn:hover { border-color: ${T.purple}; color: ${T.purple}; }
+        .pl-reader-btn.active { background: ${T.purpleLight}; border-color: ${T.purple}; color: ${T.purple}; }
+        .pl-reader-settings {
+          background: ${T.purpleLight}; border-bottom: 1px solid rgba(124,58,237,.18);
+          padding: 14px 48px; display: flex; align-items: center; gap: 16px;
+          flex-wrap: wrap; position: sticky; top: 64px; z-index: 99;
+        }
+        .pl-rs-label { font-size: 12.5px; font-weight: 600; color: ${T.textSoft}; min-width: 56px; }
+        .pl-rs-options { display: flex; gap: 2px; }
+        .pl-rs-option {
+          padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 500;
+          border: 1.5px solid ${T.border}; background: white; color: ${T.textSoft};
+          cursor: pointer; font-family: inherit; transition: all 0.15s;
+        }
+        .pl-rs-option:hover { border-color: ${T.purple}; }
+        .pl-rs-option.active { background: ${T.purple}; color: white; border-color: ${T.purple}; }
+        .pl-rs-tint {
+          width: 28px; height: 28px; border-radius: 50%;
+          border: 2px solid ${T.border}; cursor: pointer; transition: border-color 0.15s;
+        }
+        .pl-rs-tint:hover { border-color: ${T.purple}; }
+        .pl-rs-tint.active { border-color: ${T.purple}; box-shadow: 0 0 0 2px rgba(124,58,237,.2); }
+        .pl-rs-reset {
+          margin-left: auto; font-size: 13px; color: ${T.textSoft};
+          background: none; border: none; cursor: pointer; font-family: inherit;
+        }
+        .pl-rs-reset:hover { color: ${T.purple}; }
+        @media (max-width: 960px) {
+          .pl-reader-settings { padding: 12px 24px; }
+        }
       `}</style>
 
-      <div className="pl-root">
+      <div className="pl-root" style={{
+        fontFamily: readerStyles.fontFamily,
+        fontSize: readerStyles.fontSize,
+        lineHeight: readerStyles.lineHeight,
+        background: readerStyles.background,
+      }}>
         {/* Nav */}
         <nav className="pl-nav">
           <div className="pl-nav-left">
@@ -363,10 +405,53 @@ function LandingPage({ onGetStarted, onFileUpload }) {
             <a href="#resources">Resources ▾</a>
           </div>
           <div className="pl-nav-right">
+            <button className={`pl-reader-btn${showReaderSettings ? ' active' : ''}`}
+              onClick={() => setShowReaderSettings(!showReaderSettings)}>Reader settings</button>
             <a href="#" className="pl-nav-login">Log in</a>
             <button className="pl-nav-cta" onClick={onGetStarted}>Get started</button>
           </div>
         </nav>
+
+        {/* Reader settings bar */}
+        {showReaderSettings && (
+          <div className="pl-reader-settings">
+            <span className="pl-rs-label">Text size</span>
+            <div className="pl-rs-options">
+              {[["standard","Aa",12],["medium","Aa",14],["large","Aa",16],["extra-large","Aa",18]].map(([val,label,sz]) => (
+                <button key={val} className={`pl-rs-option${readerTextSize===val?' active':''}`}
+                  style={{ fontSize:sz }} onClick={() => setReaderTextSize(val)}>{label}</button>
+              ))}
+            </div>
+            <span className="pl-rs-label">Font</span>
+            <div className="pl-rs-options">
+              <button className={`pl-rs-option${readerFont==='lexend'?' active':''}`}
+                style={{ fontFamily:"'Lexend',sans-serif" }} onClick={() => setReaderFont('lexend')}>Aa</button>
+              <button className={`pl-rs-option${readerFont==='open-sans'?' active':''}`}
+                style={{ fontFamily:"'Open Sans',sans-serif" }} onClick={() => setReaderFont('open-sans')}>Aa</button>
+              <button className={`pl-rs-option${readerFont==='simple'?' active':''}`}
+                style={{ fontFamily:"Arial,sans-serif" }} onClick={() => setReaderFont('simple')}>Aa</button>
+            </div>
+            <span className="pl-rs-label">Spacing</span>
+            <div className="pl-rs-options">
+              {[["standard","━━━",{lineHeight:'1.0'}],["relaxed","━━━",{lineHeight:'1.4'}],["extra-relaxed","━━━",{lineHeight:'1.9'}]].map(([val,label,style]) => (
+                <button key={val} className={`pl-rs-option${readerLineSpacing===val?' active':''}`}
+                  style={{...style, fontSize:10, letterSpacing:'-1px'}}
+                  onClick={() => setReaderLineSpacing(val)} title={val}>{label}</button>
+              ))}
+            </div>
+            <span className="pl-rs-label">Background</span>
+            <div className="pl-rs-options" style={{ gap: 6 }}>
+              {[["cream","#FFF9F0"],["blue","#EFF6FF"],["lilac","#F3E8FF"],["grey","#F3F4F6"]].map(([val,color]) => (
+                <button key={val} className={`pl-rs-tint${readerBgTint===val?' active':''}`}
+                  style={{ background:color }} onClick={() => setReaderBgTint(val)} />
+              ))}
+            </div>
+            <button className="pl-rs-reset" onClick={() => {
+              setReaderTextSize('standard'); setReaderLineSpacing('standard');
+              setReaderFont('lexend'); setReaderBgTint('cream');
+            }}>↻ Reset</button>
+          </div>
+        )}
 
         {/* Hero */}
         <section className="pl-hero">
@@ -923,6 +1008,12 @@ export default function App() {
     <LandingPage
       onGetStarted={() => setShowLanding(false)}
       onFileUpload={(f) => { handleFile(f); setShowLanding(false); }}
+      readerStyles={readerStyles}
+      readerTextSize={readerTextSize} setReaderTextSize={setReaderTextSize}
+      readerLineSpacing={readerLineSpacing} setReaderLineSpacing={setReaderLineSpacing}
+      readerFont={readerFont} setReaderFont={setReaderFont}
+      readerBgTint={readerBgTint} setReaderBgTint={setReaderBgTint}
+      showReaderSettings={showReaderSettings} setShowReaderSettings={setShowReaderSettings}
     />
   );
 
@@ -930,7 +1021,12 @@ export default function App() {
   const checkSection = speechInfo.sections.find(s=>s.key==="checklist");
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" style={{
+      fontFamily: readerStyles.fontFamily,
+      fontSize: readerStyles.fontSize,
+      lineHeight: readerStyles.lineHeight,
+      background: readerStyles.background,
+    }}>
       <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
       <style>{`
         .app-shell {
