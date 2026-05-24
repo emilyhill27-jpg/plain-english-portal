@@ -1300,6 +1300,28 @@ export default function App() {
         }
         .empty-result-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
 
+        /* Instruction box (settings state) */
+        .instruction-box-wrap {
+          flex: 1; display: flex; align-items: center; justify-content: center;
+          padding: 24px;
+        }
+        .instruction-box {
+          background: var(--accent-soft);
+          border: 1.5px solid rgba(138,86,176,.15);
+          border-radius: var(--r-lg);
+          padding: 40px 32px;
+          text-align: center;
+          width: 100%; max-width: 460px;
+        }
+        .instruction-box-icon { font-size: 40px; margin-bottom: 14px; opacity: 0.7; }
+        .instruction-box-text {
+          font-family: var(--font-h); font-size: 16px; font-weight: 500;
+          color: var(--text); line-height: 1.5; margin-bottom: 24px;
+        }
+        .instruction-box .btn-primary {
+          margin: 0 auto;
+        }
+
         /* Word click */
         .word-click { cursor: pointer; transition: background 0.1s; border-radius: 2px; }
         .word-click:hover { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
@@ -1627,61 +1649,24 @@ export default function App() {
                     </div>
                   </div>
                 ) : (
-                  <div>
-                    <div style={{ marginBottom: 20 }}>
-                      <p style={{ fontSize:12, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:'var(--faint)', marginBottom:12 }}>
-                        Choose how you want it explained
+                  <div className="instruction-box-wrap">
+                    <div className="instruction-box">
+                      <div className="instruction-box-icon">✏️</div>
+                      <p className="instruction-box-text">
+                        {isPdf && pages.length > 0 && !selection
+                          ? "Draw a box around the text you want to simplify."
+                          : selection
+                            ? "Ready to simplify your selection."
+                            : "Draw a box around the text you want to simplify."}
                       </p>
-                      <div className="mode-toggle">
-                        <button className={`mode-btn${docMode==="general"?" mode-active":""}`}
-                          onClick={() => { setDocMode("general"); setResult(null); }}>📄 General</button>
-                        <button className={`mode-btn${docMode==="business_plan"?" mode-active":""}`}
-                          onClick={() => { setDocMode("business_plan"); setResult(null); }}>📋 Business</button>
-                        <button className={`mode-btn${docMode==="school"?" mode-active":""}`}
-                          onClick={() => { setDocMode("school"); setResult(null); }}>📚 Reading Support</button>
-                      </div>
-                      {docMode === "school" && (
-                        <div className="age-selector" style={{ marginTop: 12 }}>
-                          <span style={{ fontSize:13, color:'var(--accent)', fontWeight:600 }}>What reading level should we simplify to?</span>
-                          {[["5-6","5–6"],["7-8","7–8"],["9-10","9–10"],["11-12","11–12"]].map(([val,label]) => (
-                            <button key={val} className={`age-btn${readingAge===val?" age-active":""}`}
-                              onClick={() => setReadingAge(val)}>Age {label}</button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {selection && screenSel && currentPage && (
-                      <div style={{ marginBottom: 20 }}>
-                        <p style={{ fontSize:12, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:'var(--faint)', marginBottom:8 }}>
-                          Selected section
-                        </p>
-                        <div className="crop-preview" style={{ height: Math.min(220, Math.round(screenSel.h * (460 / screenSel.w))) }}>
-                          <img src={`data:image/png;base64,${currentPage.image_base64}`} alt="Selected section"
-                            style={{ position:"absolute",
-                              left:`${-screenSel.x * (460/screenSel.w)}px`,
-                              top:`${-screenSel.y * (460/screenSel.w)}px`,
-                              width:`${screenSel.imgW * (460/screenSel.w)}px`,
-                              display:"block" }} />
-                        </div>
-                      </div>
-                    )}
-
-                    {isPdf && pages.length > 0 && !selection && (
-                      <p style={{ fontSize:14, color:'var(--muted)', textAlign:'center', padding:'16px 0' }}>
-                        Draw a box on the document, then press Simplify.
-                      </p>
-                    )}
-
-                    {file && (!isPdf || selection) && !result && (
-                      <div style={{ textAlign:'center', padding:'12px 0' }}>
-                        <button className="btn btn-primary" style={{ height:44, fontSize:14.5, padding:'0 28px' }}
+                      {file && (!isPdf || selection) && !result && (
+                        <button className="btn btn-primary" style={{ height:48, fontSize:15, padding:'0 32px' }}
                           onClick={handleSimplify} disabled={loading}>
                           <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1l1.8 3.6L14 5.6l-3 2.9.7 4.1L8 10.5l-3.7 2.1.7-4.1-3-2.9 4.2-.6L8 1z" fill="#fff" opacity=".9"/></svg>
                           {loading ? "Simplifying…" : "Simplify this section"}
                         </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 )}
 
