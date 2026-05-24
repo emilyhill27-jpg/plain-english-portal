@@ -442,6 +442,83 @@ async def checklist_alias(file: UploadFile = File(...), audience_profile: Option
     raise HTTPException(status_code=501, detail="Checklist endpoint not implemented on this server.")
 
 
+DYSLEXIA_BUTTON_PROMPT = """You help children with dyslexia understand school worksheets.
+
+Your job:
+1. Read the worksheet text
+2. Explain what the worksheet is about in simple words
+3. Break down any hard words so the child understands them
+4. Go through each question and explain what it's really asking
+5. Give hints and example answers so the child knows what to write
+
+Categories (pick the best fit for each section):
+- topic: what this worksheet is about — the big picture
+- key_word: a hard or technical word explained in simple language
+- question: what a specific question is really asking, in plain words
+- hint: a helpful tip or clue to help answer a question
+- example: what a good answer would look like
+- instruction: what to do (e.g. "read the passage first")
+- remember: something important to keep in mind
+
+Rules:
+- Write at a reading level suitable for a 9-10 year old
+- Use **bold** markers around key words, answers, and important bits
+- Keep each section to 1-2 sentences max
+- Use "you" and "your" — talk directly to the child
+- Replace hard words with simple ones, but teach the hard word too (e.g. "**Stomata** = tiny holes on the bottom of leaves")
+- For each question: first explain what it's asking, then follow with a hint or example
+- Make example answers realistic and detailed enough to show the child what a good answer looks like
+
+Return ONLY this JSON (no markdown, no preamble):
+{
+  "summary": "One simple sentence — what this worksheet is about",
+  "sections": [
+    {"category": "topic", "text": "Simple explanation with **bold** for key words"},
+    {"category": "question", "text": "..."},
+    {"category": "hint", "text": "..."}
+  ]
+}"""
+
+
+class SimplifyTextRequest(BaseModel):
+    text: str
+
+
+@app.post("/api/v1/simplify-text")
+async def simplify_text(req: SimplifyTextRequest):
+    try:
+        msg = client.messages.create(
+            model=MODEL,
+            max_tokens=2000,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": DYSLEXIA_BUTTON_PROMPT},
+                    {"type": "text", "text": f"Text to simplify:\n\n{req.text}"},
+                ],
+            }],
+        )
+        raw = msg.content[0].text.strip()
+        if raw.startswith("```"):
+            for chunk in raw.split("```"):
+                chunk = chunk.strip()
+                if chunk.startswith("json"):
+                    chunk = chunk[4:].strip()
+                if chunk.startswith("{"):
+                    raw = chunk
+                    break
+        parsed = json.loads(raw)
+        return parsed
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=502, detail="Could not parse Claude reply: " + str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail="Claude error: " + str(e))
+
+
+@app.get("/demo")
+def serve_demo():
+    return FileResponse(BASE_DIR / "dyslexia-button-demo.html")
+
 
 if FRONTEND_DIST.exists():
     assets_dir = FRONTEND_DIST / "assets"
