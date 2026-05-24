@@ -7,13 +7,13 @@ function clamp(v, lo, hi) { return Math.min(Math.max(v, lo), hi); }
 
 /* ─── Design tokens — purple / lavender palette ─── */
 const T = {
-  purple:      "#7C3AED",
-  purpleHover: "#6D28D9",
+  purple:      "#8c52ff",
+  purpleHover: "#7a3ef0",
   purpleLight: "#EDE9FE",
   purplePale:  "#F5F3FF",
   pink:        "#EC4899",
   pinkPale:    "#FDF2F8",
-  green:       "#10B981",
+  green:       "#00bf63",
   greenLight:  "#D1FAE5",
   cream:       "#FFF9F0",
   yellowPale:  "#FFFBEB",
@@ -61,22 +61,13 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
           position: sticky; top: 0; z-index: 100;
           background: rgba(255,255,255,0.92);
           backdrop-filter: blur(12px);
-          border-bottom: 1px solid ${T.border};
+          border-bottom: 1.5px solid #DDD5F0;
           padding: 0 48px;
           display: flex; align-items: center; justify-content: space-between;
-          height: 64px;
+          height: 58px;
         }
-        .pl-nav-left { display: flex; align-items: center; gap: 8px; }
-        .pl-nav-logo-icon {
-          width: 32px; height: 32px; border-radius: 8px;
-          background: ${T.purple}; color: white;
-          display: flex; align-items: center; justify-content: center;
-          font-weight: 700; font-size: 16px;
-        }
-        .pl-nav-logo {
-          font-size: 22px; font-weight: 700;
-          color: ${T.text}; text-decoration: none;
-        }
+        .pl-nav-left { display: flex; align-items: center; gap: 0; cursor: pointer; }
+        .pl-nav-logo-img { height: 28px; display: block; }
         .pl-nav-links { display: flex; gap: 28px; align-items: center; }
         .pl-nav-links a {
           font-size: 14px; color: ${T.textSoft};
@@ -102,34 +93,39 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
         /* Hero */
         .pl-hero {
           background: ${T.bgHero};
-          padding: 80px 48px 96px;
+          padding: 56px 48px 64px;
           display: grid;
-          grid-template-columns: 1fr 480px;
+          grid-template-columns: 1fr 460px;
           align-items: center;
-          gap: 64px;
+          gap: 48px;
+          max-width: 1280px;
+          margin: 0 auto;
+        }
+        .pl-hero-outer {
+          background: ${T.bgHero};
         }
         @media (max-width: 960px) {
-          .pl-hero { grid-template-columns: 1fr; padding: 60px 24px 72px; gap: 40px; }
+          .pl-hero { grid-template-columns: 1fr; padding: 48px 24px 56px; gap: 36px; }
           .pl-nav { padding: 0 24px; }
         }
         .pl-hero-badge {
           display: inline-flex; align-items: center; gap: 8px;
           background: rgba(124,58,237,0.08);
           border: 1px solid rgba(124,58,237,0.15);
-          padding: 8px 20px; border-radius: 24px;
-          font-size: 15px; color: ${T.purple}; font-weight: 500;
-          margin-bottom: 24px;
+          padding: 6px 16px; border-radius: 24px;
+          font-size: 14px; color: ${T.purple}; font-weight: 500;
+          margin-bottom: 18px;
         }
         .pl-hero h1 {
-          font-size: clamp(36px, 4.5vw, 56px);
-          font-weight: 700; line-height: 1.12;
-          margin-bottom: 20px; color: ${T.text};
-          letter-spacing: -0.02em;
+          font-size: clamp(36px, 4.5vw, 54px);
+          font-weight: 800; line-height: 1.1;
+          margin-bottom: 16px; color: ${T.text};
+          letter-spacing: -0.03em;
         }
         .pl-hero-sub {
-          font-size: 17px; color: ${T.textMid};
-          line-height: 1.65; max-width: 480px;
-          margin-bottom: 32px;
+          font-size: 16px; color: ${T.textMid};
+          line-height: 1.65; max-width: 440px;
+          margin-bottom: 24px;
         }
         .pl-hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
         .pl-btn-primary {
@@ -152,69 +148,100 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
         .pl-btn-secondary:hover { border-color: ${T.purple}; color: ${T.purple}; }
         .pl-hero-trust {
           font-size: 13px; color: ${T.textSoft};
-          display: flex; align-items: center; gap: 6px;
+          display: flex; align-items: center; flex-wrap: wrap;
+          margin-top: 4px;
         }
 
-        /* Demo card — stacked layout */
+        /* Demo card — mini split-view of the real tool */
         .pl-demo-card {
           background: white;
           border-radius: 16px;
-          box-shadow: ${T.shadowLg};
+          box-shadow: 0 8px 32px rgba(90,50,130,0.18), 0 2px 8px rgba(90,50,130,0.10);
           overflow: hidden;
-          border: 1px solid ${T.border};
-          max-width: 520px;
+          border: 1.5px solid #C5B8E0;
+          width: 100%;
+          max-width: 480px;
         }
-        .pl-demo-header {
-          padding: 14px 20px;
+        .pl-demo-toolbar {
+          padding: 10px 16px;
           display: flex; justify-content: space-between; align-items: center;
-          border-bottom: 1px solid ${T.borderLight};
+          border-bottom: 1.5px solid #DDD5F0;
+          background: #F8F7FC;
         }
-        .pl-demo-header-left { font-size: 14px; color: ${T.textSoft}; font-weight: 500; }
-        .pl-demo-header-right { font-size: 14px; color: ${T.textSoft}; font-weight: 500; }
-        .pl-demo-stacked {
-          padding: 20px; display: flex; flex-direction: column; gap: 16px;
-        }
-        .pl-demo-msg-box {
-          border: 1.5px solid ${T.border}; border-radius: 12px;
-          padding: 16px 18px; background: ${T.bg};
-        }
-        .pl-demo-msg-box.plain {
-          border-color: rgba(124,58,237,0.2);
-          background: rgba(124,58,237,0.03);
-        }
-        .pl-demo-msg-label {
+        .pl-demo-toolbar-left {
           display: flex; align-items: center; gap: 8px;
-          font-size: 12px; font-weight: 600; color: ${T.textMid};
-          margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.03em;
+          font-size: 12px; font-weight: 600; color: #4B5563;
         }
-        .pl-demo-original-text {
-          font-size: 14px; color: ${T.textSoft}; line-height: 1.6;
-          font-style: italic;
+        .pl-demo-toolbar-badge {
+          background: #EDEBF8; border: 1px solid #C5B8E0;
+          border-radius: 5px; padding: 1px 7px;
+          font-size: 10px; font-weight: 700; color: ${T.purple};
+          letter-spacing: 0.04em;
         }
-        .pl-demo-plain-text {
-          font-size: 14px; color: ${T.text}; line-height: 1.6;
+        .pl-demo-split {
+          display: grid; grid-template-columns: 1fr 1fr;
+          min-height: 210px;
         }
-        .pl-demo-arrow-row {
-          display: flex; align-items: center; justify-content: center;
+        /* Left: fake document panel */
+        .pl-demo-doc-panel {
+          background: #DDDADF;
+          padding: 12px;
+          border-right: 1.5px solid #DDD5F0;
+          display: flex; flex-direction: column; gap: 8px;
         }
-        .pl-demo-arrow-btn {
-          width: 32px; height: 32px; border-radius: 50%;
-          background: ${T.purpleLight}; border: none; cursor: default;
-          display: flex; align-items: center; justify-content: center;
-          color: ${T.purple}; font-size: 14px;
+        .pl-demo-panel-label {
+          font-size: 9px; font-weight: 700; text-transform: uppercase;
+          letter-spacing: 0.06em; color: #9291A0;
         }
-        .pl-demo-tag {
-          display: inline-flex; align-items: center; gap: 6px;
-          padding: 4px 12px; border-radius: 12px;
-          font-size: 12px; font-weight: 500;
-          margin-top: 10px;
+        .pl-demo-page {
+          background: white;
+          border-radius: 4px;
+          padding: 10px 9px;
+          box-shadow: 0 1px 5px rgba(0,0,0,0.15);
+          flex: 1;
         }
-        .pl-demo-tag-hard { background: ${T.greyPale}; color: ${T.textSoft}; }
-        .pl-demo-tag-easy { background: ${T.greenLight}; color: #059669; }
+        .pl-demo-doc-text {
+          font-size: 10px; line-height: 1.5; color: #374151;
+          margin-bottom: 6px; font-family: Georgia, serif;
+        }
+        .pl-demo-doc-faded { color: #9CA3AF; }
+        .pl-demo-highlight-box {
+          background: rgba(250,204,21,0.28);
+          border: 1.5px solid #CA8A04;
+          border-radius: 3px;
+          padding: 6px 7px;
+          margin: 5px 0;
+        }
+        .pl-demo-highlight-box .pl-demo-doc-text {
+          color: #1F2937; margin-bottom: 0;
+        }
+        /* Right: plain English result panel */
+        .pl-demo-result-panel {
+          background: #FFFEF9;
+          padding: 12px;
+          display: flex; flex-direction: column; gap: 8px;
+        }
+        .pl-demo-result-label {
+          font-size: 9px; font-weight: 700; text-transform: uppercase;
+          letter-spacing: 0.06em; color: ${T.purple};
+          display: flex; align-items: center; gap: 4px;
+        }
+        .pl-demo-result-text {
+          font-size: 12.5px; line-height: 1.6; color: #1F2937;
+          flex: 1;
+        }
+        .pl-demo-result-tag {
+          display: inline-flex; align-items: center; gap: 5px;
+          padding: 4px 10px; border-radius: 10px;
+          font-size: 11px; font-weight: 600;
+          background: #D1FAE5; color: #059669;
+          border: 1px solid #A7F3D0;
+          align-self: flex-start; margin-top: auto;
+        }
 
         /* Support section */
         .pl-support-section {
-          padding: 80px 48px;
+          padding: 64px 48px;
           text-align: center;
         }
         .pl-support-icon {
@@ -241,15 +268,16 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
         }
         .pl-feature-card {
           background: white;
-          border: 1px solid ${T.border};
+          border: 1.5px solid #D0CADF;
           border-radius: ${T.radius};
           padding: 28px 24px;
           text-align: left;
           transition: box-shadow 0.2s, border-color 0.2s;
+          box-shadow: 0 1px 4px rgba(90,50,130,0.07);
         }
         .pl-feature-card:hover {
-          box-shadow: ${T.shadowMd};
-          border-color: rgba(124,58,237,0.2);
+          box-shadow: 0 4px 16px rgba(90,50,130,0.13);
+          border-color: rgba(124,58,237,0.4);
         }
         .pl-feature-card-icon {
           width: 56px; height: 56px; border-radius: 12px;
@@ -273,13 +301,13 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
 
         /* CTA section */
         .pl-cta-section {
-          padding: 80px 48px;
+          padding: 64px 48px;
           display: grid; grid-template-columns: 1fr 1fr;
           gap: 48px; align-items: center;
           max-width: 1100px; margin: 0 auto;
         }
         @media (max-width: 800px) {
-          .pl-cta-section { grid-template-columns: 1fr; padding: 60px 24px; }
+          .pl-cta-section { grid-template-columns: 1fr; padding: 48px 24px; }
         }
         .pl-cta-section h2 {
           font-size: 32px; font-weight: 700; color: ${T.text};
@@ -330,7 +358,7 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
         /* Drag-drop on hero */
         .pl-hero-drop {
           margin-top: 8px;
-          border: 2px dashed ${T.border};
+          border: 2px dashed #C5B8E0;
           border-radius: ${T.radius};
           padding: 24px;
           text-align: center;
@@ -349,7 +377,7 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
 
         /* Reader settings bar (landing page) */
         .pl-reader-btn {
-          padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+          padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
           border: 1.5px solid ${T.border}; background: white; color: ${T.textSoft};
           cursor: pointer; font-family: inherit; transition: all 0.15s;
         }
@@ -357,8 +385,8 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
         .pl-reader-btn.active { background: ${T.purpleLight}; border-color: ${T.purple}; color: ${T.purple}; }
         .pl-reader-settings {
           background: ${T.purpleLight}; border-bottom: 1px solid rgba(124,58,237,.18);
-          padding: 14px 48px; display: flex; align-items: center; gap: 16px;
-          flex-wrap: wrap; position: sticky; top: 64px; z-index: 99;
+          padding: 10px 48px; display: flex; align-items: center; gap: 14px;
+          flex-wrap: wrap; position: sticky; top: 58px; z-index: 99;
         }
         .pl-rs-label { font-size: 12.5px; font-weight: 600; color: ${T.textSoft}; min-width: 56px; }
         .pl-rs-options { display: flex; gap: 2px; }
@@ -394,8 +422,7 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
         {/* Nav */}
         <nav className="pl-nav">
           <div className="pl-nav-left">
-            <div className="pl-nav-logo-icon">P</div>
-            <span className="pl-nav-logo">Plainly</span>
+            <img src="/logo-plainly.png" alt="Plainly" className="pl-nav-logo-img" />
           </div>
           <div className="pl-nav-links">
             <a href="#" className="active">Home</a>
@@ -454,48 +481,60 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
         )}
 
         {/* Hero */}
+        <div className="pl-hero-outer">
         <section className="pl-hero">
           <div>
-            <div className="pl-hero-badge">🔒 Completely Free. No Signups. No Data Retention.</div>
-            <h1>We turn complicated documents into plain English.</h1>
+            <div className="pl-hero-badge">🔒 Free &nbsp;·&nbsp; No sign-up &nbsp;·&nbsp; No data stored</div>
+            <h1>Any document.<br/>Plain and simple.</h1>
             <p className="pl-hero-sub">
-              We help remove preventable barriers so more people can participate and succeed.
+              Contracts, government forms, letters, agreements — paste or upload anything and get a clear explanation in plain language.
             </p>
             <div className="pl-hero-actions">
               <button className="pl-btn-primary" onClick={onGetStarted}>✦ Try a document today</button>
             </div>
+            <div className="pl-hero-trust">
+              <span>📄 PDFs, forms &amp; contracts</span>
+              <span style={{ margin: "0 10px", opacity: 0.4 }}>·</span>
+              <span>⚡ Results in seconds</span>
+            </div>
           </div>
 
-          {/* Demo card — stacked */}
+          {/* Demo card — mini split-view of the real tool */}
           <div className="pl-demo-card">
-            <div className="pl-demo-header">
-              <span className="pl-demo-header-left">From complicated</span>
-              <span style={{ fontSize: 18 }}>🔄</span>
-              <span className="pl-demo-header-right">To easier to read</span>
+            {/* Toolbar */}
+            <div className="pl-demo-toolbar">
+              <div className="pl-demo-toolbar-left">
+                <span>📄</span>
+                <span>tenancy-agreement.pdf</span>
+                <span className="pl-demo-toolbar-badge">PDF</span>
+              </div>
             </div>
-            <div className="pl-demo-stacked">
-              <div className="pl-demo-msg-box">
-                <div className="pl-demo-msg-label">📄 Original</div>
-                <p className="pl-demo-original-text">
-                  "The tenant shall be liable for all costs of maintenance and repair, notwithstanding any provision to the contrary."
-                </p>
-                <div className="pl-demo-tag pl-demo-tag-hard">📖 Hard to read</div>
+            {/* Split body */}
+            <div className="pl-demo-split">
+              {/* Left: real document text */}
+              <div className="pl-demo-doc-panel">
+                <div className="pl-demo-panel-label">📄 Document</div>
+                <div className="pl-demo-page">
+                  <div className="pl-demo-doc-text pl-demo-doc-faded">TENANCY AGREEMENT</div>
+                  <div className="pl-demo-doc-text pl-demo-doc-faded">Clause 7.2 — Repairs</div>
+                  <div className="pl-demo-highlight-box">
+                    <div className="pl-demo-doc-text">The tenant shall be liable for all costs of maintenance and repair, notwithstanding any provision to the contrary.</div>
+                  </div>
+                  <div className="pl-demo-doc-text pl-demo-doc-faded">Clause 7.3 — The landlord reserves the right to inspect the premises with reasonable notice.</div>
+                </div>
               </div>
-
-              <div className="pl-demo-arrow-row">
-                <div className="pl-demo-arrow-btn">↓</div>
-              </div>
-
-              <div className="pl-demo-msg-box plain">
-                <div className="pl-demo-msg-label">☀️ Plain English</div>
-                <p className="pl-demo-plain-text">
+              {/* Right: plain English result */}
+              <div className="pl-demo-result-panel">
+                <div className="pl-demo-result-label">☀️ Plain English</div>
+                <div className="pl-demo-result-text">
                   You pay for all repairs — even if other parts of the agreement say something different.
-                </p>
-                <div className="pl-demo-tag pl-demo-tag-easy">✅ Easier to read</div>
+                </div>
+                <div className="pl-demo-result-tag">✅ Easier to read</div>
               </div>
             </div>
           </div>
         </section>
+        </div>
 
         {/* Support section */}
         <section className="pl-support-section" id="how">
@@ -610,6 +649,7 @@ export default function App() {
   const draggingRef                 = useRef(false);
   const dragStartRef                = useRef(null);
   const dragPageIdxRef              = useRef(0);
+  const screenSelRef                = useRef(null);
 
   // output
   const [result, setResult]         = useState(null);
@@ -760,27 +800,38 @@ export default function App() {
     const sx = Math.min(x, ds.x), sy = Math.min(y, ds.y);
     const sw = Math.abs(x - ds.x), sh = Math.abs(y - ds.y);
     if (sw < 8 || sh < 8) { setLiveRect(null); return; }
+    const newScreenSel = { x: sx, y: sy, w: sw, h: sh, imgW: rect.width };
+    screenSelRef.current = newScreenSel;
     setSelection({ x: Math.round(sx*scaleX), y: Math.round(sy*scaleY), w: Math.round(sw*scaleX), h: Math.round(sh*scaleY) });
-    setScreenSel({ x: sx, y: sy, w: sw, h: sh, imgW: rect.width });
+    setScreenSel(newScreenSel);
     setLiveRect(null);
   }
 
   // client-side crop
   function cropSelectionToBlob() {
     return new Promise((resolve, reject) => {
-      const img = pageImgRefs.current[dragPageIdx];
-      if (!screenSel || !img) { reject(new Error("No selection")); return; }
+      const img = pageImgRefs.current[dragPageIdxRef.current];
+      const sel = screenSelRef.current;
+      if (!sel || !img) { reject(new Error("No selection")); return; }
       const { width: dw, height: dh } = img.getBoundingClientRect();
-      const sx = Math.round(screenSel.x * img.naturalWidth  / dw);
-      const sy = Math.round(screenSel.y * img.naturalHeight / dh);
-      const sw = Math.max(1, Math.round(screenSel.w * img.naturalWidth  / dw));
-      const sh = Math.max(1, Math.round(screenSel.h * img.naturalHeight / dh));
+      const sx = Math.round(sel.x * img.naturalWidth  / dw);
+      const sy = Math.round(sel.y * img.naturalHeight / dh);
+      const sw = Math.max(1, Math.round(sel.w * img.naturalWidth  / dw));
+      const sh = Math.max(1, Math.round(sel.h * img.naturalHeight / dh));
       const canvas = document.createElement("canvas");
       canvas.width = sw; canvas.height = sh;
       canvas.getContext("2d").drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
       canvas.toBlob(b => b ? resolve(b) : reject(new Error("Canvas crop failed")), "image/png");
     });
   }
+
+  // Auto-simplify as soon as a box is drawn
+  useEffect(() => {
+    if (selection && file && !loading) {
+      handleSimplify();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selection]);
 
   // simplify
   async function handleSimplify() {
@@ -1032,9 +1083,9 @@ export default function App() {
         .app-shell {
           --bg: #eaf1f8; --bg2: #f0eaf8; --shell: #f7f5fa;
           --surface: #ffffff; --panel-doc: #fdfcfb; --panel-result: #fffdf7;
-          --border: rgba(90,50,130,.13); --divider: rgba(90,50,130,.10);
+          --border: rgba(90,50,130,.30); --divider: rgba(90,50,130,.18);
           --text: #2b2530; --muted: #6f677a; --faint: #b0a8b8;
-          --accent: #8a56b0; --accent-dark: #6e3f96; --accent-soft: #f2e8fa;
+          --accent: #8c52ff; --accent-dark: #7a3ef0; --accent-soft: #f0e8ff;
           --shadow-sm: 0 1px 4px rgba(60,20,90,.07);
           --shadow-md: 0 4px 18px rgba(60,20,90,.10);
           --shadow-lg: 0 10px 40px rgba(60,20,90,.13);
@@ -1066,7 +1117,7 @@ export default function App() {
         .main-nav-left { display: flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer; }
         .main-nav-logo {
           width: 30px; height: 30px; border-radius: 8px;
-          background: #7C3AED; color: white;
+          background: #8c52ff; color: white;
           display: flex; align-items: center; justify-content: center;
           font-weight: 700; font-size: 14px;
         }
@@ -1083,13 +1134,13 @@ export default function App() {
           text-decoration: none; padding: 6px 14px;
         }
         .main-nav-cta {
-          background: #7C3AED; color: white;
+          background: #8c52ff; color: white;
           padding: 8px 18px; border-radius: 18px;
           font-size: 13px; font-weight: 600;
           text-decoration: none; border: none; cursor: pointer;
           font-family: inherit; transition: background .2s;
         }
-        .main-nav-cta:hover { background: #6D28D9; }
+        .main-nav-cta:hover { background: #7a3ef0; }
 
         .topnav {
           display: flex; align-items: center; justify-content: space-between;
@@ -1148,7 +1199,7 @@ export default function App() {
         /* LEFT: DOCUMENT PANEL */
         .doc-panel {
           display: flex; flex-direction: column; overflow: hidden;
-          border: 1.5px solid var(--border); border-radius: var(--r-lg);
+          border: 2px solid rgba(90,50,130,.25); border-radius: var(--r-lg);
           margin: 14px; background: var(--panel-doc);
         }
         .doc-toolbar {
@@ -1506,8 +1557,7 @@ export default function App() {
       {/* MAIN NAV (same as landing page) */}
       <nav className="main-nav no-print">
         <a className="main-nav-left" href="/" onClick={e => { e.preventDefault(); reset(); setShowLanding(true); }}>
-          <div className="main-nav-logo">P</div>
-          <span className="main-nav-name">Plainly</span>
+          <img src="/logo-plainly.png" alt="Plainly" style={{ height: 28, display: 'block' }} />
         </a>
         <div className="main-nav-links">
           <a href="#" onClick={e => { e.preventDefault(); reset(); setShowLanding(true); }}>Home</a>
@@ -1525,8 +1575,7 @@ export default function App() {
       {/* APP NAV */}
       <header className="topnav no-print">
         <a href="/" className="logo" onClick={e => { e.preventDefault(); reset(); setShowLanding(true); }}>
-          <div className="logo-mark">P</div>
-          Plainly
+          <img src="/logo-plainly.png" alt="Plainly" style={{ height: 24, display: 'block' }} />
         </a>
 
         <div className="steps">

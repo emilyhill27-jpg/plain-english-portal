@@ -26,3 +26,6 @@ uploads/
 *.jpeg
 *.png
 *.webp
+
+# Allow logo files
+!frontend/public/logo-*.png
