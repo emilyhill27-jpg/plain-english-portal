@@ -116,8 +116,8 @@ function LandingPage({ onGetStarted, onFileUpload }) {
           display: inline-flex; align-items: center; gap: 8px;
           background: rgba(124,58,237,0.08);
           border: 1px solid rgba(124,58,237,0.15);
-          padding: 6px 16px; border-radius: 20px;
-          font-size: 13px; color: ${T.purple}; font-weight: 500;
+          padding: 8px 20px; border-radius: 24px;
+          font-size: 15px; color: ${T.purple}; font-weight: 500;
           margin-bottom: 24px;
         }
         .pl-hero h1 {
@@ -155,34 +155,38 @@ function LandingPage({ onGetStarted, onFileUpload }) {
           display: flex; align-items: center; gap: 6px;
         }
 
-        /* Demo card */
+        /* Demo card — stacked layout */
         .pl-demo-card {
           background: white;
           border-radius: 16px;
           box-shadow: ${T.shadowLg};
           overflow: hidden;
           border: 1px solid ${T.border};
+          max-width: 520px;
         }
         .pl-demo-header {
-          padding: 16px 20px;
+          padding: 14px 20px;
           display: flex; justify-content: space-between; align-items: center;
           border-bottom: 1px solid ${T.borderLight};
         }
         .pl-demo-header-left { font-size: 14px; color: ${T.textSoft}; font-weight: 500; }
         .pl-demo-header-right { font-size: 14px; color: ${T.textSoft}; font-weight: 500; }
-        .pl-demo-cols {
-          display: grid; grid-template-columns: 1fr auto 1fr;
-          gap: 0; min-height: 260px;
+        .pl-demo-stacked {
+          padding: 20px; display: flex; flex-direction: column; gap: 16px;
         }
-        .pl-demo-col {
-          padding: 20px;
+        .pl-demo-msg-box {
+          border: 1.5px solid ${T.border}; border-radius: 12px;
+          padding: 16px 18px; background: ${T.bg};
         }
-        .pl-demo-col-label {
+        .pl-demo-msg-box.plain {
+          border-color: rgba(124,58,237,0.2);
+          background: rgba(124,58,237,0.03);
+        }
+        .pl-demo-msg-label {
           display: flex; align-items: center; gap: 8px;
-          font-size: 13px; font-weight: 600; color: ${T.textMid};
-          margin-bottom: 12px;
+          font-size: 12px; font-weight: 600; color: ${T.textMid};
+          margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.03em;
         }
-        .pl-demo-col-label svg { width: 16px; height: 16px; }
         .pl-demo-original-text {
           font-size: 14px; color: ${T.textSoft}; line-height: 1.6;
           font-style: italic;
@@ -190,30 +194,23 @@ function LandingPage({ onGetStarted, onFileUpload }) {
         .pl-demo-plain-text {
           font-size: 14px; color: ${T.text}; line-height: 1.6;
         }
-        .pl-demo-arrow-col {
+        .pl-demo-arrow-row {
           display: flex; align-items: center; justify-content: center;
-          padding: 0 8px;
         }
         .pl-demo-arrow-btn {
-          width: 36px; height: 36px; border-radius: 50%;
+          width: 32px; height: 32px; border-radius: 50%;
           background: ${T.purpleLight}; border: none; cursor: default;
           display: flex; align-items: center; justify-content: center;
-          color: ${T.purple}; font-size: 16px;
+          color: ${T.purple}; font-size: 14px;
         }
         .pl-demo-tag {
           display: inline-flex; align-items: center; gap: 6px;
           padding: 4px 12px; border-radius: 12px;
           font-size: 12px; font-weight: 500;
-          margin-top: 16px;
+          margin-top: 10px;
         }
         .pl-demo-tag-hard { background: ${T.greyPale}; color: ${T.textSoft}; }
         .pl-demo-tag-easy { background: ${T.greenLight}; color: #059669; }
-        .pl-demo-footer {
-          padding: 14px 20px;
-          border-top: 1px solid ${T.borderLight};
-          font-size: 13px; color: ${T.textSoft};
-          display: flex; align-items: center; gap: 8px;
-        }
 
         /* Support section */
         .pl-support-section {
@@ -384,44 +381,33 @@ function LandingPage({ onGetStarted, onFileUpload }) {
             </div>
           </div>
 
-          {/* Demo card */}
+          {/* Demo card — stacked */}
           <div className="pl-demo-card">
             <div className="pl-demo-header">
               <span className="pl-demo-header-left">From complicated</span>
-              <span style={{ fontSize: 20 }}>🔄</span>
+              <span style={{ fontSize: 18 }}>🔄</span>
               <span className="pl-demo-header-right">To easier to read</span>
             </div>
-            <div className="pl-demo-cols">
-              <div className="pl-demo-col">
-                <div className="pl-demo-col-label">
-                  📄 Original document
-                </div>
+            <div className="pl-demo-stacked">
+              <div className="pl-demo-msg-box">
+                <div className="pl-demo-msg-label">📄 Original</div>
                 <p className="pl-demo-original-text">
-                  "Notwithstanding the foregoing, the Company shall, in its sole and absolute discretion, be entitled to terminate this Agreement forthwith upon written notice in the event of any material breach by the Recipient, it being acknowledged that such termination shall be without prejudice to any rights or remedies available to the Company at law or in equity."
+                  "The tenant shall be liable for all costs of maintenance and repair, notwithstanding any provision to the contrary."
                 </p>
                 <div className="pl-demo-tag pl-demo-tag-hard">📖 Hard to read</div>
               </div>
-              <div className="pl-demo-arrow-col">
-                <div className="pl-demo-arrow-btn">→</div>
+
+              <div className="pl-demo-arrow-row">
+                <div className="pl-demo-arrow-btn">↓</div>
               </div>
-              <div className="pl-demo-col">
-                <div className="pl-demo-col-label">
-                  ☀️ Plain English
-                </div>
+
+              <div className="pl-demo-msg-box plain">
+                <div className="pl-demo-msg-label">☀️ Plain English</div>
                 <p className="pl-demo-plain-text">
-                  The Company can end this agreement at any time if you seriously break the rules.
-                </p>
-                <p className="pl-demo-plain-text" style={{ marginTop: 12 }}>
-                  They will give you written notice if that happens.
-                </p>
-                <p className="pl-demo-plain-text" style={{ marginTop: 12 }}>
-                  Ending the agreement doesn't take away any other rights they may have.
+                  You pay for all repairs — even if other parts of the agreement say something different.
                 </p>
                 <div className="pl-demo-tag pl-demo-tag-easy">✅ Easier to read</div>
               </div>
-            </div>
-            <div className="pl-demo-footer">
-              🔒 Plainly keeps your information private and secure.
             </div>
           </div>
         </section>
@@ -961,6 +947,42 @@ export default function App() {
         button { font: inherit; cursor: pointer; border: none; background: none; }
 
         /* TOP NAV */
+        /* Main nav (matches landing page) */
+        .main-nav {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 0 36px; height: 56px;
+          background: rgba(255,255,255,.95); backdrop-filter: blur(12px);
+          border-bottom: 1px solid rgba(90,50,130,.08);
+          flex-shrink: 0; z-index: 201;
+        }
+        .main-nav-left { display: flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer; }
+        .main-nav-logo {
+          width: 30px; height: 30px; border-radius: 8px;
+          background: #7C3AED; color: white;
+          display: flex; align-items: center; justify-content: center;
+          font-weight: 700; font-size: 14px;
+        }
+        .main-nav-name { font-family: var(--font-h); font-size: 20px; font-weight: 700; color: var(--text); }
+        .main-nav-links { display: flex; gap: 24px; align-items: center; }
+        .main-nav-links a {
+          font-size: 13.5px; color: var(--muted); text-decoration: none;
+          font-weight: 500; transition: color .15s;
+        }
+        .main-nav-links a:hover { color: var(--accent); }
+        .main-nav-right { display: flex; gap: 10px; align-items: center; }
+        .main-nav-login {
+          font-size: 13.5px; color: var(--muted); font-weight: 500;
+          text-decoration: none; padding: 6px 14px;
+        }
+        .main-nav-cta {
+          background: #7C3AED; color: white;
+          padding: 8px 18px; border-radius: 18px;
+          font-size: 13px; font-weight: 600;
+          text-decoration: none; border: none; cursor: pointer;
+          font-family: inherit; transition: background .2s;
+        }
+        .main-nav-cta:hover { background: #6D28D9; }
+
         .topnav {
           display: flex; align-items: center; justify-content: space-between;
           padding: 0 24px; height: 56px;
@@ -1334,7 +1356,26 @@ export default function App() {
         .print-warning { display: none; }
       `}</style>
 
-      {/* TOP NAV */}
+      {/* MAIN NAV (same as landing page) */}
+      <nav className="main-nav no-print">
+        <a className="main-nav-left" href="/" onClick={e => { e.preventDefault(); reset(); setShowLanding(true); }}>
+          <div className="main-nav-logo">P</div>
+          <span className="main-nav-name">Plainly</span>
+        </a>
+        <div className="main-nav-links">
+          <a href="#" onClick={e => { e.preventDefault(); reset(); setShowLanding(true); }}>Home</a>
+          <a href="#how">How it works</a>
+          <a href="#schools">For schools</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#resources">Resources</a>
+        </div>
+        <div className="main-nav-right">
+          <a href="#" className="main-nav-login">Log in</a>
+          <button className="main-nav-cta" onClick={() => { reset(); setShowLanding(true); }}>Get started</button>
+        </div>
+      </nav>
+
+      {/* APP NAV */}
       <header className="topnav no-print">
         <a href="/" className="logo" onClick={e => { e.preventDefault(); reset(); setShowLanding(true); }}>
           <div className="logo-mark">P</div>
