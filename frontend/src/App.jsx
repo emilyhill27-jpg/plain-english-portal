@@ -530,6 +530,7 @@ export default function App() {
   const [result, setResult]         = useState(null);
   const [checklistOpen, setChecklistOpen] = useState(false);
   const [showPrompts, setShowPrompts] = useState(false);
+  const [showReadingSupport, setShowReadingSupport] = useState(false);
   const [showExamples, setShowExamples] = useState(false);
   const [showChecklistInline, setShowChecklistInline] = useState(false);
   const [checkedItems, setCheckedItems] = useState({});
@@ -824,9 +825,20 @@ export default function App() {
     );
 
     if (!isPdf) return (
-      <div className="doc-page-area">
-        <img src={previewUrl} alt="Uploaded document" style={{ width: `${zoom*100}%`, display: "block" }} />
-      </div>
+      <>
+        <div className="doc-toolbar" role="toolbar">
+          <button className="btn btn-ghost" style={{ height:32, padding:'0 12px', fontSize:13 }}
+            onClick={() => setZoom(z=>Math.max(0.4,+(z-0.2).toFixed(1)))}>−</button>
+          <span className="tool-label">{Math.round(zoom*100)}%</span>
+          <button className="btn btn-ghost" style={{ height:32, padding:'0 12px', fontSize:13 }}
+            onClick={() => setZoom(z=>Math.min(3.0,+(z+0.2).toFixed(1)))}>+</button>
+          <div className="tool-sep" />
+          <span className="tool-label">Page 1 / 1</span>
+        </div>
+        <div className="doc-page-area">
+          <img src={previewUrl} alt="Uploaded document" style={{ width: `${zoom*100}%`, display: "block" }} />
+        </div>
+      </>
     );
 
     if (loading && pages.length === 0) return <div className="doc-loading">Reading PDF…</div>;
@@ -1038,7 +1050,11 @@ export default function App() {
         .shell-divider { background: var(--border); align-self: stretch; }
 
         /* LEFT: DOCUMENT PANEL */
-        .doc-panel { display: flex; flex-direction: column; overflow: hidden; }
+        .doc-panel {
+          display: flex; flex-direction: column; overflow: hidden;
+          border: 1.5px solid var(--border); border-radius: var(--r-lg);
+          margin: 14px; background: var(--panel-doc);
+        }
         .doc-toolbar {
           display: flex; align-items: center; gap: 4px;
           padding: 10px 14px; border-bottom: 1px solid var(--border);
@@ -1100,7 +1116,11 @@ export default function App() {
         .doc-loading { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 16px; }
 
         /* RIGHT: RESULT PANEL */
-        .result-panel { display: flex; flex-direction: column; background: var(--panel-result); overflow: hidden; }
+        .result-panel {
+          display: flex; flex-direction: column; background: var(--panel-result); overflow: hidden;
+          border: 1.5px solid var(--border); border-radius: var(--r-lg);
+          margin: 14px;
+        }
         .result-topbar {
           display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
           padding: 12px 18px; border-bottom: 1px solid var(--border);
@@ -1148,7 +1168,7 @@ export default function App() {
         .result-section { margin-bottom: 20px; }
         .result-section:last-child { margin-bottom: 0; }
         .r-h { font-family: var(--font-h); font-size: 15px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
-        .r-p { font-size: 15.5px; line-height: 1.65; color: var(--text); }
+        .r-p { font-size: inherit; line-height: inherit; color: var(--text); }
 
         /* Checklist */
         .checklist-box {
@@ -1178,46 +1198,55 @@ export default function App() {
 
         /* Reading support card (top of result panel) */
         .reading-support-card {
-          padding: 18px 20px; border-bottom: 1px solid var(--border);
+          padding: 12px 20px; border-bottom: 1px solid var(--border);
           background: rgba(255,253,240,.6); flex-shrink: 0;
+        }
+        .rs-card-header {
+          display: flex; align-items: center; justify-content: space-between;
+          cursor: pointer; user-select: none;
         }
         .rs-card-title {
           font-family: var(--font-h); font-size: 14px; font-weight: 600;
-          color: var(--text); margin-bottom: 14px;
+          color: var(--text); margin: 0;
         }
-        .rs-slider-group { display: flex; flex-direction: column; gap: 14px; }
+        .rs-card-toggle {
+          font-size: 18px; color: var(--muted); transition: transform .2s;
+          background: none; border: none; cursor: pointer; padding: 4px 8px;
+        }
+        .rs-card-toggle.open { transform: rotate(180deg); }
+        .rs-slider-group { display: flex; flex-direction: column; gap: 10px; padding-top: 12px; }
         .rs-slider-row {
-          display: flex; align-items: center; gap: 12px;
+          display: flex; align-items: center; gap: 10px;
         }
         .rs-slider-label {
-          font-size: 12.5px; font-weight: 600; color: var(--muted);
-          min-width: 95px; flex-shrink: 0;
+          font-size: 12px; font-weight: 600; color: var(--muted);
+          min-width: 85px; flex-shrink: 0;
         }
-        .rs-slider-wrap { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+        .rs-slider-wrap { flex: 1; max-width: 280px; display: flex; flex-direction: column; gap: 2px; }
         .rs-slider-ticks {
           display: flex; justify-content: space-between;
-          font-size: 10.5px; color: var(--faint); padding: 0 2px;
+          font-size: 9.5px; color: var(--faint); padding: 0 2px;
         }
         .rs-slider-tick { text-align: center; }
         .rs-slider-tick.active { color: var(--accent); font-weight: 600; }
         input[type="range"].rs-range {
           -webkit-appearance: none; appearance: none;
-          width: 100%; height: 6px; border-radius: 3px;
+          width: 100%; height: 5px; border-radius: 3px;
           background: linear-gradient(90deg, var(--accent-soft) 0%, var(--accent-soft) 100%);
           outline: none; cursor: pointer;
         }
         input[type="range"].rs-range::-webkit-slider-thumb {
           -webkit-appearance: none; appearance: none;
-          width: 20px; height: 20px; border-radius: 50%;
-          background: var(--accent); border: 3px solid white;
-          box-shadow: 0 1px 4px rgba(90,50,130,.3);
+          width: 16px; height: 16px; border-radius: 50%;
+          background: var(--accent); border: 2px solid white;
+          box-shadow: 0 1px 3px rgba(90,50,130,.3);
           cursor: pointer; transition: transform .12s;
         }
         input[type="range"].rs-range::-webkit-slider-thumb:hover { transform: scale(1.15); }
         input[type="range"].rs-range::-moz-range-thumb {
-          width: 20px; height: 20px; border-radius: 50%;
-          background: var(--accent); border: 3px solid white;
-          box-shadow: 0 1px 4px rgba(90,50,130,.3); cursor: pointer;
+          width: 16px; height: 16px; border-radius: 50%;
+          background: var(--accent); border: 2px solid white;
+          box-shadow: 0 1px 3px rgba(90,50,130,.3); cursor: pointer;
         }
 
         /* Outer box around entire result content */
@@ -1459,14 +1488,15 @@ export default function App() {
           </div>
           <span className="rs-group-label">Spacing</span>
           <div className="rs-options">
-            {[["standard","≡"],["relaxed","≡"],["extra-relaxed","≡"]].map(([val,label]) => (
+            {[["standard","━━━",{lineHeight:'1.0'}],["relaxed","━━━",{lineHeight:'1.4'}],["extra-relaxed","━━━",{lineHeight:'1.9'}]].map(([val,label,style]) => (
               <button key={val} className={`rs-option${readerLineSpacing===val?' active':''}`}
-                onClick={() => setReaderLineSpacing(val)}>{label}</button>
+                style={{...style, fontSize:10, letterSpacing:'-1px'}}
+                onClick={() => setReaderLineSpacing(val)} title={val}>{label}</button>
             ))}
           </div>
           <span className="rs-group-label">Background</span>
           <div className="rs-options" style={{ gap: 6 }}>
-            {[["cream","#F5D0C5"],["blue","#C7D2FE"],["lilac","#DDD6FE"],["grey","#D1FAE5"]].map(([val,color]) => (
+            {[["cream","#FFF9F0"],["blue","#EFF6FF"],["lilac","#F3E8FF"],["grey","#F3F4F6"]].map(([val,color]) => (
               <button key={val} className={`rs-tint${readerBgTint===val?' active':''}`}
                 style={{ background:color }} onClick={() => setReaderBgTint(val)} />
             ))}
@@ -1492,11 +1522,14 @@ export default function App() {
           {/* RIGHT: RESULT */}
           <section className="result-panel" aria-label="Plain-English result">
 
-            {/* Reading support card */}
+            {/* Reading support card — collapsible */}
             {result && (
               <div className="reading-support-card no-print">
-                <div className="rs-card-title">Reading support</div>
-                <div className="rs-slider-group">
+                <div className="rs-card-header" onClick={() => setShowReadingSupport(!showReadingSupport)}>
+                  <div className="rs-card-title">Reading support</div>
+                  <button className={`rs-card-toggle${showReadingSupport ? ' open' : ''}`} aria-label="Toggle reading support">▾</button>
+                </div>
+                {showReadingSupport && <div className="rs-slider-group">
                   <div className="rs-slider-row">
                     <span className="rs-slider-label">Year level</span>
                     <div className="rs-slider-wrap">
@@ -1526,7 +1559,7 @@ export default function App() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </div>}
               </div>
             )}
 
@@ -1538,6 +1571,7 @@ export default function App() {
                 fontFamily: readerStyles.fontFamily,
                 fontSize: readerStyles.fontSize,
                 lineHeight: readerStyles.lineHeight,
+                background: readerStyles.background,
               }}>
 
                 {result ? (
@@ -1558,7 +1592,7 @@ export default function App() {
                           <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polygon points="2,1 11,6 2,11" fill="#fff"/></svg>
                         )}
                       </button>
-                      <button className="stop-btn" onClick={stopSpeech} disabled={!isPlaying}>
+                      <button className="stop-btn" onClick={() => { window.speechSynthesis?.cancel(); setIsPlaying(false); setCurrentCharRange(null); }}>
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1" y="1" width="8" height="8" rx="1.5" fill="currentColor"/></svg>
                       </button>
                       {voices.length > 0 && (
