@@ -123,8 +123,8 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
           letter-spacing: -0.03em;
         }
         .pl-hero-sub {
-          font-size: 16px; color: ${T.textMid};
-          line-height: 1.65; max-width: 440px;
+          font-size: 1em; color: ${T.textMid};
+          line-height: inherit; max-width: 440px;
           margin-bottom: 24px;
         }
         .pl-hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
@@ -253,7 +253,7 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
           margin-bottom: 8px;
         }
         .pl-support-section > p {
-          font-size: 16px; color: ${T.textSoft}; max-width: 560px;
+          font-size: 1em; color: ${T.textSoft}; max-width: 560px;
           margin: 0 auto 48px;
         }
         .pl-cards-grid {
@@ -285,11 +285,11 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
           margin-bottom: 16px; font-size: 28px;
         }
         .pl-feature-card h3 {
-          font-size: 16px; font-weight: 600; color: ${T.text};
+          font-size: 1em; font-weight: 600; color: ${T.text};
           margin-bottom: 8px;
         }
         .pl-feature-card p {
-          font-size: 14px; color: ${T.textSoft}; line-height: 1.55;
+          font-size: 0.875em; color: ${T.textSoft}; line-height: inherit;
           margin-bottom: 16px;
         }
         .pl-feature-card-link {
@@ -314,7 +314,7 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
           line-height: 1.2; margin-bottom: 16px;
         }
         .pl-cta-section > div > p {
-          font-size: 16px; color: ${T.textSoft}; line-height: 1.6;
+          font-size: 1em; color: ${T.textSoft}; line-height: inherit;
           margin-bottom: 24px;
         }
         .pl-cta-actions { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -371,7 +371,7 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
           background: rgba(124,58,237,0.03);
         }
         .pl-hero-drop p {
-          font-size: 14px; color: ${T.textSoft};
+          font-size: 0.875em; color: ${T.textSoft};
         }
         .pl-hero-drop input { display: none; }
 
@@ -428,6 +428,7 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
             <a href="#" className="active">Home</a>
             <a href="#how">How it works</a>
             <a href="#school">For schools</a>
+            <a href="/organisations.html">For organisations</a>
             <a href="#pricing">Pricing</a>
             <a href="#resources">Resources ▾</a>
           </div>
@@ -659,16 +660,23 @@ export default function App() {
   const [showExamples, setShowExamples] = useState(false);
   const [showChecklistInline, setShowChecklistInline] = useState(false);
   const [checkedItems, setCheckedItems] = useState({});
+  const [cropPreviewUrl, setCropPreviewUrl] = useState(null);
 
   // audio
   const [audioSpeed, setAudioSpeed]             = useState(1);
   const [isPlaying, setIsPlaying]               = useState(false);
   const [currentCharRange, setCurrentCharRange] = useState(null);
   const utterRef                                = useRef(null);
+  const keepAliveRef                            = useRef(null);
   const [voices, setVoices]                     = useState([]);
   const [voiceName, setVoiceName]               = useState("");
 
-  useEffect(() => () => { window.speechSynthesis?.cancel(); }, []);
+  useEffect(() => () => { window.speechSynthesis?.cancel(); if (keepAliveRef.current) clearInterval(keepAliveRef.current); }, []);
+
+  useEffect(() => {
+    if (isPlaying) speakFrom(currentCharRange?.start || 0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [audioSpeed]);
 
   useEffect(() => {
     function pickBest(list) {
@@ -730,6 +738,9 @@ export default function App() {
     setSessionId(null); setPages([]); setPageIdx(0);
     setSelection(null); setScreenSel(null); setResult(null); setError("");
     setIsPlaying(false); setCurrentCharRange(null);
+    if (cropPreviewUrl) URL.revokeObjectURL(cropPreviewUrl);
+    setCropPreviewUrl(null);
+    if (keepAliveRef.current) clearInterval(keepAliveRef.current);
   }
 
   async function handleFile(candidate) {
@@ -776,6 +787,7 @@ export default function App() {
     setDragging(true); setDragStart({ x, y });
     setLiveRect({ x, y, w: 0, h: 0 });
     setSelection(null); setScreenSel(null); setResult(null);
+    setCropPreviewUrl(prev => { if (prev) URL.revokeObjectURL(prev); return null; });
   }
   function onMouseMove(e) {
     if (!draggingRef.current || !dragStartRef.current) return;
@@ -828,6 +840,9 @@ export default function App() {
   // Auto-simplify as soon as a box is drawn
   useEffect(() => {
     if (selection && file && !loading) {
+      cropSelectionToBlob().then(blob => {
+        setCropPreviewUrl(prev => { if (prev) URL.revokeObjectURL(prev); return URL.createObjectURL(blob); });
+      }).catch(() => {});
       handleSimplify();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -866,8 +881,19 @@ export default function App() {
       sections.push({ key: "simplified", text: result.simplified_text, offset });
       offset += result.simplified_text.length + sep.length;
     }
+    if (result.flags) {
+      const parts = [];
+      result.flags.deadlines?.forEach(d => parts.push("Deadline: " + d));
+      result.flags.amounts?.forEach(a => parts.push("Amount: " + a));
+      result.flags.documents_needed?.forEach(d => parts.push("Document needed: " + d));
+      if (parts.length) {
+        const text = "Important details.\n" + parts.join(".\n");
+        sections.push({ key: "flags", text, offset });
+        offset += text.length + sep.length;
+      }
+    }
     if (result.checklist?.length > 0) {
-      const text = result.checklist.join("\n");
+      const text = "What you need to do.\n" + result.checklist.join(".\n");
       sections.push({ key: "checklist", text, offset });
     }
     return { fullText: sections.map(s => s.text).join(sep), sections };
@@ -876,6 +902,7 @@ export default function App() {
   function speakFrom(charStart) {
     if (!speechInfo.fullText || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
+    if (keepAliveRef.current) clearInterval(keepAliveRef.current);
     const u = new SpeechSynthesisUtterance(speechInfo.fullText.slice(charStart));
     u.rate = audioSpeed;
     if (voiceName) {
@@ -887,14 +914,20 @@ export default function App() {
       const abs = charStart + (e.charIndex || 0);
       setCurrentCharRange({ start: abs, end: abs + (e.charLength || 1) });
     };
-    u.onend   = () => { setIsPlaying(false); setCurrentCharRange(null); };
-    u.onerror = () => { setIsPlaying(false); setCurrentCharRange(null); };
+    u.onend   = () => { setIsPlaying(false); setCurrentCharRange(null); if (keepAliveRef.current) clearInterval(keepAliveRef.current); };
+    u.onerror = () => { setIsPlaying(false); setCurrentCharRange(null); if (keepAliveRef.current) clearInterval(keepAliveRef.current); };
     utterRef.current = u;
     setIsPlaying(true);
     window.speechSynthesis.speak(u);
+    keepAliveRef.current = setInterval(() => {
+      if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+        window.speechSynthesis.pause();
+        window.speechSynthesis.resume();
+      }
+    }, 10000);
   }
   function speak()       { speakFrom(0); }
-  function stopSpeech()  { window.speechSynthesis?.cancel(); setIsPlaying(false); setCurrentCharRange(null); }
+  function stopSpeech()  { window.speechSynthesis?.cancel(); setIsPlaying(false); setCurrentCharRange(null); if (keepAliveRef.current) clearInterval(keepAliveRef.current); }
   function pauseResume() {
     if (!window.speechSynthesis) return;
     if (window.speechSynthesis.paused) { window.speechSynthesis.resume(); setIsPlaying(true); }
@@ -1563,6 +1596,7 @@ export default function App() {
           <a href="#" onClick={e => { e.preventDefault(); reset(); setShowLanding(true); }}>Home</a>
           <a href="#how">How it works</a>
           <a href="#schools">For schools</a>
+          <a href="/organisations.html">For organisations</a>
           <a href="#pricing">Pricing</a>
           <a href="#resources">Resources</a>
         </div>
@@ -1719,6 +1753,15 @@ export default function App() {
                 background: readerStyles.background,
               }}>
 
+                {cropPreviewUrl && (
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Your selection</div>
+                    <div className="crop-preview">
+                      <img src={cropPreviewUrl} alt="Selected area" style={{ width: '100%', display: 'block' }} />
+                    </div>
+                  </div>
+                )}
+
                 {result ? (
                   <div className="result-outer-box">
                     {/* Plain-English version label */}
@@ -1745,6 +1788,16 @@ export default function App() {
                           {voices.map(v => <option key={v.name} value={v.name}>{v.name}</option>)}
                         </select>
                       )}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginLeft: 4 }}>
+                        <span style={{ fontSize: 11, color: 'var(--muted)', marginRight: 4 }}>Speed</span>
+                        {[0.5, 0.75, 1, 1.25].map(spd => (
+                          <button key={spd} className={`rs-option${audioSpeed === spd ? ' active' : ''}`}
+                            style={{ padding: '2px 8px', fontSize: 11, height: 24, minWidth: 0 }}
+                            onClick={() => setAudioSpeed(spd)}>
+                            {spd === 1 ? '1x' : spd + 'x'}
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
                     {/* Inner box — plain-English text */}

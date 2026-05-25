@@ -49,60 +49,61 @@ Built from lived experience — Emily's entire family struggles with complex pap
 
 ---
 
-## Design Language — Sand Banding (applied everywhere)
+## Design Language — Current (as of 25 May 2026)
 
-All pages and the app share one visual identity:
-- **Body background:** `#ede4d4` (warm sand) — creates top/bottom/side banding
-- **Page content:** sits in a white or cream container — appears to float
-- **App tool page:** `app-shell` is `#ede4d4`, left panel `#fdfaf5`, right panel `#f6f0e6`, drop zone `#ffffff`
-- **B2B landing:** `body` is `#ede4d4`, all content inside `.page-shell` (max-width 1400px, white bg)
-- **Landing page:** full-bleed terracotta hero — intentional, no banding applied here
-- Apply this same pattern to any new page (pitch deck, etc.): `body { background: #ede4d4 }` + white/cream shell
+Purple / lavender palette with rounded corners:
+
+- **Fonts:** Lexend (headings + body), Open Sans (fallback body). Loaded from Google Fonts.
+- **Accent colour:** Purple `#8c52ff`, hover `#7a3ef0`
+- **Light accents:** `#EDE9FE` (purple light), `#F5F3FF` (purple pale)
+- **Backgrounds:** `#FAFAFA` (main off-white), `#FFF9F0` (cream, reader default), hero gradient (lavender/pink/warm yellow)
+- **Text colours:** `#1F2937` (dark), `#4B5563` (mid), `#6B7280` (soft)
+- **Borders:** `#E5E7EB` (light grey)
+- **Corners:** Rounded — 8px, 12px, 16px. Pill buttons use `border-radius: 999px`
+- **Logo:** `logo-plainly.png` in `frontend/public/`
+- **App page panels:** Left panel (document) has subtle border, right panel (result) has subtle border. Both inside a rounded outer shell with shadow.
+
+**NOTE:** The old design (terracotta `#bf5030`, Playfair Display, Atkinson Hyperlegible, sand banding `#ede4d4`, square corners) is GONE. Do not reference it.
 
 ---
 
 ## Current State — What Is Built and Working
 
 ### Landing page
-- Full editorial landing page built from Emily's Canva HTML export
-- Sections: hero with live demo card, scrolling ticker, stats bar (851K / 26% / 1 in 5 / 15–20%), How it works (3 steps), What Plainly reads (3 cards), School module feature, AI/technology section, Promises strip, CTA, Footer
-- Live demo card: tabs for WINZ letter / IRD notice / School form — shows before/after plainification
-- Drag-and-drop file upload on hero goes straight into the app
-- All CTA buttons connect to the app
+- Nav bar: Plainly logo, Home, How it works, For schools, Pricing, Resources, Reader settings button, Log in, Get started
+- Hero section: gradient background (lavender/pink/yellow), badge "Free · No sign-up · No data stored", headline "Any document. Plain and simple.", subtitle, CTA button, trust badges
+- Demo card: mini split-view showing a tenancy agreement clause on the left and plain English version on the right
+- Feature cards (4): Simplify documents, Made for students and schools, Accessible for everyone, Safe supportive and private
+- CTA section: "Because everyone deserves to feel in the loop"
+- Footer: privacy messaging
+- Reader settings bar: text size (4 options), font (Lexend/Open Sans/Arial), spacing (3 options), background tint (cream/blue/lilac/grey), reset button — settings now actually work on landing page text
 
-### B2B landing page (`b2b-landing.html` / served at `/b2b.html`)
-- Standalone HTML — Pomelo-inspired, clean white + terracotta, big Playfair Display type
-- Hero: "The plain language layer." with terracotta italic on `<em>`
-- Sections: nav → hero → proof bar → value props → how it works (dark) → white-label split → who it's for → pricing → CTA → footer
+### B2B landing page (`frontend/public/b2b.html`)
+- Standalone HTML served at `/b2b.html`
 - Pricing: Starter $299/mo · Organisation $699/mo · Enterprise custom
-- Sand banding: `body { background: #ede4d4 }` + `.page-shell` (max-width 1400px, white)
-- Stored in `frontend/public/b2b.html` so it survives every `npm run build`
 
 ### App page (the two-panel tool)
-- PDF and image upload (drag & drop or browse)
-- Multi-page PDF with thumbnail sidebar
-- Zoom controls and page navigation
-- Rubber-band drag-to-select any region on the document
-- Crop preview shows selected section
-- Bullet-point plain English output
-- Numbered checklist with clickable items
-- Audio: Play All / Pause / Stop + click any word to play from that point + voice selector
-- Three document modes:
-  - 📄 General — plain English rewrite for any document
-  - 📋 Business plan — coaching mode for WINZ business plan applications
-  - 📚 School — explains at the child's actual reading age (Age 5–6, 7–8, 9–10, 11–12)
-- Print, New document, Checklist drawer
-
-### Design system (both pages now match)
-- **Fonts:** Playfair Display (headings/logo) + Atkinson Hyperlegible (body)
-- **Accent colour:** Terracotta `#bf5030`
-- **Backgrounds:** Warm cream `#f6f0e6`, warm white `#fdfaf5`
-- **Text:** Near-black `#1c1710`
-- **No black backgrounds** — dark sections use forest sage `#3D5C40`
-- **Square corners** — no pill buttons, no heavy border-radius
-- App page header: Playfair Display "Plain**ly**" logo (links to `/`), "Plain language, instantly." tagline, "← Home" always visible, "↩ New document" in terracotta when file loaded
-- When result shows: green sage done-banner appears with "↩ New doc" and "← Home" buttons so user can easily close and go back
-- Sand banding: `app-shell` bg `#ede4d4`, left panel `#fdfaf5`, drop zone `#ffffff`, right panel `#f6f0e6`
+- Top nav: Plainly logo (links home), nav links, Reader settings button, Load new document button
+- Progress steps: Upload → Settings → Result
+- Reader settings bar: same as landing page, works on result text
+- **Left panel (document):**
+  - PDF and image upload (drag & drop or browse)
+  - Multi-page PDF with thumbnail sidebar
+  - Zoom controls and page navigation
+  - Rubber-band drag-to-select any region on the document
+  - Auto-simplifies when selection is drawn
+- **Right panel (result):**
+  - Reading support card (collapsible): year level slider, reading level slider
+  - Crop preview: shows what you selected from the document
+  - "Plain-English version" label
+  - Listen controls: play/pause, stop, voice selector, speed control (0.5x/0.75x/1x/1.25x)
+  - Simplified text with clickable words (click to play from that word, current word highlighted yellow)
+  - Important details: deadlines, amounts, documents needed (with icons)
+  - Checklist: "What you need to do" with tickable checkboxes
+  - Prompts & examples (expandable)
+  - Print button
+- Three document modes: General / Business Plan / School (with reading age)
+- Text-to-speech reads all sections (simplified text + important details + checklist) with Chrome keepalive fix
 
 ---
 
@@ -142,16 +143,18 @@ Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 | `frontend/src/App.jsx` | Entire React UI — landing page + app page |
 | `.env` | ANTHROPIC_API_KEY |
 | `frontend/dist/` | Built frontend — rebuild after JSX changes |
+| `frontend/public/b2b.html` | B2B landing page (standalone) |
+| `frontend/public/logo-plainly.png` | Site logo |
 | `HANDOVER.md` | This file — update at end of every session |
+| `CLAUDE.md` | Quick reference loaded into every conversation |
 
 ---
 
 ## Pending Tasks — IN ORDER, ONE AT A TIME
 
-1. **Pitch deck** — Emily wants a pitch deck with the same sand-banding design language. Build as a standalone HTML presentation or Canva export. To do next session.
-2. **Business Plan prompt** — currently uses AI-generated WINZ criteria, not official. Could mislead vulnerable users. Fix before going public.
-3. **Domain** — check if tryplainly.co.nz is available
-4. **First paying customer** — approach one school, community org, or adviser. Don't wait for it to be perfect.
+1. **Business Plan prompt** — currently uses AI-generated WINZ criteria, not official. Could mislead vulnerable users. Fix before going public.
+2. **Domain** — check if tryplainly.co.nz is available
+3. **First paying customer** — approach one school, community org, or adviser. Don't wait for it to be perfect.
 
 ---
 
@@ -162,8 +165,7 @@ Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 - Do not sell to big government first — start with small orgs who can decide fast
 - Get paying customers before approaching investors
 - Apply for Callaghan Innovation grant as non-dilutive first funding
-- No black backgrounds anywhere in the UI
-- Design: Playfair Display + Atkinson Hyperlegible, terracotta accent, cream/warm palette, square corners
+- Design: purple/lavender palette, Lexend font, rounded corners (NOT terracotta/Playfair/sand banding — that was the old design)
 - Client-side canvas crop (not server-side — coordinate bugs)
 - No guiding questions — removed
 - One universal general prompt, not separate academic/government prompts
