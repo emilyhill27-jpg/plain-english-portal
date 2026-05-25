@@ -678,6 +678,41 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioSpeed]);
 
+  const voiceRegions = {
+    "en-NZ": { flag: "\u{1F1F3}\u{1F1FF}", label: "NZ English" },
+    "en-AU": { flag: "\u{1F1E6}\u{1F1FA}", label: "Australian" },
+    "en-GB": { flag: "\u{1F1EC}\u{1F1E7}", label: "UK English" },
+    "en-US": { flag: "\u{1F1FA}\u{1F1F8}", label: "US English" },
+    "en-IE": { flag: "\u{1F1EE}\u{1F1EA}", label: "Irish" },
+    "en-ZA": { flag: "\u{1F1FF}\u{1F1E6}", label: "South African" },
+    "en-IN": { flag: "\u{1F1EE}\u{1F1F3}", label: "Indian" },
+    "en-SC": { flag: "\u{1F1EC}\u{1F1E7}", label: "Scottish" },
+  };
+  const regionOrder = ["en-NZ", "en-AU", "en-GB", "en-US", "en-IE", "en-ZA", "en-IN", "en-SC"];
+
+  function formatVoiceName(v) {
+    const r = voiceRegions[v.lang] || { flag: "\u{1F310}", label: "English" };
+    let name = v.name.replace(/Google|Microsoft|Apple|com\.apple\.speech\.|com\.apple\.voice\./gi, "").trim();
+    name = name.replace(/\(.*?\)/g, "").trim();
+    const gender = /female|woman|fiona|karen|moira|samantha|tessa|veena|victoria|kate|serena/i.test(v.name) ? "Female" :
+                   /male|man|daniel|alex|lee|rishi|oliver|aaron|gordon|thomas/i.test(v.name) ? "Male" : "";
+    const quality = /enhanced|premium/i.test(v.name) ? " ★" : "";
+    return `${r.flag} ${r.label} - ${name}${gender ? " (" + gender + ")" : ""}${quality}`;
+  }
+
+  const groupedVoices = useMemo(() => {
+    const groups = {};
+    voices.forEach(v => {
+      const key = v.lang || "en";
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(v);
+    });
+    const sorted = [];
+    regionOrder.forEach(r => { if (groups[r]) { sorted.push({ region: r, voices: groups[r] }); delete groups[r]; } });
+    Object.keys(groups).forEach(r => sorted.push({ region: r, voices: groups[r] }));
+    return sorted;
+  }, [voices]);
+
   useEffect(() => {
     function pickBest(list) {
       const en = list.filter(v => v.lang.startsWith("en"));
@@ -1073,14 +1108,6 @@ export default function App() {
               </div>
             ))}
 
-            {selection && (
-              <div className="simplify-float">
-                <button className="btn btn-primary" onClick={handleSimplify} disabled={loading}>
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1l1.8 3.6L14 5.6l-3 2.9.7 4.1L8 10.5l-3.7 2.1.7-4.1-3-2.9 4.2-.6L8 1z" fill="#fff" opacity=".9"/></svg>
-                  {loading ? "Simplifying…" : "Simplify this selection"}
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </>
@@ -1236,7 +1263,7 @@ export default function App() {
           margin: 14px; background: var(--panel-doc);
         }
         .doc-toolbar {
-          display: flex; align-items: center; gap: 4px;
+          display: flex; align-items: center; justify-content: center; gap: 4px;
           padding: 10px 14px; border-bottom: 1px solid var(--border);
           background: rgba(255,255,255,.6); flex-shrink: 0; flex-wrap: wrap;
         }
@@ -1333,7 +1360,7 @@ export default function App() {
           height: 30px; border-radius: 999px; border: 1.5px solid var(--border);
           background: var(--surface); color: var(--text);
           padding: 0 10px; font: inherit; font-size: 12px; cursor: pointer;
-          max-width: 120px;
+          max-width: 220px;
         }
 
         /* Simplified area */
@@ -1602,7 +1629,8 @@ export default function App() {
         </div>
         <div className="main-nav-right">
           <a href="#" className="main-nav-login">Log in</a>
-          <button className="main-nav-cta" onClick={() => { reset(); setShowLanding(true); }}>Get started</button>
+          <button className="main-nav-cta" onClick={() => setShowReaderSettings(!showReaderSettings)}
+            style={showReaderSettings ? { background:'var(--accent)', opacity: 0.9 } : {}}>Reader support</button>
         </div>
       </nav>
 
@@ -1783,21 +1811,25 @@ export default function App() {
                       <button className="stop-btn" onClick={() => { window.speechSynthesis?.cancel(); setIsPlaying(false); setCurrentCharRange(null); }}>
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1" y="1" width="8" height="8" rx="1.5" fill="currentColor"/></svg>
                       </button>
-                      {voices.length > 0 && (
+                      {groupedVoices.length > 0 && (
                         <select className="voice-sel" value={voiceName} onChange={e => setVoiceName(e.target.value)}>
-                          {voices.map(v => <option key={v.name} value={v.name}>{v.name}</option>)}
+                          {groupedVoices.map(g => (
+                            <optgroup key={g.region} label={(voiceRegions[g.region]?.flag || "\u{1F310}") + " " + (voiceRegions[g.region]?.label || "English")}>
+                              {g.voices.map(v => <option key={v.name} value={v.name}>{formatVoiceName(v)}</option>)}
+                            </optgroup>
+                          ))}
                         </select>
                       )}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginLeft: 4 }}>
-                        <span style={{ fontSize: 11, color: 'var(--muted)', marginRight: 4 }}>Speed</span>
-                        {[0.5, 0.75, 1, 1.25].map(spd => (
-                          <button key={spd} className={`rs-option${audioSpeed === spd ? ' active' : ''}`}
-                            style={{ padding: '2px 8px', fontSize: 11, height: 24, minWidth: 0 }}
-                            onClick={() => setAudioSpeed(spd)}>
-                            {spd === 1 ? '1x' : spd + 'x'}
-                          </button>
-                        ))}
-                      </div>
+                    </div>
+                    <div className="listen-inline no-print" style={{ marginTop: 4 }}>
+                      <span style={{ fontSize: 11, color: 'var(--muted)', marginRight: 6 }}>Speed</span>
+                      {[0.5, 0.75, 1, 1.25].map(spd => (
+                        <button key={spd} className={`rs-option${audioSpeed === spd ? ' active' : ''}`}
+                          style={{ padding: '2px 8px', fontSize: 11, height: 24, minWidth: 0 }}
+                          onClick={() => setAudioSpeed(spd)}>
+                          {spd === 1 ? '1x' : spd + 'x'}
+                        </button>
+                      ))}
                     </div>
 
                     {/* Inner box — plain-English text */}
