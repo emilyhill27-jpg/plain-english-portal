@@ -429,8 +429,8 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
             <a href="#how">How it works</a>
             <a href="#school">For schools</a>
             <a href="/organisations.html">For organisations</a>
-            <a href="#pricing">Pricing</a>
-            <a href="#resources">Resources ▾</a>
+            <a href="#technology">Technology</a>
+            <a href="#about">About us</a>
           </div>
           <div className="pl-nav-right">
             <button className={`pl-reader-btn${showReaderSettings ? ' active' : ''}`}
@@ -1624,8 +1624,8 @@ export default function App() {
           <a href="#how">How it works</a>
           <a href="#schools">For schools</a>
           <a href="/organisations.html">For organisations</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#resources">Resources</a>
+          <a href="#technology">Technology</a>
+          <a href="#about">About us</a>
         </div>
         <div className="main-nav-right">
           <a href="#" className="main-nav-login">Log in</a>
