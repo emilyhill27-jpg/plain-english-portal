@@ -37,10 +37,14 @@ body {
   font-family: var(--font);
   background: var(--bg);
   color: var(--text);
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 18px;
+  line-height: 1.7;
   -webkit-font-smoothing: antialiased;
 }
+body.size-standard { font-size: 18px; }
+body.size-medium { font-size: 20px; }
+body.size-large { font-size: 22px; }
+body.size-extra-large { font-size: 24px; }
 
 /* ── NAV ── */
 nav {
@@ -159,7 +163,7 @@ blockquote.act-quote::after {
   font-size: 20px; flex-shrink: 0; margin-top: 2px;
 }
 .repeal-notice p {
-  font-size: 15px; color: var(--text-mid); line-height: 1.65;
+  font-size: 1em; color: var(--text-mid); line-height: 1.65;
 }
 .repeal-notice strong { color: var(--text); }
 .repeal-notice em { font-style: italic; color: var(--text-soft); }
@@ -269,7 +273,7 @@ blockquote.act-quote::after {
   letter-spacing: -0.03em;
 }
 .proof-num span { font-size: 28px; font-weight: 600; }
-.proof-desc { font-size: 13px; color: var(--text-soft); line-height: 1.5; }
+.proof-desc { font-size: 0.9em; color: var(--text-soft); line-height: 1.6; }
 
 /* ── SECTIONS ── */
 .section { padding: 72px 48px; }
@@ -303,8 +307,8 @@ h2.display em {
 .section-dark h2.display em { color: #a78bfa; }
 
 .lead {
-  font-size: 18px; color: var(--text-mid);
-  line-height: 1.65; max-width: 580px;
+  font-size: 1.1em; color: var(--text-mid);
+  line-height: 1.7; max-width: 620px;
   margin-bottom: 44px;
 }
 .section-dark .lead { color: rgba(255,255,255,0.65); }
@@ -333,7 +337,7 @@ h2.display em {
   font-size: 20px; font-weight: 600;
   color: var(--text); margin-bottom: 12px; line-height: 1.3;
 }
-.prop p { font-size: 15px; color: var(--text-mid); line-height: 1.65; }
+.prop p { font-size: 1em; color: var(--text-mid); line-height: 1.65; }
 
 /* ── HOW IT WORKS ── */
 .steps {
@@ -352,7 +356,7 @@ h2.display em {
   font-size: 20px; font-weight: 600;
   color: white; margin-bottom: 12px; line-height: 1.3;
 }
-.steps p { font-size: 15px; color: rgba(255,255,255,0.65); line-height: 1.65; }
+.steps p { font-size: 1em; color: rgba(255,255,255,0.65); line-height: 1.65; }
 
 /* ── WHO IT'S FOR ── */
 .clients-grid {
@@ -374,7 +378,7 @@ h2.display em {
   font-size: 17px; font-weight: 600;
   color: var(--text); margin-bottom: 10px; line-height: 1.3;
 }
-.client p { font-size: 14px; color: var(--text-mid); line-height: 1.6; }
+.client p { font-size: 1em; color: var(--text-mid); line-height: 1.65; }
 
 /* ── WHITE LABEL ── */
 .wl-split {
@@ -426,7 +430,7 @@ h2.display em {
 .wl-list { list-style: none; display: flex; flex-direction: column; gap: 16px; }
 .wl-list li {
   display: flex; gap: 12px; align-items: flex-start;
-  font-size: 16px; color: var(--text-mid); line-height: 1.5;
+  font-size: 1em; color: var(--text-mid); line-height: 1.65;
 }
 .wl-check {
   width: 22px; height: 22px; flex-shrink: 0;
@@ -471,8 +475,8 @@ h2.display em {
 .price-card.featured .price-per { color: rgba(255,255,255,0.55); }
 .price-features { list-style: none; display: flex; flex-direction: column; gap: 11px; }
 .price-features li {
-  font-size: 14px; color: var(--text-mid);
-  display: flex; gap: 10px; align-items: flex-start; line-height: 1.4;
+  font-size: 1em; color: var(--text-mid);
+  display: flex; gap: 10px; align-items: flex-start; line-height: 1.6;
 }
 .price-card.featured .price-features li { color: rgba(255,255,255,0.8); }
 .price-features li::before {
@@ -523,7 +527,7 @@ footer {
   letter-spacing: -0.02em;
 }
 .footer-logo span { color: #a78bfa; }
-footer p { font-size: 13px; }
+footer p { font-size: 0.85em; }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
@@ -548,6 +552,30 @@ footer p { font-size: 13px; }
   .proof-bar { grid-template-columns: 1fr 1fr; }
   .hero-actions { flex-direction: column; align-items: flex-start; }
 }
+
+/* ── READER SUPPORT BAR ── */
+.reader-bar {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 12px 48px;
+  background: var(--purple-pale);
+  border-bottom: 1.5px solid #DDD5F0;
+}
+.reader-bar.hidden { display: none; }
+.rs-label {
+  font-size: 0.75em; font-weight: 600; color: var(--text-soft);
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.rs-options { display: flex; gap: 4px; }
+.rs-option {
+  padding: 6px 12px; border-radius: 20px; border: 1.5px solid var(--border);
+  background: white; color: var(--text); font-size: 0.8em; font-weight: 500;
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.rs-option:hover { border-color: var(--purple); color: var(--purple); }
+.rs-option.active { background: var(--purple); color: white; border-color: var(--purple); }
+@media (max-width: 900px) {
+  .reader-bar { padding: 12px 20px; }
+}
 </style>
 </head>
 <body>
@@ -560,17 +588,41 @@ footer p { font-size: 13px; }
 
 <!-- NAV -->
 <nav>
-  <a href="/" class="nav-logo">Plain<span>ly</span></a>
+  <a href="/" class="nav-logo"><img src="/logo-plainly.png" alt="Plainly" style="height: 28px; display: block;"></a>
   <div class="nav-links">
-    <a href="#how">How it works</a>
-    <a href="#who">Who it's for</a>
-    <a href="#pricing">Pricing</a>
+    <a href="/">Home</a>
+    <a href="/#how">How it works</a>
+    <a href="/organisations.html" class="active">For organisations</a>
+    <a href="/#technology">Technology</a>
+    <a href="/#about">About us</a>
   </div>
   <div class="nav-right">
-    <a href="/" class="nav-home">← Back to app</a>
-    <a href="#contact" class="nav-cta">Book a demo →</a>
+    <button class="nav-cta" id="reader-toggle" onclick="document.getElementById('reader-bar').classList.toggle('hidden')">Reader support</button>
   </div>
 </nav>
+
+<!-- READER SUPPORT BAR -->
+<div id="reader-bar" class="reader-bar hidden">
+  <span class="rs-label">Text size</span>
+  <div class="rs-options">
+    <button class="rs-option active" onclick="setSize('standard')">Aa</button>
+    <button class="rs-option" onclick="setSize('medium')">Aa</button>
+    <button class="rs-option" onclick="setSize('large')">Aa</button>
+    <button class="rs-option" onclick="setSize('extra-large')">Aa</button>
+  </div>
+  <span class="rs-label">Font</span>
+  <div class="rs-options">
+    <button class="rs-option active" onclick="setFont('lexend')">Lexend</button>
+    <button class="rs-option" onclick="setFont('opensans')" style="font-family:'Open Sans',sans-serif">Open Sans</button>
+    <button class="rs-option" onclick="setFont('comic')" style="font-family:'Comic Sans MS',cursive">Comic Sans</button>
+  </div>
+  <span class="rs-label">Spacing</span>
+  <div class="rs-options">
+    <button class="rs-option active" onclick="setSpacing('normal')">1x</button>
+    <button class="rs-option" onclick="setSpacing('relaxed')">1.5x</button>
+    <button class="rs-option" onclick="setSpacing('loose')">2x</button>
+  </div>
+</div>
 
 <!-- LEGISLATION BLOCK -->
 <div class="legislation-block" id="legislation">
@@ -845,5 +897,31 @@ footer p { font-size: 13px; }
   </div>
 </footer>
 
+<script>
+function setSize(size) {
+  document.body.className = document.body.className.replace(/size-\S+/g, '');
+  document.body.classList.add('size-' + size);
+  updateActive('.rs-options:nth-of-type(1)', size, ['standard','medium','large','extra-large']);
+}
+function setFont(font) {
+  const fonts = { lexend: "'Lexend','Open Sans',sans-serif", opensans: "'Open Sans',sans-serif", comic: "'Comic Sans MS',cursive,sans-serif" };
+  document.body.style.fontFamily = fonts[font] || fonts.lexend;
+  updateActive('.rs-options:nth-of-type(2)', font, ['lexend','opensans','comic']);
+}
+function setSpacing(spacing) {
+  const vals = { normal: '1.7', relaxed: '2.2', loose: '2.8' };
+  document.body.style.lineHeight = vals[spacing] || vals.normal;
+  updateActive('.rs-options:nth-of-type(3)', spacing, ['normal','relaxed','loose']);
+}
+function updateActive(selector, active, options) {
+  const bar = document.getElementById('reader-bar');
+  const groups = bar.querySelectorAll('.rs-options');
+  const idx = selector.includes('1') ? 0 : selector.includes('2') ? 1 : 2;
+  const btns = groups[idx]?.querySelectorAll('.rs-option');
+  if (!btns) return;
+  const activeIdx = options.indexOf(active);
+  btns.forEach((b, i) => b.classList.toggle('active', i === activeIdx));
+}
+</script>
 </body>
 </html>

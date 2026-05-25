@@ -429,7 +429,7 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
             <a href="#how">How it works</a>
             <a href="#school">For schools</a>
             <a href="/organisations.html">For organisations</a>
-            <a href="#technology">Technology</a>
+            <a href="/technology.html">Technology</a>
             <a href="#about">About us</a>
           </div>
           <div className="pl-nav-right">
@@ -717,6 +717,8 @@ export default function App() {
     function pickBest(list) {
       const en = list.filter(v => v.lang.startsWith("en"));
       const tests = [
+        v => /google us english/i.test(v.name) && /female/i.test(v.name),
+        v => v.lang === "en-US" && /google/i.test(v.name) && /female/i.test(v.name),
         v => v.lang === "en-NZ",
         v => v.lang === "en-AU" && /enhanced|premium|siri/i.test(v.name),
         v => v.lang === "en-AU",
@@ -1624,7 +1626,7 @@ export default function App() {
           <a href="#how">How it works</a>
           <a href="#schools">For schools</a>
           <a href="/organisations.html">For organisations</a>
-          <a href="#technology">Technology</a>
+          <a href="/technology.html">Technology</a>
           <a href="#about">About us</a>
         </div>
         <div className="main-nav-right">
