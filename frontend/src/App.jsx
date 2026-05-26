@@ -7,8 +7,8 @@ function clamp(v, lo, hi) { return Math.min(Math.max(v, lo), hi); }
 
 /* ─── Design tokens — purple / lavender palette ─── */
 const T = {
-  purple:      "#8c52ff",
-  purpleHover: "#7a3ef0",
+  purple:      "#7c3aed",
+  purpleHover: "#6d28d9",
   purpleLight: "#EDE9FE",
   purplePale:  "#F5F3FF",
   pink:        "#EC4899",
@@ -191,7 +191,7 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
         }
         .pl-demo-panel-label {
           font-size: 9px; font-weight: 700; text-transform: uppercase;
-          letter-spacing: 0.06em; color: #9291A0;
+          letter-spacing: 0.06em; color: #4a4560;
         }
         .pl-demo-page {
           background: white;
@@ -204,7 +204,7 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
           font-size: 10px; line-height: 1.5; color: #374151;
           margin-bottom: 6px; font-family: Georgia, serif;
         }
-        .pl-demo-doc-faded { color: #9CA3AF; }
+        .pl-demo-doc-faded { color: #6b7280; }
         .pl-demo-highlight-box {
           background: rgba(250,204,21,0.28);
           border: 1.5px solid #CA8A04;
@@ -481,6 +481,8 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
           </div>
         )}
 
+        {/* Main content */}
+        <main>
         {/* Hero */}
         <div className="pl-hero-outer">
         <section className="pl-hero">
@@ -588,6 +590,8 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
             </div>
           </div>
         </section>
+
+        </main>
 
         {/* Footer */}
         <footer className="pl-footer">
@@ -1831,6 +1835,7 @@ export default function App() {
       )}
 
       {/* PAGE */}
+      <main>
       <div className="page-pad">
         <div className="outer-shell">
 
@@ -2209,6 +2214,7 @@ export default function App() {
 
         </div>
       </div>
+      </main>
 
       <div className="print-warning">This is a personal helper note only — do not submit this to any agency.</div>
     </div>
