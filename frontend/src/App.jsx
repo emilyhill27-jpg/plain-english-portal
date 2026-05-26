@@ -624,12 +624,13 @@ export default function App() {
   const [readingAge, setReadingAge] = useState("7-8");
   const [readingLevel, setReadingLevel] = useState(3);
 
-  // translate mode
+  // translate
   const [translateLangs, setTranslateLangs] = useState([]);
   const [targetLang, setTargetLang]         = useState("");
   const [translateResult, setTranslateResult] = useState(null);
+  const [showTranslatePanel, setShowTranslatePanel] = useState(false);
 
-  // form explainer mode
+  // form explainer
   const [formExplainResult, setFormExplainResult] = useState(null);
 
   // controls
@@ -882,9 +883,9 @@ export default function App() {
     });
   }
 
-  // Auto-simplify as soon as a box is drawn (not in translate mode)
+  // Auto-simplify as soon as a box is drawn
   useEffect(() => {
-    if (selection && file && !loading && docMode !== "translate") {
+    if (selection && file && !loading) {
       cropSelectionToBlob().then(blob => {
         setCropPreviewUrl(prev => { if (prev) URL.revokeObjectURL(prev); return URL.createObjectURL(blob); });
       }).catch(() => {});
@@ -893,9 +894,9 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selection]);
 
-  // Fetch available languages for translate mode
+  // Fetch available languages for translate
   useEffect(() => {
-    if (docMode === "translate" && translateLangs.length === 0) {
+    if (file && translateLangs.length === 0) {
       fetch(`${API_BASE}/api/v1/translate/languages`)
         .then(r => r.json())
         .then(d => {
@@ -905,7 +906,7 @@ export default function App() {
         .catch(() => {});
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [docMode]);
+  }, [file]);
 
   // Translate worksheet
   async function handleTranslate() {
@@ -957,7 +958,7 @@ export default function App() {
         fd.append("file", file);
         fd.append("page_num", String(dragPageIdx + 1));
       }
-      const profile = docMode === "school" ? `school_${readingAge}` : docMode === "form_explainer" ? "form_explainer" : docMode;
+      const profile = "general";
       fd.append("audience_profile", profile);
       const res = await fetch(`${API_BASE}/api/simplify`, { method: "POST", body: fd });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || `Error ${res.status}`);
@@ -1576,7 +1577,43 @@ export default function App() {
           margin-bottom: 20px; font-size: 14px; line-height: 1.6; color: var(--text);
         }
 
-        /* (mode bar and translate bar removed — single universal mode) */
+        /* Tool buttons */
+        .tool-buttons {
+          display: flex; flex-direction: column; gap: 10px;
+          margin-top: 16px; padding: 0 16px;
+        }
+        .tool-btn {
+          display: flex; align-items: center; gap: 14px;
+          padding: 16px 20px;
+          background: white;
+          border: 1.5px solid var(--border);
+          border-radius: var(--r-md);
+          cursor: pointer;
+          font-family: inherit;
+          text-align: left;
+          transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .tool-btn:hover:not(:disabled) { border-color: var(--accent); box-shadow: 0 2px 8px rgba(140,82,255,0.1); }
+        .tool-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .tool-btn-icon { font-size: 24px; flex-shrink: 0; }
+        .tool-btn-text { display: flex; flex-direction: column; gap: 2px; }
+        .tool-btn-text strong { font-size: 15px; font-weight: 600; color: var(--text); }
+        .tool-btn-text span { font-size: 13px; color: var(--muted); line-height: 1.4; }
+        .translate-picker {
+          display: flex; align-items: center; gap: 10px;
+          margin-top: 12px; padding: 12px 16px;
+          background: var(--accent-soft); border-radius: var(--r-md);
+        }
+        .translate-lang-select {
+          padding: 8px 14px; border: 1.5px solid var(--border); border-radius: 999px;
+          font-size: 14px; font-family: inherit; color: var(--text);
+          background: white; cursor: pointer; min-width: 180px; flex: 1;
+        }
+        .translate-lang-select:focus { outline: none; border-color: var(--accent); }
+        @media (max-width: 900px) {
+          .tool-buttons { padding: 0 8px; }
+          .tool-btn { padding: 12px 14px; gap: 10px; }
+        }
         .age-selector {
           display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
           padding: 12px; background: var(--accent-soft); border-radius: var(--r-md);
@@ -2104,30 +2141,17 @@ export default function App() {
                   </div>
                 ) : !file ? (
                   <div className="empty-result">
-                    <div className="empty-result-icon">{docMode === "translate" ? "🌍" : "📝"}</div>
+                    <div className="empty-result-icon">📝</div>
                     <p style={{ fontFamily:'var(--font-h)', fontSize:18, fontWeight:600, color:'var(--text)', marginBottom:8 }}>
-                      {docMode === "translate" ? "Your translated worksheet will appear here." : "Your plain-English version will appear here."}
+                      Your plain-English version will appear here.
                     </p>
                     <p style={{ fontSize:14, color:'var(--muted)', marginTop:8 }}>
-                      {docMode === "translate"
-                        ? "Upload a worksheet, pick a language, and click Translate."
-                        : "Select the part of the document you want help with, then click Simplify."}
+                      Upload a document, then choose what you want to do with it.
                     </p>
-                    {docMode !== "translate" && (
-                      <div style={{ marginTop:24, display:'flex', flexDirection:'column', gap:8, fontSize:14, color:'var(--muted)' }}>
-                        <span>✅ We use clear, everyday language.</span>
-                        <span>✅ We keep the meaning the same.</span>
-                        <span>✅ You stay in control.</span>
-                      </div>
-                    )}
-                  </div>
-                ) : docMode === "translate" ? (
-                  <div className="instruction-box-wrap">
-                    <div className="instruction-box">
-                      <div className="instruction-box-icon">🌍</div>
-                      <p className="instruction-box-text">
-                        {loading ? "Translating your worksheet..." : "Pick a language above and click \"Translate this page\" to get started."}
-                      </p>
+                    <div style={{ marginTop:24, display:'flex', flexDirection:'column', gap:8, fontSize:14, color:'var(--muted)' }}>
+                      <span>✅ We use clear, everyday language.</span>
+                      <span>✅ We keep the meaning the same.</span>
+                      <span>✅ You stay in control.</span>
                     </div>
                   </div>
                 ) : (
@@ -2135,20 +2159,47 @@ export default function App() {
                     <div className="instruction-box">
                       <div className="instruction-box-icon">✏️</div>
                       <p className="instruction-box-text">
-                        {isPdf && pages.length > 0 && !selection
-                          ? "Draw a box around the text you want to simplify."
-                          : selection
-                            ? "Ready to simplify your selection."
-                            : "Draw a box around the text you want to simplify."}
+                        {loading ? "Working on it…"
+                          : selection ? "Ready. Choose what to do with your selection."
+                          : "Draw a box around the section you want help with — or use a full-page tool below."}
                       </p>
-                      {file && (!isPdf || selection) && !result && (
-                        <button className="btn btn-primary" style={{ height:48, fontSize:15, padding:'0 32px' }}
-                          onClick={handleSimplify} disabled={loading}>
-                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1l1.8 3.6L14 5.6l-3 2.9.7 4.1L8 10.5l-3.7 2.1.7-4.1-3-2.9 4.2-.6L8 1z" fill="#fff" opacity=".9"/></svg>
-                          {loading ? "Simplifying…" : "Simplify this section"}
+                    </div>
+                    <div className="tool-buttons no-print">
+                      {file && (!isPdf || selection) && (
+                        <button className="tool-btn tool-btn-simplify" onClick={handleSimplify} disabled={loading}>
+                          <span className="tool-btn-icon">✨</span>
+                          <span className="tool-btn-text">
+                            <strong>Simplify</strong>
+                            <span>Convert selection to plain English</span>
+                          </span>
                         </button>
                       )}
+                      <button className="tool-btn tool-btn-explain" onClick={handleFormExplain} disabled={loading}>
+                        <span className="tool-btn-icon">📋</span>
+                        <span className="tool-btn-text">
+                          <strong>Explain this form</strong>
+                          <span>Every field explained — what to write and where to find it</span>
+                        </span>
+                      </button>
+                      <button className="tool-btn tool-btn-translate" onClick={() => setShowTranslatePanel(true)} disabled={loading}>
+                        <span className="tool-btn-icon">🌍</span>
+                        <span className="tool-btn-text">
+                          <strong>Translate</strong>
+                          <span>Translate this page into another language</span>
+                        </span>
+                      </button>
                     </div>
+                    {showTranslatePanel && (
+                      <div className="translate-picker no-print">
+                        <select className="translate-lang-select" value={targetLang} onChange={e => setTargetLang(e.target.value)}>
+                          {translateLangs.map(lang => <option key={lang} value={lang}>{lang}</option>)}
+                        </select>
+                        <button className="btn btn-primary" style={{ height: 40, fontSize: 14, padding: '0 20px' }}
+                          onClick={handleTranslate} disabled={loading || !targetLang}>
+                          {loading ? "Translating…" : "Go"}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
