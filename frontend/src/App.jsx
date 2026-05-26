@@ -1576,54 +1576,7 @@ export default function App() {
           margin-bottom: 20px; font-size: 14px; line-height: 1.6; color: var(--text);
         }
 
-        /* Mode bar */
-        .mode-bar {
-          display: flex; align-items: center; gap: 12px;
-          padding: 10px 48px;
-          background: white;
-          border-bottom: 1.5px solid var(--border);
-        }
-        .mode-bar-label {
-          font-size: 12px; font-weight: 600; color: var(--muted);
-          text-transform: uppercase; letter-spacing: 0.08em;
-          flex-shrink: 0;
-        }
-        .mode-toggle { display: flex; gap: 2px; background: rgba(240,235,248,.5); padding: 3px; border-radius: 999px; }
-        .mode-btn {
-          padding: 8px 16px; background: transparent; color: var(--muted);
-          border: none; font-size: 13px; font-weight: 500;
-          cursor: pointer; border-radius: 999px; transition: all 0.15s; font-family: inherit;
-          white-space: nowrap;
-        }
-        .mode-btn:hover:not(.mode-active) { background: white; color: var(--text); }
-        .mode-active { background: var(--accent) !important; color: white !important; }
-        @media (max-width: 900px) {
-          .mode-bar { padding: 10px 16px; gap: 8px; flex-wrap: wrap; }
-          .mode-btn { padding: 6px 10px; font-size: 12px; }
-        }
-        .translate-bar {
-          display: flex; align-items: center; gap: 12px;
-          padding: 10px 48px;
-          background: #F5F3FF;
-          border-bottom: 1.5px solid var(--border);
-        }
-        .translate-lang-select {
-          padding: 8px 14px; border: 1.5px solid var(--border); border-radius: 999px;
-          font-size: 14px; font-family: inherit; color: var(--text);
-          background: white; cursor: pointer; min-width: 180px;
-        }
-        .translate-lang-select:focus { outline: none; border-color: var(--accent); }
-        .translate-go-btn {
-          padding: 10px 24px; background: var(--accent); color: white;
-          border: none; border-radius: 999px; font-size: 14px; font-weight: 600;
-          font-family: inherit; cursor: pointer; transition: background 0.2s;
-          white-space: nowrap;
-        }
-        .translate-go-btn:hover:not(:disabled) { background: #7a3ef0; }
-        .translate-go-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        @media (max-width: 900px) {
-          .translate-bar { padding: 10px 16px; flex-wrap: wrap; }
-        }
+        /* (mode bar and translate bar removed — single universal mode) */
         .age-selector {
           display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
           padding: 12px; background: var(--accent-soft); border-radius: var(--r-md);
@@ -1718,16 +1671,22 @@ export default function App() {
         }
         @media print {
           .no-print { display: none !important; }
-          .doc-panel, .shell-divider { display: none !important; }
-          .outer-shell { display: block; }
-          .result-panel { width: 100%; background: white; overflow: visible; }
           .app-shell { height: auto; }
-          .print-warning { display: block !important; border: 2px dashed red; padding: 10px; color: red; font-weight: 700; }
-          /* Translate mode: show original + translation side by side */
-          .translate-print-layout { display: flex !important; gap: 20px; page-break-inside: avoid; margin: 0 -8px; }
-          .translate-print-original { flex: 1; border: 1px solid #ccc; border-radius: 4px; padding: 8px; background: #fafafa; }
-          .translate-print-original img { width: 100%; height: auto; display: block; }
-          .translate-print-translated { flex: 1; padding-top: 4px; }
+          .outer-shell { display: flex; }
+          .doc-panel {
+            flex: 1; overflow: visible; max-height: none;
+            border: 1px solid #ddd; border-radius: 4px;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+          }
+          .doc-panel img { width: 100% !important; height: auto !important; display: block; }
+          .doc-panel .doc-toolbar { display: none !important; }
+          .doc-panel .thumb-sidebar { display: none !important; }
+          .shell-divider { display: block; width: 1px; background: #ddd; flex-shrink: 0; margin: 0 8px; }
+          .result-panel {
+            flex: 1; overflow: visible; max-height: none;
+            background: white;
+          }
+          .result-scroll { overflow: visible; max-height: none; }
           .bubble-label { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
         .print-warning { display: none; }
@@ -1831,48 +1790,6 @@ export default function App() {
             setReaderTextSize('standard'); setReaderLineSpacing('standard');
             setReaderFont('lexend'); setReaderBgTint('cream');
           }}>↻ Reset</button>
-        </div>
-      )}
-
-      {/* MODE TOGGLE */}
-      {file && (
-        <div className="mode-bar no-print">
-          <span className="mode-bar-label">Mode</span>
-          <div className="mode-toggle">
-            {[
-              ["general", "General"],
-              ["business_plan", "Business Plan"],
-              ["school", "School"],
-              ["form_explainer", "Form Explainer"],
-              ["translate", "Translate"],
-            ].map(([key, label]) => (
-              <button key={key} className={`mode-btn${docMode === key ? ' mode-active' : ''}`}
-                onClick={() => { setDocMode(key); setResult(null); setTranslateResult(null); }}>{label}</button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* TRANSLATE: language picker + translate button */}
-      {file && docMode === "translate" && (
-        <div className="translate-bar no-print">
-          <span className="mode-bar-label">Translate to</span>
-          <select
-            className="translate-lang-select"
-            value={targetLang}
-            onChange={e => setTargetLang(e.target.value)}
-          >
-            {translateLangs.map(lang => (
-              <option key={lang} value={lang}>{lang}</option>
-            ))}
-          </select>
-          <button
-            className="translate-go-btn"
-            onClick={handleTranslate}
-            disabled={loading || !targetLang}
-          >
-            {loading ? "Translating..." : "Translate this page"}
-          </button>
         </div>
       )}
 
@@ -2062,7 +1979,7 @@ export default function App() {
                     {/* Plain-English version label */}
                     <div className="bubble-label">
                       <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.6 3.2L12 5l-2.6 2.5.6 3.7L7 9.5l-3 1.7.6-3.7L2 5l3.4-.8L7 1z" fill="#fff" opacity=".9"/></svg>
-                      {docMode === "form_explainer" ? "Form Explainer — field by field" : "Plain-English version"}
+                      Plain-English version
                     </div>
 
                     {/* Listen controls — inline under label */}
@@ -2102,7 +2019,7 @@ export default function App() {
                     {/* Inner box — plain-English text */}
                     <div className="plain-english-box">
                       <div className="result-section">
-                        <h2 className="r-h">{docMode === "form_explainer" ? "Every field explained" : "What this is about"}</h2>
+                        <h2 className="r-h">What this is about</h2>
                         <div className="r-p">
                           {renderClickableWords(result.simplified_text, simpSection?.offset ?? 0)}
                         </div>
@@ -2160,7 +2077,7 @@ export default function App() {
                     {/* Checklist — at bottom */}
                     {result?.checklist?.length > 0 && (
                       <div className="result-section">
-                        <h2 className="r-h">{docMode === "form_explainer" ? "What to gather before you start" : "What you need to do"}</h2>
+                        <h2 className="r-h">What you need to do</h2>
                         <div className="checklist-box">
                           <ul className="chk-list">
                             {result.checklist.map((item, i) => (
@@ -2181,7 +2098,7 @@ export default function App() {
                     {/* Print — at very bottom */}
                     <div className="bottom-actions no-print">
                       <button className="action-btn" onClick={() => window.print()}>
-                        <span className="action-btn-icon">🖨️</span> Print plain-English support copy
+                        <span className="action-btn-icon">🖨️</span> Print side by side — form + explanation
                       </button>
                     </div>
                   </div>
