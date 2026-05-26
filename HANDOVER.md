@@ -49,7 +49,7 @@ Built from lived experience — Emily's entire family struggles with complex pap
 
 ---
 
-## Design Language — Current (as of 25 May 2026)
+## Design Language — Current (as of 26 May 2026)
 
 Purple / lavender palette with rounded corners:
 
@@ -70,48 +70,72 @@ Purple / lavender palette with rounded corners:
 ## Current State — What Is Built and Working
 
 ### Landing page
-- Nav bar: Plainly logo, Home, How it works, For schools, Pricing, Resources, Reader settings button, Log in, Get started
-- Hero section: gradient background (lavender/pink/yellow), badge "Free · No sign-up · No data stored", headline "Any document. Plain and simple.", subtitle, CTA button, trust badges
+- Nav bar: Plainly logo, Home, How it works, For organisations, Technology, About us, Reader support button
+- Hero section: gradient background (lavender/pink/yellow), badge, headline, CTA button, trust badges
 - Demo card: mini split-view showing a tenancy agreement clause on the left and plain English version on the right
 - Feature cards (4): Simplify documents, Made for students and schools, Accessible for everyone, Safe supportive and private
-- CTA section: "Because everyone deserves to feel in the loop"
-- Footer: privacy messaging
-- Reader settings bar: text size (4 options), font (Lexend/Open Sans/Arial), spacing (3 options), background tint (cream/blue/lilac/grey), reset button — settings now actually work on landing page text
+- CTA section
+- Footer
+- Reader settings bar: text size (4 options), font (Lexend/Open Sans/Comic Sans), spacing (3 options)
 
-### B2B landing page (`frontend/public/b2b.html`)
-- Standalone HTML served at `/b2b.html`
-- Pricing: Starter $299/mo · Organisation $699/mo · Enterprise custom
+### Organisations page (`frontend/public/organisations.html`)
+- Standalone HTML page, full purple/Lexend design with reader support toolbar
+- **Sections in order:**
+  1. Hero: "Because everyone deserves to understand what they're reading"
+  2. Plain language built in Aotearoa (standards bar + proof bar with NZ stats)
+  3. Plain Language Act (legislation block with repeal notice)
+  4. Who it's built for (6 cards: govt, schools, health, community, legal, HR)
+  5. What we solve (3 value props: reduce calls, meet standards, include everyone)
+  6. How it works (3 steps: branding, deploy, users get plain language)
+  7. White-label (split layout with demo mockup)
+  8. Pricing ($299/$699/custom)
+  9. CTA + Footer
+
+### Technology page (`frontend/public/technology.html`)
+- Standalone HTML page, full purple/Lexend design with reader support toolbar
+- Hero: "Built for real accessibility. Not just compliance."
+- Features section with cards:
+  - Text to speech (featured full-width card with visual demo of play/stop/speed/highlighting)
+  - Side-by-side translation (featured full-width card with split-pane mockup)
+  - Personalised reading level
+  - WCAG and neuroinclusive reading toolbar
+- Neuroinclusive design section (dark background): TTS, visual comfort, structure/spacing
+- Anthropic AI badge
+- CTA + Footer
 
 ### App page (the two-panel tool)
-- Top nav: Plainly logo (links home), nav links, Reader settings button, Load new document button
-- Progress steps: Upload → Settings → Result
-- Reader settings bar: same as landing page, works on result text
+- Top nav: Plainly logo, nav links (Home, How it works, For organisations, Technology, About us), Reader support button, Load new document button
+- Reader settings bar: text size, font, spacing
 - **Left panel (document):**
   - PDF and image upload (drag & drop or browse)
   - Multi-page PDF with thumbnail sidebar
-  - Zoom controls and page navigation
-  - Rubber-band drag-to-select any region on the document
+  - Zoom controls and page navigation (centred)
+  - Rubber-band drag-to-select any region
   - Auto-simplifies when selection is drawn
 - **Right panel (result):**
   - Reading support card (collapsible): year level slider, reading level slider
-  - Crop preview: shows what you selected from the document
-  - "Plain-English version" label
-  - Listen controls: play/pause, stop, voice selector, speed control (0.5x/0.75x/1x/1.25x)
-  - Simplified text with clickable words (click to play from that word, current word highlighted yellow)
-  - Important details: deadlines, amounts, documents needed (with icons)
+  - Crop preview
+  - Listen controls: play/pause, stop, voice selector (grouped by region with flags), speed control (0.5x/0.75x/1x/1.25x) on its own row
+  - Default voice: Google US English Female
+  - Simplified text with clickable words (click to play from that word, current word highlighted)
+  - Important details: deadlines, amounts, documents needed
   - Checklist: "What you need to do" with tickable checkboxes
-  - Prompts & examples (expandable)
   - Print button
-- Three document modes: General / Business Plan / School (with reading age)
-- Text-to-speech reads all sections (simplified text + important details + checklist) with Chrome keepalive fix
+- Five document modes: General / Business Plan / School (with reading age) / Form Explainer / Translate
+- **Worksheet Translator:** upload any worksheet, pick from 30 languages (te reo Māori, Samoan, Tongan, Mandarin, etc.), translates the full page preserving structure (headings, questions, instructions, blank lines). Shows original text underneath each translated section. Print button included. Backend endpoints: `POST /api/v1/translate-worksheet`, `GET /api/v1/translate/languages`
+
+### B2B landing page (`frontend/public/b2b.html`)
+- Old terracotta design — NOT current design. Needs updating or removing.
+- Pricing: Starter $299/mo, Organisation $699/mo, Enterprise custom
 
 ---
 
 ## Tech Stack
 
 - **Backend:** FastAPI + PyMuPDF (fitz) + Anthropic SDK → `app.py`
-- **Frontend:** React + Vite → `frontend/src/App.jsx`
+- **Frontend:** React + Vite → `frontend/src/App.jsx` (single-file, ~1900 lines)
 - **AI model:** Claude Sonnet 4.6 via vision API
+- **TTS:** Browser-native `speechSynthesis` — zero API cost
 - **API key:** `~/Desktop/plain-english/.env` → `ANTHROPIC_API_KEY`
 - **Deploy:** Render.com — `render.yaml` already configured, auto-deploys from GitHub on push to `main`
 - **GitHub:** `emilyhill27-jpg/plain-english-portal`
@@ -128,7 +152,7 @@ python3 -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 cd ~/Desktop/plain-english/frontend && npm run build
 ```
 
-**To deploy:** `git add frontend/src/App.jsx && git commit -m "..." && git push origin main`
+**To deploy:** `git add [files] && git commit -m "..." && git push origin main`
 Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 
 **Local address:** http://127.0.0.1:8000
@@ -143,7 +167,9 @@ Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 | `frontend/src/App.jsx` | Entire React UI — landing page + app page |
 | `.env` | ANTHROPIC_API_KEY |
 | `frontend/dist/` | Built frontend — rebuild after JSX changes |
-| `frontend/public/b2b.html` | B2B landing page (standalone) |
+| `frontend/public/organisations.html` | Organisations landing page (standalone) |
+| `frontend/public/technology.html` | Technology page (standalone) |
+| `frontend/public/b2b.html` | Old B2B page (terracotta design — outdated) |
 | `frontend/public/logo-plainly.png` | Site logo |
 | `HANDOVER.md` | This file — update at end of every session |
 | `CLAUDE.md` | Quick reference loaded into every conversation |
@@ -152,9 +178,14 @@ Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 
 ## Pending Tasks — IN ORDER, ONE AT A TIME
 
-1. **Business Plan prompt** — currently uses AI-generated WINZ criteria, not official. Could mislead vulnerable users. Fix before going public.
-2. **Domain** — check if tryplainly.co.nz is available
-3. **First paying customer** — approach one school, community org, or adviser. Don't wait for it to be perfect.
+1. **Usage tracking/analytics dashboard** — log metadata (doc count, pages, mode, reading level, timestamp) per org. No document content stored. This is what makes the product sticky and proves value to paying customers. Shows orgs which documents keep getting simplified (feedback loop).
+2. **Additional tools to build into the platform** — contract red-flagger (highlights risky clauses), worksheet leveller (rewrite at different year levels), policy compliance checker (readability score + rewrite suggestions), form explainer, parent letter writer. All use same Claude API backend.
+3. **Logo swap** — Emily has purple/black and purple/white Plainly logos in Google. Need to download and replace across all pages once available.
+4. **Business Plan prompt** — currently uses AI-generated WINZ criteria, not official. Fix with official criteria before going public.
+5. **Domain** — check if tryplainly.co.nz is available
+6. **First paying customer** — approach one school, community org, or adviser. Don't wait for it to be perfect.
+7. **About us page** — nav link exists (`#about`) but no page built yet.
+8. **Update b2b.html** — still has old terracotta design. Either update to purple/Lexend or remove (organisations.html now covers this).
 
 ---
 
@@ -169,3 +200,30 @@ Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 - Client-side canvas crop (not server-side — coordinate bugs)
 - No guiding questions — removed
 - One universal general prompt, not separate academic/government prompts
+- TTS uses browser-native speechSynthesis (zero API cost per use)
+- Nav tabs: Home, How it works, For organisations, Technology, About us (NO "Pricing" or "Resources" tabs)
+
+---
+
+## Business Strategy Thinking (26 May 2026)
+
+Emily identified three potential objections from customers and the answers:
+
+**"You don't store data — how do you track/bill?"**
+→ Store metadata only (doc count, pages, mode, timestamp). No content. Gives billing data + usage dashboard without touching their files.
+
+**"It's a plaster — you're not fixing the root cause"**
+→ Build a feedback loop: track which documents get simplified most. Show the org: "Your tenancy agreement was simplified 94 times this month." Now they know which docs are failing. Plainly fixes it now AND shows them what to rewrite. That's not a plaster — it's a diagnostic tool.
+
+**"Why not just use ChatGPT?"**
+→ ChatGPT doesn't give: neuroinclusive reading environment, TTS, reader support toolbar, white-label branding, usage tracking dashboard, feedback loop showing which docs are broken, WCAG compliance, or a tool the whole team can use without AI knowledge.
+
+**Feature expansion ideas (all use same Claude backend, zero extra infrastructure):**
+- Contract red-flagger (highlights risky clauses with plain-English explanation)
+- Worksheet leveller (same worksheet at multiple reading levels)
+- Policy compliance checker (readability score + rewrite suggestions)
+- Form explainer (explains every field in plain English)
+- Parent letter writer (bullet points → professional letter)
+- Meeting notes → action items
+
+These turn Plainly from a single tool into a toolbox — justifies the subscription and keeps people logging in daily.

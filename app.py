@@ -130,6 +130,41 @@ Only deadlines, dollar amounts, or required documents visible in THIS image.
 
 ⚠️ Never make up specific dollar amounts, local business names, or statistics — use clearly labelled placeholders like [your price] or [competitor name] if the person must fill these in themselves."""
 
+FORM_EXPLAINER_PROMPT = """You help people understand blank forms — government applications, school enrolment forms, ACC claims, tax forms, tenancy agreements, consent forms, or any document with fields to fill in.
+
+Your job is to go through EVERY field, checkbox, and section visible in the image and explain in plain English:
+- What it's asking for
+- What kind of information to put there
+- Where to find that information if it's not obvious
+- Any common mistakes to avoid
+
+Read ALL the text in the image. Look at every label, field, checkbox, dropdown, and instruction.
+
+Return ONLY this JSON (no markdown, no preamble):
+{
+  "original_text": "The form title or heading visible in the image",
+  "simplified_text": "• [field-by-field explanations as bullets]",
+  "checklist": ["Item 1", "Item 2"],
+  "flags": {"deadlines": [], "amounts": [], "documents_needed": []}
+}
+
+For simplified_text, write one or more bullets per field/section in this format:
+• **[Field name or label]** — What this is asking for in plain English. [Where to find the answer if not obvious. Common mistakes to watch for.]
+
+Rules:
+- Go through the form TOP TO BOTTOM, LEFT TO RIGHT — don't skip any field
+- If a field says something like "IRD number" or "NSN", explain what that is and where to find it
+- If there are checkboxes, explain what each option means and when to tick it
+- If there's fine print or conditions, explain what they actually mean
+- Use plain language a 12-year-old could understand
+- Keep every explanation to 1-2 sentences max
+- If a section says "Office use only" or similar, say "Skip this — the office fills this in, not you"
+
+For the checklist: list everything the person needs to GATHER BEFORE they can fill in this form (e.g. "Find your IRD number — it's on any letter from IRD or in your myIR account", "Get your employer's name and address", "Have your bank account number ready — it's on your bank card or in your banking app")
+
+For flags: only deadlines, dollar amounts, or documents/ID mentioned in THIS image."""
+
+
 def make_school_prompt(reading_age: str) -> str:
     """Return a prompt tuned to the child's actual reading age (e.g. '7-8')."""
     try:
@@ -198,11 +233,46 @@ Checklist for TYPE B: ["Read this carefully before you start"]
 Flags: only deadlines or important requirements visible in THIS image."""
 
 
+WORKSHEET_TRANSLATE_PROMPT_TEMPLATE = """You are a worksheet translator for schools. Your job is to translate an entire worksheet from English into {language}.
+
+Look at this worksheet image carefully. It contains text, and may contain images, diagrams, tables, numbered questions, fill-in-the-blank fields, or other visual elements.
+
+Translate ALL text on the worksheet into {language}. Keep the same structure and order as the original.
+
+Rules:
+- Translate every piece of text: headings, instructions, questions, labels, captions, footnotes, everything
+- Keep numbers, dates, and proper nouns (names of people, places, brands) as they are
+- For fill-in-the-blank lines or boxes, keep them as blank lines: _______________
+- If there is an image or diagram, describe it briefly in square brackets in {language}, e.g. [diagram of a plant cell]
+- Keep the same numbering (1, 2, 3... or a, b, c...)
+- If there are tables, preserve the table structure using clear formatting
+- Keep any mathematical equations or formulas exactly as they are
+- Match the tone — if the original is friendly and casual, the translation should be too
+
+Return ONLY this JSON (no markdown, no preamble):
+{{
+  "title": "The translated title or heading of the worksheet",
+  "original_language": "English",
+  "target_language": "{language}",
+  "sections": [
+    {{
+      "type": "heading|instruction|question|table|image_note|text",
+      "original": "Original English text",
+      "translated": "Translated text in {language}",
+      "number": null
+    }}
+  ]
+}}
+
+Go through the worksheet top to bottom, left to right. Every piece of text gets its own section entry. For questions, include the question number in the "number" field. For images, use type "image_note" and describe what the image shows."""
+
+
 PROMPTS = {
-    "ACADEMIC":      GENERAL_PROMPT,
-    "GOVERNMENT":    GENERAL_PROMPT,
-    "UNIVERSAL":     GENERAL_PROMPT,
-    "BUSINESS_PLAN": BUSINESS_PLAN_PROMPT,
+    "ACADEMIC":        GENERAL_PROMPT,
+    "GOVERNMENT":      GENERAL_PROMPT,
+    "UNIVERSAL":       GENERAL_PROMPT,
+    "BUSINESS_PLAN":   BUSINESS_PLAN_PROMPT,
+    "FORM_EXPLAINER":  FORM_EXPLAINER_PROMPT,
 }
 
 
@@ -360,7 +430,9 @@ async def simplify_alias(
 ):
     """Single-shot: upload file + simplify page in one request (used by the built frontend)."""
     profile_lower = audience_profile.lower()
-    if "business" in profile_lower or "plan" in profile_lower or "flexi" in profile_lower:
+    if "form_explainer" in profile_lower or "form-explainer" in profile_lower:
+        context_type = "FORM_EXPLAINER"
+    elif "business" in profile_lower or "plan" in profile_lower or "flexi" in profile_lower:
         context_type = "BUSINESS_PLAN"
     elif profile_lower.startswith("school"):
         context_type = "SCHOOL"
@@ -495,6 +567,167 @@ async def simplify_text(req: SimplifyTextRequest):
                 "content": [
                     {"type": "text", "text": DYSLEXIA_BUTTON_PROMPT},
                     {"type": "text", "text": f"Text to simplify:\n\n{req.text}"},
+                ],
+            }],
+        )
+        raw = msg.content[0].text.strip()
+        if raw.startswith("```"):
+            for chunk in raw.split("```"):
+                chunk = chunk.strip()
+                if chunk.startswith("json"):
+                    chunk = chunk[4:].strip()
+                if chunk.startswith("{"):
+                    raw = chunk
+                    break
+        parsed = json.loads(raw)
+        return parsed
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=502, detail="Could not parse Claude reply: " + str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail="Claude error: " + str(e))
+
+
+FORM_EXPLAINER_FULL_PROMPT = """You help people understand forms — government applications, school enrolment forms, ACC claims, tax forms, tenancy agreements, consent forms, or any document with fields to fill in.
+
+Look at this form image carefully. Go through EVERY field, checkbox, section, and instruction from top to bottom, left to right.
+
+For each field or section, explain:
+- What it's asking for in plain English
+- What kind of information to put there
+- Where to find that information if it's not obvious
+- Any common mistakes to avoid
+
+Return ONLY this JSON (no markdown, no preamble):
+{{
+  "title": "The form title or heading",
+  "fields": [
+    {{
+      "type": "field|checkbox|section|instruction|office_only",
+      "label": "The exact label or text from the form",
+      "explanation": "What this is asking for in plain English — 1-2 sentences",
+      "tip": "Where to find the answer, or a common mistake to avoid (or null if obvious)",
+      "number": null
+    }}
+  ],
+  "gather_first": ["Thing to gather before starting, e.g. Find your IRD number — on any letter from IRD"],
+  "flags": {{"deadlines": [], "amounts": [], "documents_needed": []}}
+}}
+
+Rules:
+- Go TOP TO BOTTOM, LEFT TO RIGHT — don't skip ANY field
+- For fields like "IRD number" or "NSN", explain what it is and where to find it
+- For checkboxes, explain what each option means and when to tick it
+- For fine print or conditions, explain what they actually mean
+- If a section says "Office use only", set type to "office_only" and explanation to "Skip this — the office fills this in, not you"
+- Use plain language a 12-year-old could understand
+- Keep every explanation to 1-2 sentences max
+- For gather_first: list everything the person needs to have ready BEFORE they start filling in (documents, numbers, details)
+- For flags: only deadlines, amounts, or documents visible in THIS image"""
+
+
+SUPPORTED_LANGUAGES = [
+    "te reo Māori", "Samoan", "Tongan", "Cook Islands Māori", "Niuean", "Fijian",
+    "Hindi", "Mandarin Chinese", "Cantonese Chinese", "Korean", "Japanese",
+    "Tagalog", "Thai", "Vietnamese", "Khmer", "Burmese",
+    "Arabic", "Somali", "Amharic", "Swahili",
+    "Spanish", "Portuguese", "French", "German", "Italian", "Dutch",
+    "Russian", "Ukrainian", "Polish",
+    "Afrikaans",
+]
+
+
+@app.get("/api/v1/translate/languages")
+def list_languages():
+    return {"languages": SUPPORTED_LANGUAGES}
+
+
+@app.post("/api/v1/translate-worksheet")
+async def translate_worksheet(
+    file: UploadFile = File(...),
+    target_language: str = Form(...),
+    page_num: int = Form(1),
+):
+    if target_language not in SUPPORTED_LANGUAGES:
+        raise HTTPException(status_code=400, detail=f"Unsupported language: {target_language}")
+
+    raw_bytes = await file.read()
+    ext = (file.filename or "").rsplit(".", 1)[-1].lower()
+
+    if ext in ("jpg", "jpeg", "png", "webp"):
+        img_b64 = base64.b64encode(raw_bytes).decode("ascii")
+        media_type = "image/png" if ext == "png" else f"image/{ext}"
+    else:
+        pdf_doc = fitz.open(stream=raw_bytes, filetype="pdf")
+        page_index = max(0, page_num - 1)
+        if page_index >= len(pdf_doc):
+            page_index = len(pdf_doc) - 1
+        page = pdf_doc[page_index]
+        pix = page.get_pixmap(dpi=150)
+        img_b64 = base64.b64encode(pix.tobytes("png")).decode("ascii")
+        media_type = "image/png"
+        pdf_doc.close()
+
+    prompt_text = WORKSHEET_TRANSLATE_PROMPT_TEMPLATE.format(language=target_language)
+    try:
+        msg = client.messages.create(
+            model=MODEL,
+            max_tokens=4000,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": img_b64}},
+                    {"type": "text", "text": prompt_text},
+                ],
+            }],
+        )
+        raw = msg.content[0].text.strip()
+        if raw.startswith("```"):
+            for chunk in raw.split("```"):
+                chunk = chunk.strip()
+                if chunk.startswith("json"):
+                    chunk = chunk[4:].strip()
+                if chunk.startswith("{"):
+                    raw = chunk
+                    break
+        parsed = json.loads(raw)
+        return parsed
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=502, detail="Could not parse Claude reply: " + str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail="Claude error: " + str(e))
+
+
+@app.post("/api/v1/explain-form")
+async def explain_form(
+    file: UploadFile = File(...),
+    page_num: int = Form(1),
+):
+    raw_bytes = await file.read()
+    ext = (file.filename or "").rsplit(".", 1)[-1].lower()
+
+    if ext in ("jpg", "jpeg", "png", "webp"):
+        img_b64 = base64.b64encode(raw_bytes).decode("ascii")
+        media_type = "image/png" if ext == "png" else f"image/{ext}"
+    else:
+        pdf_doc = fitz.open(stream=raw_bytes, filetype="pdf")
+        page_index = max(0, page_num - 1)
+        if page_index >= len(pdf_doc):
+            page_index = len(pdf_doc) - 1
+        page = pdf_doc[page_index]
+        pix = page.get_pixmap(dpi=150)
+        img_b64 = base64.b64encode(pix.tobytes("png")).decode("ascii")
+        media_type = "image/png"
+        pdf_doc.close()
+
+    try:
+        msg = client.messages.create(
+            model=MODEL,
+            max_tokens=4000,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": img_b64}},
+                    {"type": "text", "text": FORM_EXPLAINER_FULL_PROMPT},
                 ],
             }],
         )

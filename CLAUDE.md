@@ -49,6 +49,7 @@ A web app that turns confusing documents into plain English. Upload a PDF or ima
 | Backend | FastAPI + PyMuPDF + Anthropic SDK → `app.py` |
 | Frontend | React + Vite → `frontend/src/App.jsx` |
 | AI | Claude Sonnet 4.6 (vision API) |
+| TTS | Browser-native speechSynthesis (zero API cost) |
 | Deploy | Render.com — `render.yaml` configured |
 
 **Start locally:**
@@ -80,29 +81,35 @@ Frontend: `cd frontend && npm run dev` → http://localhost:5173
 ## What's built and working
 
 - Landing page: nav, hero with gradient background, demo card (tenancy agreement example), feature cards, CTA section, footer
-- Reader settings bar: text size, font, spacing, background tint — works on both landing page and app page
+- Reader settings bar: text size, font, spacing — works on both landing page and app page
 - App page: PDF/image upload, multi-page PDF with thumbnail sidebar, drag-to-select region, crop preview on right panel, plain English output, checklist with tick boxes, important details (deadlines/amounts/documents)
-- Audio: play/pause/stop, voice selector, speed control (0.5x/0.75x/1x/1.25x), click any word to play from there, word highlighting
-- Three document modes: General / Business Plan / School (with reading age slider)
+- Audio: play/pause/stop, voice selector (grouped by region with flags), speed control (0.5x/0.75x/1x/1.25x), click any word to play from there, word highlighting. Default: Google US English Female.
+- Five document modes: General / Business Plan / School (with reading age slider) / Form Explainer / Translate
+- Worksheet translator: upload worksheet, pick from 30 languages (te reo Māori, Samoan, Tongan, Mandarin, etc.), translates full page preserving structure. Backend: `/api/v1/translate-worksheet`, languages list: `/api/v1/translate/languages`
 - Reading support panel (collapsible): year level slider, reading level slider
 - Print button
-- B2B landing page (`frontend/public/b2b.html`) — pricing at $299/$699/custom
+- Organisations page (`frontend/public/organisations.html`) — hero, NZ stats, legislation, who it's for, what we solve, how it works, white-label, pricing, CTA
+- Technology page (`frontend/public/technology.html`) — TTS feature, side-by-side translation, reading level, WCAG toolbar, neuroinclusive design section
+- B2B landing page (`frontend/public/b2b.html`) — OLD design, needs updating
+
+---
+
+## Nav tabs (all pages)
+
+Home | How it works | For organisations | Technology | About us
+
+(NO "Pricing" or "Resources" tabs — removed)
 
 ---
 
 ## Pending tasks (in order — one at a time)
 
-1. **Business Plan prompt** — uses AI-guessed WINZ criteria. Fix with official criteria before going public.
-2. **Domain** — check if tryplainly.co.nz is available
-3. **First paying customer** — one school, CAB, or adviser. Don't wait for perfect.
-
----
-
-## Reference docs (in plain-english/docs/)
-
-- `Plain Form - Summary.pdf` — early product summary
-- `business-plan-template.pdf` — WINZ business plan template
-- `What if we offered for free .textClipping` — early thinking on pricing model
+1. **Usage tracking/analytics** — log metadata per org (doc count, mode, reading level). Shows which docs get simplified most. Feedback loop for customers.
+2. **Additional tools** — worksheet leveller, contract red-flagger, policy checker, report comment writer, parent letter writer, quiz maker, rubric builder, IEP helper. All use same Claude backend. (Worksheet translator is done; form explainer is done.)
+3. **Logo swap** — Emily has new logos in Google. Download and replace when available.
+4. **Business Plan prompt** — uses AI-guessed WINZ criteria. Fix with official criteria before going public.
+5. **Domain** — check if tryplainly.co.nz is available
+6. **First paying customer** — one school, CAB, or adviser. Don't wait for perfect.
 
 ---
 
@@ -115,3 +122,5 @@ Frontend: `cd frontend && npm run dev` → http://localhost:5173
 - No guiding questions (removed — users couldn't answer them)
 - One universal general prompt, not separate academic/government versions
 - Start small orgs, not big government
+- TTS = browser-native speechSynthesis (zero API cost)
+- Nav: Home, How it works, For organisations, Technology, About us

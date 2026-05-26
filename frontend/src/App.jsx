@@ -624,6 +624,14 @@ export default function App() {
   const [readingAge, setReadingAge] = useState("7-8");
   const [readingLevel, setReadingLevel] = useState(3);
 
+  // translate mode
+  const [translateLangs, setTranslateLangs] = useState([]);
+  const [targetLang, setTargetLang]         = useState("");
+  const [translateResult, setTranslateResult] = useState(null);
+
+  // form explainer mode
+  const [formExplainResult, setFormExplainResult] = useState(null);
+
   // controls
   const [zoom, setZoom]             = useState(1.0);
   const [loading, setLoading]       = useState(false);
@@ -692,12 +700,10 @@ export default function App() {
 
   function formatVoiceName(v) {
     const r = voiceRegions[v.lang] || { flag: "\u{1F310}", label: "English" };
-    let name = v.name.replace(/Google|Microsoft|Apple|com\.apple\.speech\.|com\.apple\.voice\./gi, "").trim();
+    let name = v.name.replace(/com\.apple\.speech\.|com\.apple\.voice\./gi, "").trim();
     name = name.replace(/\(.*?\)/g, "").trim();
-    const gender = /female|woman|fiona|karen|moira|samantha|tessa|veena|victoria|kate|serena/i.test(v.name) ? "Female" :
-                   /male|man|daniel|alex|lee|rishi|oliver|aaron|gordon|thomas/i.test(v.name) ? "Male" : "";
     const quality = /enhanced|premium/i.test(v.name) ? " ★" : "";
-    return `${r.flag} ${r.label} - ${name}${gender ? " (" + gender + ")" : ""}${quality}`;
+    return `${r.flag} ${name}${quality}`;
   }
 
   const groupedVoices = useMemo(() => {
@@ -777,6 +783,8 @@ export default function App() {
     setIsPlaying(false); setCurrentCharRange(null);
     if (cropPreviewUrl) URL.revokeObjectURL(cropPreviewUrl);
     setCropPreviewUrl(null);
+    setTranslateResult(null);
+    setFormExplainResult(null);
     if (keepAliveRef.current) clearInterval(keepAliveRef.current);
   }
 
@@ -874,9 +882,9 @@ export default function App() {
     });
   }
 
-  // Auto-simplify as soon as a box is drawn
+  // Auto-simplify as soon as a box is drawn (not in translate mode)
   useEffect(() => {
-    if (selection && file && !loading) {
+    if (selection && file && !loading && docMode !== "translate") {
       cropSelectionToBlob().then(blob => {
         setCropPreviewUrl(prev => { if (prev) URL.revokeObjectURL(prev); return URL.createObjectURL(blob); });
       }).catch(() => {});
@@ -884,6 +892,56 @@ export default function App() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selection]);
+
+  // Fetch available languages for translate mode
+  useEffect(() => {
+    if (docMode === "translate" && translateLangs.length === 0) {
+      fetch(`${API_BASE}/api/v1/translate/languages`)
+        .then(r => r.json())
+        .then(d => {
+          setTranslateLangs(d.languages || []);
+          if (!targetLang && d.languages?.length) setTargetLang(d.languages[0]);
+        })
+        .catch(() => {});
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [docMode]);
+
+  // Translate worksheet
+  async function handleTranslate() {
+    if (!file) { setError("Upload a file first."); return; }
+    if (!targetLang) { setError("Pick a language first."); return; }
+    window.speechSynthesis?.cancel();
+    setIsPlaying(false); setCurrentCharRange(null);
+    setLoading(true); setError(""); setResult(null); setTranslateResult(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("target_language", targetLang);
+      fd.append("page_num", String(pageIdx + 1));
+      const res = await fetch(`${API_BASE}/api/v1/translate-worksheet`, { method: "POST", body: fd });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || `Error ${res.status}`);
+      setTranslateResult(await res.json());
+    } catch (e) { setError(e.message); }
+    finally { setLoading(false); }
+  }
+
+  // form explainer
+  async function handleFormExplain() {
+    if (!file) { setError("Upload a file first."); return; }
+    window.speechSynthesis?.cancel();
+    setIsPlaying(false); setCurrentCharRange(null);
+    setLoading(true); setError(""); setResult(null); setTranslateResult(null); setFormExplainResult(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("page_num", String(pageIdx + 1));
+      const res = await fetch(`${API_BASE}/api/v1/explain-form`, { method: "POST", body: fd });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || `Error ${res.status}`);
+      setFormExplainResult(await res.json());
+    } catch (e) { setError(e.message); }
+    finally { setLoading(false); }
+  }
 
   // simplify
   async function handleSimplify() {
@@ -899,7 +957,7 @@ export default function App() {
         fd.append("file", file);
         fd.append("page_num", String(dragPageIdx + 1));
       }
-      const profile = docMode === "school" ? `school_${readingAge}` : docMode;
+      const profile = docMode === "school" ? `school_${readingAge}` : docMode === "form_explainer" ? "form_explainer" : docMode;
       fd.append("audience_profile", profile);
       const res = await fetch(`${API_BASE}/api/simplify`, { method: "POST", body: fd });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || `Error ${res.status}`);
@@ -910,6 +968,20 @@ export default function App() {
 
   // speech
   const speechInfo = useMemo(() => {
+    // Build from translate result if available
+    if (translateResult?.sections?.length) {
+      const sep = "\n\n";
+      const sections = [];
+      let offset = 0;
+      const translated = translateResult.sections
+        .filter(s => s.translated && s.type !== "image_note")
+        .map(s => s.translated)
+        .join(".\n");
+      if (translated) {
+        sections.push({ key: "simplified", text: translated, offset });
+      }
+      return { fullText: sections.map(s => s.text).join(sep), sections };
+    }
     if (!result) return { fullText: "", sections: [] };
     const sep = "\n\n";
     const sections = [];
@@ -934,7 +1006,7 @@ export default function App() {
       sections.push({ key: "checklist", text, offset });
     }
     return { fullText: sections.map(s => s.text).join(sep), sections };
-  }, [result]);
+  }, [result, translateResult]);
 
   function speakFrom(charStart) {
     if (!speechInfo.fullText || !window.speechSynthesis) return;
@@ -1504,15 +1576,54 @@ export default function App() {
           margin-bottom: 20px; font-size: 14px; line-height: 1.6; color: var(--text);
         }
 
-        /* Mode toggle */
+        /* Mode bar */
+        .mode-bar {
+          display: flex; align-items: center; gap: 12px;
+          padding: 10px 48px;
+          background: white;
+          border-bottom: 1.5px solid var(--border);
+        }
+        .mode-bar-label {
+          font-size: 12px; font-weight: 600; color: var(--muted);
+          text-transform: uppercase; letter-spacing: 0.08em;
+          flex-shrink: 0;
+        }
         .mode-toggle { display: flex; gap: 2px; background: rgba(240,235,248,.5); padding: 3px; border-radius: 999px; }
         .mode-btn {
-          flex: 1; padding: 8px 12px; background: transparent; color: var(--muted);
+          padding: 8px 16px; background: transparent; color: var(--muted);
           border: none; font-size: 13px; font-weight: 500;
           cursor: pointer; border-radius: 999px; transition: all 0.15s; font-family: inherit;
+          white-space: nowrap;
         }
         .mode-btn:hover:not(.mode-active) { background: white; color: var(--text); }
         .mode-active { background: var(--accent) !important; color: white !important; }
+        @media (max-width: 900px) {
+          .mode-bar { padding: 10px 16px; gap: 8px; flex-wrap: wrap; }
+          .mode-btn { padding: 6px 10px; font-size: 12px; }
+        }
+        .translate-bar {
+          display: flex; align-items: center; gap: 12px;
+          padding: 10px 48px;
+          background: #F5F3FF;
+          border-bottom: 1.5px solid var(--border);
+        }
+        .translate-lang-select {
+          padding: 8px 14px; border: 1.5px solid var(--border); border-radius: 999px;
+          font-size: 14px; font-family: inherit; color: var(--text);
+          background: white; cursor: pointer; min-width: 180px;
+        }
+        .translate-lang-select:focus { outline: none; border-color: var(--accent); }
+        .translate-go-btn {
+          padding: 10px 24px; background: var(--accent); color: white;
+          border: none; border-radius: 999px; font-size: 14px; font-weight: 600;
+          font-family: inherit; cursor: pointer; transition: background 0.2s;
+          white-space: nowrap;
+        }
+        .translate-go-btn:hover:not(:disabled) { background: #7a3ef0; }
+        .translate-go-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        @media (max-width: 900px) {
+          .translate-bar { padding: 10px 16px; flex-wrap: wrap; }
+        }
         .age-selector {
           display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
           padding: 12px; background: var(--accent-soft); border-radius: var(--r-md);
@@ -1612,6 +1723,12 @@ export default function App() {
           .result-panel { width: 100%; background: white; overflow: visible; }
           .app-shell { height: auto; }
           .print-warning { display: block !important; border: 2px dashed red; padding: 10px; color: red; font-weight: 700; }
+          /* Translate mode: show original + translation side by side */
+          .translate-print-layout { display: flex !important; gap: 20px; page-break-inside: avoid; margin: 0 -8px; }
+          .translate-print-original { flex: 1; border: 1px solid #ccc; border-radius: 4px; padding: 8px; background: #fafafa; }
+          .translate-print-original img { width: 100%; height: auto; display: block; }
+          .translate-print-translated { flex: 1; padding-top: 4px; }
+          .bubble-label { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
         .print-warning { display: none; }
       `}</style>
@@ -1717,6 +1834,48 @@ export default function App() {
         </div>
       )}
 
+      {/* MODE TOGGLE */}
+      {file && (
+        <div className="mode-bar no-print">
+          <span className="mode-bar-label">Mode</span>
+          <div className="mode-toggle">
+            {[
+              ["general", "General"],
+              ["business_plan", "Business Plan"],
+              ["school", "School"],
+              ["form_explainer", "Form Explainer"],
+              ["translate", "Translate"],
+            ].map(([key, label]) => (
+              <button key={key} className={`mode-btn${docMode === key ? ' mode-active' : ''}`}
+                onClick={() => { setDocMode(key); setResult(null); setTranslateResult(null); }}>{label}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* TRANSLATE: language picker + translate button */}
+      {file && docMode === "translate" && (
+        <div className="translate-bar no-print">
+          <span className="mode-bar-label">Translate to</span>
+          <select
+            className="translate-lang-select"
+            value={targetLang}
+            onChange={e => setTargetLang(e.target.value)}
+          >
+            {translateLangs.map(lang => (
+              <option key={lang} value={lang}>{lang}</option>
+            ))}
+          </select>
+          <button
+            className="translate-go-btn"
+            onClick={handleTranslate}
+            disabled={loading || !targetLang}
+          >
+            {loading ? "Translating..." : "Translate this page"}
+          </button>
+        </div>
+      )}
+
       {/* PAGE */}
       <div className="page-pad">
         <div className="outer-shell">
@@ -1731,8 +1890,8 @@ export default function App() {
           {/* RIGHT: RESULT */}
           <section className="result-panel" aria-label="Plain-English result">
 
-            {/* Reading support card — collapsible */}
-            {result && (
+            {/* Reading support card — collapsible (simplify modes only) */}
+            {result && docMode !== "translate" && (
               <div className="reading-support-card no-print">
                 <div className="rs-card-header" onClick={() => setShowReadingSupport(!showReadingSupport)}>
                   <div className="rs-card-title">Reading support</div>
@@ -1762,7 +1921,7 @@ export default function App() {
                         value={readingLevel}
                         onChange={e => setReadingLevel(+e.target.value)} />
                       <div className="rs-slider-ticks">
-                        {["Simple","Easy","Standard","Detailed","Advanced"].map((t,i) => (
+                        {["Age 5–7","Age 7–9","Age 9–11","Age 11–13","Age 13+"].map((t,i) => (
                           <span key={i} className={`rs-slider-tick${readingLevel === i+1 ? ' active' : ''}`}>{t}</span>
                         ))}
                       </div>
@@ -1783,7 +1942,7 @@ export default function App() {
                 background: readerStyles.background,
               }}>
 
-                {cropPreviewUrl && (
+                {cropPreviewUrl && docMode !== "translate" && (
                   <div style={{ marginBottom: 16 }}>
                     <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Your selection</div>
                     <div className="crop-preview">
@@ -1792,12 +1951,118 @@ export default function App() {
                   </div>
                 )}
 
-                {result ? (
+                {/* TRANSLATE RESULT */}
+                {docMode === "translate" && translateResult ? (
+                  <div className="result-outer-box">
+                    <div className="bubble-label" style={{ background: 'linear-gradient(135deg, #8c52ff 0%, #6366F1 100%)' }}>
+                      <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.6 3.2L12 5l-2.6 2.5.6 3.7L7 9.5l-3 1.7.6-3.7L2 5l3.4-.8L7 1z" fill="#fff" opacity=".9"/></svg>
+                      Translated to {translateResult.target_language}
+                    </div>
+
+                    {translateResult.title && (
+                      <div style={{ padding: '16px 18px 0', fontFamily: 'var(--font-h)', fontWeight: 700, fontSize: 20, color: 'var(--text)' }}>
+                        {translateResult.title}
+                      </div>
+                    )}
+
+                    {/* Listen controls */}
+                    <div className="listen-inline no-print" aria-label="Listen controls">
+                      <span className="listen-inline-label">Listen to translation</span>
+                      <button className="play-btn" onClick={isPlaying ? pauseResume : speak} disabled={!speechInfo.fullText}>
+                        {isPlaying ? (
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="1" width="3" height="10" rx="1" fill="#fff"/><rect x="7" y="1" width="3" height="10" rx="1" fill="#fff"/></svg>
+                        ) : (
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polygon points="2,1 11,6 2,11" fill="#fff"/></svg>
+                        )}
+                      </button>
+                      <button className="stop-btn" onClick={() => { window.speechSynthesis?.cancel(); setIsPlaying(false); setCurrentCharRange(null); }}>
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1" y="1" width="8" height="8" rx="1.5" fill="currentColor"/></svg>
+                      </button>
+                      {groupedVoices.length > 0 && (
+                        <select className="voice-sel" value={voiceName} onChange={e => setVoiceName(e.target.value)}>
+                          {groupedVoices.map(g => (
+                            <optgroup key={g.region} label={(voiceRegions[g.region]?.flag || "\u{1F310}") + " " + (voiceRegions[g.region]?.label || "English")}>
+                              {g.voices.map(v => <option key={v.name} value={v.name}>{formatVoiceName(v)}</option>)}
+                            </optgroup>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                    <div className="listen-inline no-print" style={{ marginTop: 4 }}>
+                      <span style={{ fontSize: 11, color: 'var(--muted)', marginRight: 6 }}>Speed</span>
+                      {[0.5, 0.75, 1, 1.25].map(spd => (
+                        <button key={spd} className={`rs-option${audioSpeed === spd ? ' active' : ''}`}
+                          style={{ padding: '2px 8px', fontSize: 11, height: 24, minWidth: 0 }}
+                          onClick={() => setAudioSpeed(spd)}>
+                          {spd === 1 ? '1x' : spd + 'x'}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Side-by-side print layout: original + translation */}
+                    <div className="translate-print-layout" style={{ display: 'none' }}>
+                      <div className="translate-print-original">
+                        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B7280', marginBottom: 8 }}>Original worksheet</div>
+                        {isPdf && currentPage ? (
+                          <img src={`data:image/png;base64,${currentPage.image_base64}`} alt="Original worksheet" />
+                        ) : previewUrl ? (
+                          <img src={previewUrl} alt="Original worksheet" />
+                        ) : null}
+                      </div>
+                      <div className="translate-print-translated">
+                        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8c52ff', marginBottom: 8 }}>Translated — {translateResult.target_language}</div>
+                        {translateResult.title && (
+                          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10 }}>{translateResult.title}</div>
+                        )}
+                        {translateResult.sections?.map((sec, i) => (
+                          <div key={i} style={{ marginBottom: 8 }}>
+                            {sec.number && <span style={{ fontWeight: 700, marginRight: 4 }}>{sec.number}.</span>}
+                            {sec.type === "heading" ? (
+                              <div style={{ fontWeight: 700, fontSize: 14, marginTop: 8 }}>{sec.translated}</div>
+                            ) : sec.type === "image_note" ? (
+                              <div style={{ fontSize: 11, color: '#6B7280', fontStyle: 'italic' }}>{sec.translated}</div>
+                            ) : (
+                              <span style={{ fontSize: 13, lineHeight: 1.6 }}>{sec.translated}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* On-screen: translation only */}
+                    <div className="plain-english-box no-print" style={{ marginTop: 8 }}>
+                      {translateResult.sections?.map((sec, i) => (
+                        <div key={i} className="translate-section" style={{ marginBottom: 14 }}>
+                          {sec.number && <span style={{ fontWeight: 700, color: 'var(--purple)', marginRight: 6 }}>{sec.number}.</span>}
+                          {sec.type === "heading" ? (
+                            <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)', margin: '12px 0 4px' }}>{sec.translated}</h3>
+                          ) : sec.type === "image_note" ? (
+                            <div style={{ padding: '8px 12px', background: '#F3F4F6', borderRadius: 8, fontSize: 13, color: '#6B7280', fontStyle: 'italic' }}>
+                              {sec.translated}
+                            </div>
+                          ) : (
+                            <p style={{ margin: 0, lineHeight: 1.7 }}>{sec.translated}</p>
+                          )}
+                          {sec.original && sec.type !== "image_note" && (
+                            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9CA3AF', fontStyle: 'italic' }}>{sec.original}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="bottom-actions no-print">
+                      <button className="action-btn" onClick={() => window.print()}>
+                        <span className="action-btn-icon">🖨️</span> Print side-by-side (original + translation)
+                      </button>
+                    </div>
+                  </div>
+
+                ) : result ? (
                   <div className="result-outer-box">
                     {/* Plain-English version label */}
                     <div className="bubble-label">
                       <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.6 3.2L12 5l-2.6 2.5.6 3.7L7 9.5l-3 1.7.6-3.7L2 5l3.4-.8L7 1z" fill="#fff" opacity=".9"/></svg>
-                      Plain-English version
+                      {docMode === "form_explainer" ? "Form Explainer — field by field" : "Plain-English version"}
                     </div>
 
                     {/* Listen controls — inline under label */}
@@ -1837,7 +2102,7 @@ export default function App() {
                     {/* Inner box — plain-English text */}
                     <div className="plain-english-box">
                       <div className="result-section">
-                        <h2 className="r-h">What this is about</h2>
+                        <h2 className="r-h">{docMode === "form_explainer" ? "Every field explained" : "What this is about"}</h2>
                         <div className="r-p">
                           {renderClickableWords(result.simplified_text, simpSection?.offset ?? 0)}
                         </div>
@@ -1853,9 +2118,30 @@ export default function App() {
                     </button>
                     {showPrompts && (
                       <div className="prompts-content">
-                        <p style={{ color:'var(--muted)', fontStyle:'italic' }}>
-                          Prompts and examples for this document will appear here.
-                        </p>
+                        {result?.original_text ? (
+                          <>
+                            <div style={{ marginBottom: 12 }}>
+                              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Original text from document</div>
+                              <div style={{ padding: '12px 14px', background: '#F9FAFB', border: '1px solid var(--border)', borderRadius: 8, fontSize: 14, color: 'var(--text-mid)', lineHeight: 1.7 }}>
+                                {result.original_text}
+                              </div>
+                            </div>
+                            {result.guiding_questions?.length > 0 && (
+                              <div>
+                                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Think about</div>
+                                <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                  {result.guiding_questions.map((q, i) => (
+                                    <li key={i} style={{ fontSize: 14, color: 'var(--text-mid)', lineHeight: 1.6 }}>{q}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <p style={{ color:'var(--muted)', fontStyle:'italic' }}>
+                            No prompts available for this selection.
+                          </p>
+                        )}
                       </div>
                     )}
 
@@ -1874,7 +2160,7 @@ export default function App() {
                     {/* Checklist — at bottom */}
                     {result?.checklist?.length > 0 && (
                       <div className="result-section">
-                        <h2 className="r-h">What you need to do</h2>
+                        <h2 className="r-h">{docMode === "form_explainer" ? "What to gather before you start" : "What you need to do"}</h2>
                         <div className="checklist-box">
                           <ul className="chk-list">
                             {result.checklist.map((item, i) => (
@@ -1901,17 +2187,30 @@ export default function App() {
                   </div>
                 ) : !file ? (
                   <div className="empty-result">
-                    <div className="empty-result-icon">📝</div>
+                    <div className="empty-result-icon">{docMode === "translate" ? "🌍" : "📝"}</div>
                     <p style={{ fontFamily:'var(--font-h)', fontSize:18, fontWeight:600, color:'var(--text)', marginBottom:8 }}>
-                      Your plain-English version will appear here.
+                      {docMode === "translate" ? "Your translated worksheet will appear here." : "Your plain-English version will appear here."}
                     </p>
                     <p style={{ fontSize:14, color:'var(--muted)', marginTop:8 }}>
-                      Select the part of the document you want help with, then click Simplify.
+                      {docMode === "translate"
+                        ? "Upload a worksheet, pick a language, and click Translate."
+                        : "Select the part of the document you want help with, then click Simplify."}
                     </p>
-                    <div style={{ marginTop:24, display:'flex', flexDirection:'column', gap:8, fontSize:14, color:'var(--muted)' }}>
-                      <span>✅ We use clear, everyday language.</span>
-                      <span>✅ We keep the meaning the same.</span>
-                      <span>✅ You stay in control.</span>
+                    {docMode !== "translate" && (
+                      <div style={{ marginTop:24, display:'flex', flexDirection:'column', gap:8, fontSize:14, color:'var(--muted)' }}>
+                        <span>✅ We use clear, everyday language.</span>
+                        <span>✅ We keep the meaning the same.</span>
+                        <span>✅ You stay in control.</span>
+                      </div>
+                    )}
+                  </div>
+                ) : docMode === "translate" ? (
+                  <div className="instruction-box-wrap">
+                    <div className="instruction-box">
+                      <div className="instruction-box-icon">🌍</div>
+                      <p className="instruction-box-text">
+                        {loading ? "Translating your worksheet..." : "Pick a language above and click \"Translate this page\" to get started."}
+                      </p>
                     </div>
                   </div>
                 ) : (
