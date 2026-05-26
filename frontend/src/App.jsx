@@ -67,7 +67,7 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
           height: 58px;
         }
         .pl-nav-left { display: flex; align-items: center; gap: 0; cursor: pointer; }
-        .pl-nav-logo-img { height: 28px; display: block; }
+        .pl-nav-logo-img { height: 44px; display: block; }
         .pl-nav-links { display: flex; gap: 28px; align-items: center; }
         .pl-nav-links a {
           font-size: 14px; color: ${T.textSoft};
@@ -1736,7 +1736,7 @@ export default function App() {
       {/* MAIN NAV (same as landing page) */}
       <nav className="main-nav no-print">
         <a className="main-nav-left" href="/" onClick={e => { e.preventDefault(); reset(); setShowLanding(true); }}>
-          <img src="/logo-plainly.png" alt="Plainly" style={{ height: 28, display: 'block' }} />
+          <img src="/logo-plainly.png" alt="Plainly" style={{ height: 44, display: 'block' }} />
         </a>
         <div className="main-nav-links">
           <a href="#" onClick={e => { e.preventDefault(); reset(); setShowLanding(true); }}>Home</a>
@@ -1756,7 +1756,7 @@ export default function App() {
       {/* APP NAV */}
       <header className="topnav no-print">
         <a href="/" className="logo" onClick={e => { e.preventDefault(); reset(); setShowLanding(true); }}>
-          <img src="/logo-plainly.png" alt="Plainly" style={{ height: 24, display: 'block' }} />
+          <img src="/logo-plainly.png" alt="Plainly" style={{ height: 36, display: 'block' }} />
         </a>
 
         <div className="steps">
