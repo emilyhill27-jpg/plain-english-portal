@@ -926,7 +926,9 @@ export default function App() {
       fd.append("page_num", String(pageIdx + 1));
       const res = await fetch(`${API_BASE}/api/v1/translate-worksheet`, { method: "POST", body: fd });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || `Error ${res.status}`);
-      setTranslateResult(await res.json());
+      const tdata = await res.json();
+      setTranslateResult(tdata);
+      setDocMode("translate");
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
   }
@@ -987,6 +989,28 @@ export default function App() {
       }
       return { fullText: sections.map(s => s.text).join(sep), sections };
     }
+    // Build from form explainer result if available
+    if (formExplainResult?.fields?.length) {
+      const sep = "\n\n";
+      const sections = [];
+      let offset = 0;
+      const gatherText = formExplainResult.gather_first?.length
+        ? "Before you start, gather these.\n" + formExplainResult.gather_first.join(".\n")
+        : "";
+      if (gatherText) {
+        sections.push({ key: "simplified", text: gatherText, offset });
+        offset += gatherText.length + sep.length;
+      }
+      const fieldsText = formExplainResult.fields
+        .map(f => f.label + ". " + f.explanation + (f.tip ? " Tip: " + f.tip : ""))
+        .join(".\n");
+      if (fieldsText) {
+        const key = gatherText ? "fields" : "simplified";
+        sections.push({ key, text: fieldsText, offset });
+        offset += fieldsText.length + sep.length;
+      }
+      return { fullText: sections.map(s => s.text).join(sep), sections };
+    }
     if (!result) return { fullText: "", sections: [] };
     const sep = "\n\n";
     const sections = [];
@@ -1011,7 +1035,7 @@ export default function App() {
       sections.push({ key: "checklist", text, offset });
     }
     return { fullText: sections.map(s => s.text).join(sep), sections };
-  }, [result, translateResult]);
+  }, [result, translateResult, formExplainResult]);
 
   function speakFrom(charStart) {
     if (!speechInfo.fullText || !window.speechSynthesis) return;
@@ -1326,6 +1350,7 @@ export default function App() {
         .btn-ghost:hover { background: #f0ecf5; color: var(--text); border-color: rgba(138,86,176,.3); }
 
         /* OUTER SHELL */
+        main { flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
         .page-pad { padding: 20px 24px 32px; flex: 1; overflow: hidden; display: flex; flex-direction: column; }
         .outer-shell {
           background: var(--shell); border: 1px solid var(--border);
@@ -1614,6 +1639,15 @@ export default function App() {
           background: white; cursor: pointer; min-width: 180px; flex: 1;
         }
         .translate-lang-select:focus { outline: none; border-color: var(--accent); }
+        .tool-btn-small {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 8px 14px; background: white;
+          border: 1.5px solid var(--border); border-radius: 999px;
+          font-size: 13px; font-weight: 500; color: var(--text);
+          cursor: pointer; font-family: inherit; transition: border-color 0.15s;
+        }
+        .tool-btn-small:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+        .tool-btn-small:disabled { opacity: 0.5; cursor: not-allowed; }
         @media (max-width: 900px) {
           .tool-buttons { padding: 0 8px; }
           .tool-btn { padding: 12px 14px; gap: 10px; }
@@ -1850,7 +1884,7 @@ export default function App() {
           <section className="result-panel" aria-label="Plain-English result">
 
             {/* Reading support card — collapsible (simplify modes only) */}
-            {result && docMode !== "translate" && (
+            {(result || formExplainResult) && !translateResult && (
               <div className="reading-support-card no-print">
                 <div className="rs-card-header" onClick={() => setShowReadingSupport(!showReadingSupport)}>
                   <div className="rs-card-title">Reading support</div>
@@ -1901,7 +1935,7 @@ export default function App() {
                 background: readerStyles.background,
               }}>
 
-                {cropPreviewUrl && docMode !== "translate" && (
+                {cropPreviewUrl && !translateResult && !formExplainResult && (
                   <div style={{ marginBottom: 16 }}>
                     <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Your selection</div>
                     <div className="crop-preview">
@@ -1911,7 +1945,7 @@ export default function App() {
                 )}
 
                 {/* TRANSLATE RESULT */}
-                {docMode === "translate" && translateResult ? (
+                {translateResult ? (
                   <div className="result-outer-box">
                     <div className="bubble-label" style={{ background: 'linear-gradient(135deg, #8c52ff 0%, #6366F1 100%)' }}>
                       <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.6 3.2L12 5l-2.6 2.5.6 3.7L7 9.5l-3 1.7.6-3.7L2 5l3.4-.8L7 1z" fill="#fff" opacity=".9"/></svg>
@@ -2016,6 +2050,135 @@ export default function App() {
                     </div>
                   </div>
 
+                ) : formExplainResult ? (
+                  <div className="result-outer-box">
+                    <div className="bubble-label" style={{ background: 'linear-gradient(135deg, #8c52ff 0%, #6366F1 100%)' }}>
+                      <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.6 3.2L12 5l-2.6 2.5.6 3.7L7 9.5l-3 1.7.6-3.7L2 5l3.4-.8L7 1z" fill="#fff" opacity=".9"/></svg>
+                      Form explained
+                    </div>
+
+                    {formExplainResult.title && (
+                      <div style={{ padding: '16px 18px 0', fontFamily: 'var(--font-h)', fontWeight: 700, fontSize: 20, color: 'var(--text)' }}>
+                        {formExplainResult.title}
+                      </div>
+                    )}
+
+                    {/* Listen controls */}
+                    <div className="listen-inline no-print" aria-label="Listen controls">
+                      <span className="listen-inline-label">Listen to this explanation</span>
+                      <button className="play-btn" onClick={isPlaying ? pauseResume : speak} disabled={!speechInfo.fullText}>
+                        {isPlaying ? (
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="1" width="3" height="10" rx="1" fill="#fff"/><rect x="7" y="1" width="3" height="10" rx="1" fill="#fff"/></svg>
+                        ) : (
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polygon points="2,1 11,6 2,11" fill="#fff"/></svg>
+                        )}
+                      </button>
+                      <button className="stop-btn" onClick={() => { window.speechSynthesis?.cancel(); setIsPlaying(false); setCurrentCharRange(null); }}>
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1" y="1" width="8" height="8" rx="1.5" fill="currentColor"/></svg>
+                      </button>
+                      {groupedVoices.length > 0 && (
+                        <select className="voice-sel" value={voiceName} onChange={e => setVoiceName(e.target.value)}>
+                          {groupedVoices.map(g => (
+                            <optgroup key={g.region} label={(voiceRegions[g.region]?.flag || "\u{1F310}") + " " + (voiceRegions[g.region]?.label || "English")}>
+                              {g.voices.map(v => <option key={v.name} value={v.name}>{formatVoiceName(v)}</option>)}
+                            </optgroup>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                    <div className="listen-inline no-print" style={{ marginTop: 4 }}>
+                      <span style={{ fontSize: 11, color: 'var(--muted)', marginRight: 6 }}>Speed</span>
+                      {[0.5, 0.75, 1, 1.25].map(spd => (
+                        <button key={spd} className={`rs-option${audioSpeed === spd ? ' active' : ''}`}
+                          style={{ padding: '2px 8px', fontSize: 11, height: 24, minWidth: 0 }}
+                          onClick={() => setAudioSpeed(spd)}>
+                          {spd === 1 ? '1x' : spd + 'x'}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Gather first */}
+                    {formExplainResult.gather_first?.length > 0 && (
+                      <div className="result-section" style={{ padding: '16px 18px' }}>
+                        <h2 className="r-h" style={{ color: '#8c52ff' }}>Before you start — gather these</h2>
+                        <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {formExplainResult.gather_first.map((item, i) => (
+                            <li key={i} style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-mid)' }}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Fields */}
+                    <div className="plain-english-box" style={{ padding: '16px 18px' }}>
+                      <h2 className="r-h">Every field explained</h2>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        {formExplainResult.fields?.map((field, i) => (
+                          <div key={i} style={{
+                            padding: '12px 14px',
+                            background: field.type === 'office_only' ? '#f9fafb' : '#fff',
+                            border: '1px solid var(--border)',
+                            borderRadius: 10,
+                            opacity: field.type === 'office_only' ? 0.7 : 1,
+                          }}>
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
+                              <span style={{ fontSize: 14, opacity: 0.6 }}>
+                                {field.type === 'checkbox' ? '☑️' : field.type === 'section' ? '📑' : field.type === 'instruction' ? 'ℹ️' : field.type === 'office_only' ? '🏢' : '✏️'}
+                              </span>
+                              <strong style={{ fontSize: 14, color: 'var(--text)' }}>{field.label}</strong>
+                            </div>
+                            <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--text-mid)', lineHeight: 1.6 }}>{field.explanation}</p>
+                            {field.tip && (
+                              <p style={{ margin: '6px 0 0', fontSize: 13, color: '#8c52ff', lineHeight: 1.5 }}>
+                                💡 {field.tip}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Important details / flags */}
+                    {formExplainResult.flags && Object.values(formExplainResult.flags).some(v => v?.length > 0) && (
+                      <div className="result-section" style={{ padding: '16px 18px' }}>
+                        <h2 className="r-h">Important details</h2>
+                        <div className="flags-row">
+                          {formExplainResult.flags.deadlines?.map((d,i) => <span key={i} className="flag-chip">📅 {d}</span>)}
+                          {formExplainResult.flags.amounts?.map((a,i) => <span key={i} className="flag-chip">💰 {a}</span>)}
+                          {formExplainResult.flags.documents_needed?.map((d,i) => <span key={i} className="flag-chip">📄 {d}</span>)}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Print */}
+                    <div className="bottom-actions no-print">
+                      <button className="action-btn" onClick={() => window.print()}>
+                        <span className="action-btn-icon">🖨️</span> Print side by side — form + explanation
+                      </button>
+                    </div>
+
+                    {/* Other tools */}
+                    <div className="other-tools no-print" style={{ marginTop: 16, padding: '16px 0', borderTop: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Other tools</div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button className="tool-btn-small" onClick={() => setShowTranslatePanel(p => !p)} disabled={loading}>
+                          <span>🌍</span> Translate
+                        </button>
+                      </div>
+                      {showTranslatePanel && (
+                        <div className="translate-picker no-print" style={{ marginTop: 8 }}>
+                          <select className="translate-lang-select" value={targetLang} onChange={e => setTargetLang(e.target.value)}>
+                            {translateLangs.map(lang => <option key={lang} value={lang}>{lang}</option>)}
+                          </select>
+                          <button className="btn btn-primary" style={{ height: 36, fontSize: 13, padding: '0 16px' }}
+                            onClick={handleTranslate} disabled={loading || !targetLang}>
+                            {loading ? "Translating…" : "Go"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                 ) : result ? (
                   <div className="result-outer-box">
                     {/* Plain-English version label */}
@@ -2077,23 +2240,27 @@ export default function App() {
                     </button>
                     {showPrompts && (
                       <div className="prompts-content">
-                        {result?.original_text ? (
+                        {result?.simplified_text ? (
                           <>
-                            <div style={{ marginBottom: 12 }}>
-                              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Original text from document</div>
-                              <div style={{ padding: '12px 14px', background: '#F9FAFB', border: '1px solid var(--border)', borderRadius: 8, fontSize: 14, color: 'var(--text-mid)', lineHeight: 1.7 }}>
-                                {result.original_text}
-                              </div>
-                            </div>
-                            {result.guiding_questions?.length > 0 && (
-                              <div>
-                                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Think about</div>
-                                <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                  {result.guiding_questions.map((q, i) => (
-                                    <li key={i} style={{ fontSize: 14, color: 'var(--text-mid)', lineHeight: 1.6 }}>{q}</li>
+                            {result.simplified_text.split('\n').filter(line => {
+                              const t = line.trim().replace(/^[•\-]\s*/, '');
+                              return /example|for example|could write|could say|might look|might say|strong answer|weak answer/i.test(t);
+                            }).length > 0 ? (
+                              <div style={{ marginBottom: 12 }}>
+                                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Examples from the explanation</div>
+                                <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                  {result.simplified_text.split('\n').filter(line => {
+                                    const t = line.trim().replace(/^[•\-]\s*/, '');
+                                    return /example|for example|could write|could say|might look|might say|strong answer|weak answer/i.test(t);
+                                  }).map((line, i) => (
+                                    <li key={i} style={{ fontSize: 14, color: 'var(--text-mid)', lineHeight: 1.6 }}>{line.trim().replace(/^[•\-]\s*/, '')}</li>
                                   ))}
                                 </ul>
                               </div>
+                            ) : (
+                              <p style={{ color:'var(--muted)', fontStyle:'italic' }}>
+                                No specific prompts or examples for this section. The plain English version above has all the guidance.
+                              </p>
                             )}
                           </>
                         ) : (
@@ -2142,6 +2309,30 @@ export default function App() {
                       <button className="action-btn" onClick={() => window.print()}>
                         <span className="action-btn-icon">🖨️</span> Print side by side — form + explanation
                       </button>
+                    </div>
+
+                    {/* Other tools — always visible */}
+                    <div className="other-tools no-print" style={{ marginTop: 16, padding: '16px 0', borderTop: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Other tools</div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button className="tool-btn-small" onClick={handleFormExplain} disabled={loading}>
+                          <span>📋</span> Explain this form
+                        </button>
+                        <button className="tool-btn-small" onClick={() => setShowTranslatePanel(p => !p)} disabled={loading}>
+                          <span>🌍</span> Translate
+                        </button>
+                      </div>
+                      {showTranslatePanel && (
+                        <div className="translate-picker no-print" style={{ marginTop: 8 }}>
+                          <select className="translate-lang-select" value={targetLang} onChange={e => setTargetLang(e.target.value)}>
+                            {translateLangs.map(lang => <option key={lang} value={lang}>{lang}</option>)}
+                          </select>
+                          <button className="btn btn-primary" style={{ height: 36, fontSize: 13, padding: '0 16px' }}
+                            onClick={handleTranslate} disabled={loading || !targetLang}>
+                            {loading ? "Translating…" : "Go"}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ) : !file ? (

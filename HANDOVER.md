@@ -1,6 +1,6 @@
 # Plainly — Project Handover
 > Full detail file. For the quick-reference, use CLAUDE.md.
-> Last updated: 26 May 2026
+> Last updated: 28 May 2026
 
 ---
 
@@ -128,6 +128,7 @@ Purple / lavender palette with rounded corners:
 
 ### App page (the two-panel tool) — CRITICAL: NO MODE TOGGLE
 
+- **Browser tab title:** "Plainly | Understand forms and documents in plain English"
 - Top nav: Plainly logo, nav links (Home, How it works, For organisations, Technology, About us), Reader support button, Load new document button
 - Reader settings bar: text size, font, spacing
 - **Left panel (document):**
@@ -135,17 +136,18 @@ Purple / lavender palette with rounded corners:
   - Multi-page PDF with thumbnail sidebar
   - Zoom controls and page navigation (centred)
   - Rubber-band drag-to-select any region
-  - Auto-simplifies when selection is drawn
 - **Right panel — three tool buttons (NOT modes):**
-  1. **Simplify** — draw a box, converts selection to plain English + prompts/examples + checklist + important details. Auto-fires when you draw a selection.
-  2. **Explain this form** — processes full current page, goes through every field and explains what it's asking, where to find the info, what to gather. Backend: `POST /api/v1/explain-form`
+  1. **Simplify** — draw a box, converts selection to plain English + prompts/examples + checklist + important details.
+  2. **Explain this form** — processes full current page, goes through every field and explains what it's asking, where to find the info, what to gather. Shows: title, "gather first" list, every field with label/explanation/tip, flags, print button, other tools. Backend: `POST /api/v1/explain-form`
   3. **Translate** — shows language picker (30 languages: te reo Māori, Samoan, Tongan, Mandarin, etc.), translates full page preserving structure. Backend: `POST /api/v1/translate-worksheet`, `GET /api/v1/translate/languages`
-- Reading support card (collapsible): year level slider, reading level slider
-- Listen controls: play/pause, stop, voice selector (grouped by region with flags), speed control (0.5x/0.75x/1x/1.25x) on its own row. Default: Google US English Female.
+- **Tool buttons stay visible** — after results load, "Other tools" section at bottom shows remaining tools
+- Reading support card (collapsible): year level slider, reading level slider — shows for Simplify and Form Explain results
+- Listen controls: play/pause, stop, voice selector (grouped by region with flags), speed control (0.5x/0.75x/1x/1.25x) on its own row. Default: Google US English Female. Works for all three tools.
 - Simplified text with clickable words (click to play from that word, current word highlighted)
 - Important details: deadlines, amounts, documents needed
 - Checklist: "What you need to do" with tickable checkboxes
 - **Print: shows BOTH panels side by side** — original document on left, explanation on right. Person prints it out and fills in the form with the guide beside them.
+- **Independent panel scrolling** — left document panel and right result panel each scroll on their own. Nav stays fixed at top. `<main>` element styled with `flex: 1; overflow: hidden;` to prevent page-level scrolling.
 
 ### B2B landing page (`frontend/public/b2b.html`)
 - Old terracotta design — NOT current design. Needs updating or removing.
@@ -203,12 +205,12 @@ Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 
 1. **Usage tracking/analytics** — log metadata per org (doc count, reading level, timestamp). No document content stored. Shows which docs get simplified most. Feedback loop for customers. This is what makes the product sticky.
 2. **Additional tools** — contract red-flagger, worksheet leveller, policy checker, parent letter writer. All use same Claude backend.
-3. **Logo swap** — Emily has new purple/black and purple/white logos in Google. Download and replace across all pages when available.
-4. **Business Plan prompt** — currently uses AI-generated WINZ criteria, not official. Fix with official criteria before going public.
-5. **Domain** — check if tryplainly.co.nz is available
-6. **First paying customer** — approach one school, community org, or adviser. Don't wait for it to be perfect.
-7. **About us page** — nav link exists (`#about`) but no page built yet.
-8. **Update b2b.html** — still has old terracotta design. Either update to purple/Lexend or remove (organisations.html now covers this).
+3. **Logo swap** ✅ Done (26 May 2026)
+4. **Domain** ✅ Done (26 May 2026) — tryplainly.co.nz registered
+5. **First paying customer** — approach one school, community org, or adviser. Don't wait for it to be perfect.
+6. **About us page** — nav link exists (`#about`) but no page built yet.
+7. **Update b2b.html** — still has old terracotta design. Either update to purple/Lexend or remove (organisations.html now covers this).
+8. **Commit and push** — all fixes from 28 May session are built locally but NOT yet pushed to GitHub/Render.
 
 ---
 
@@ -244,3 +246,18 @@ Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 
 **Feature expansion ideas (all same Claude backend):**
 - Contract red-flagger, worksheet leveller, policy compliance checker, form explainer (done), parent letter writer, translate (done)
+
+---
+
+## Session Log — 28 May 2026
+
+**What was fixed:**
+
+1. **Browser tab title** — changed from "frontend" to "Plainly | Understand forms and documents in plain English" (`frontend/index.html`)
+2. **Form explainer rendering** — `handleFormExplain` was setting `formExplainResult` but the right panel only rendered `result` (from Simplify). Added a full rendering branch for form explain results: title, "gather first" checklist, every field explained with label/explanation/tip, important details (flags), print button, "Other tools" section, TTS controls.
+3. **Translate rendering** — was checking `docMode === "translate" && translateResult` but `handleTranslate` never set `docMode`. Fixed both: (a) `handleTranslate` now sets `setDocMode("translate")`, (b) rendering checks `translateResult` directly (no `docMode` dependency).
+4. **Independent panel scrolling** — `<main>` element had no CSS, breaking the flex chain from `.app-shell` (100vh). Added `main { flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }` so nav stays fixed and panels scroll independently.
+5. **TTS for form explain** — added `formExplainResult` to `speechInfo` useMemo so play/stop works for form explanations.
+6. **Reading support card** — now shows for both `result` (Simplify) and `formExplainResult` (Explain this form), not just Simplify.
+
+**Status:** All changes built locally. NOT yet committed or pushed.

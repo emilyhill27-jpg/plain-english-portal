@@ -1,6 +1,6 @@
 # Plainly — Claude Working Memory
 > Drop this file into any Claude Chat, Cowork, or Code session to get started.
-> Last updated: 26 May 2026
+> Last updated: 28 May 2026
 
 ---
 
@@ -93,12 +93,16 @@ Frontend: `cd frontend && npm run dev` → http://localhost:5173
 
 **Landing page:** Nav, hero with gradient, demo card (tenancy agreement example), feature cards, CTA, footer, reader settings bar
 
+**Browser tab title:** "Plainly | Understand forms and documents in plain English"
+
 **Three tools (NOT modes — there is NO mode toggle):**
 1. **Simplify** — draw a box on the document → plain English + prompts/examples + checklist + important details + reading level support
-2. **Explain this form** — processes full page, explains every field, what to gather before starting
-3. **Translate** — 30 languages (te reo Māori, Samoan, Tongan, Mandarin, etc.), translates full page
+2. **Explain this form** — processes full page, shows: title, "gather first" list, every field explained with label/explanation/tip, important details, print button, TTS. Backend: `POST /api/v1/explain-form`
+3. **Translate** — 30 languages (te reo Māori, Samoan, Tongan, Mandarin, etc.), translates full page. Backend: `POST /api/v1/translate-worksheet`
 
-**Other features:** Audio playback (play/pause/stop, voice selector, speed control, click any word), reading support panel (year level + reading level sliders), print view (original doc + explanation side by side)
+**After results load:** "Other tools" section at bottom shows remaining tool buttons — they never disappear.
+
+**Other features:** Audio playback (play/pause/stop, voice selector, speed control, click any word), reading support panel (year level + reading level sliders), print view (original doc + explanation side by side), independent panel scrolling (left doc panel and right result panel scroll separately, nav stays fixed)
 
 **Standalone pages:**
 - `frontend/public/organisations.html` — B2B landing page (current purple design)
@@ -202,13 +206,14 @@ There is NO mode toggle. No Business Plan mode. No School mode. These are gone.
 
 ## Pending Tasks — In Order, One at a Time
 
-1. **Usage tracking/analytics** — log metadata per org (doc count, reading level, timestamp). No document content stored.
-2. **Additional tools** — contract red-flagger, worksheet leveller, policy checker, parent letter writer
-3. **Logo swap** ✅ Done (26 May 2026) — new Plainly logo (black + purple "ly") live across all pages. Other versions saved in `~/Desktop/plainly (10) 2/`.
-4. **Domain** ✅ Done (26 May 2026) — tryplainly.co.nz registered, DNS pointed, added to Render dashboard.
-5. **First paying customer** — approach one school, CAB, or adviser. Don't wait for perfect.
-6. **About us page** — nav link exists but no page built yet
-7. **Update b2b.html** — old terracotta design. Either update to purple/Lexend or remove
+1. **Commit and push** — 28 May fixes are built locally but NOT pushed to GitHub/Render yet
+2. **Usage tracking/analytics** — log metadata per org (doc count, reading level, timestamp). No document content stored.
+3. **Additional tools** — contract red-flagger, worksheet leveller, policy checker, parent letter writer
+4. **Logo swap** ✅ Done (26 May 2026)
+5. **Domain** ✅ Done (26 May 2026) — tryplainly.co.nz registered, DNS pointed, added to Render dashboard.
+6. **First paying customer** — approach one school, CAB, or adviser. Don't wait for perfect.
+7. **About us page** — nav link exists but no page built yet
+8. **Update b2b.html** — old terracotta design. Either update to purple/Lexend or remove
 
 ---
 
