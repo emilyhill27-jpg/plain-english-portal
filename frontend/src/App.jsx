@@ -913,16 +913,17 @@ export default function App() {
   }, [file]);
 
   // Translate worksheet
-  async function handleTranslate() {
+  async function handleTranslate(langOverride) {
+    const lang = langOverride || targetLang;
     if (!file) { setError("Upload a file first."); return; }
-    if (!targetLang) { setError("Pick a language first."); return; }
+    if (!lang) { setError("Pick a language first."); return; }
     window.speechSynthesis?.cancel();
     setIsPlaying(false); setCurrentCharRange(null);
     setLoading(true); setError(""); setResult(null); setTranslateResult(null);
     try {
       const fd = new FormData();
       fd.append("file", file);
-      fd.append("target_language", targetLang);
+      fd.append("target_language", lang);
       fd.append("page_num", String(pageIdx + 1));
       const res = await fetch(`${API_BASE}/api/v1/translate-worksheet`, { method: "POST", body: fd });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || `Error ${res.status}`);
@@ -1355,14 +1356,14 @@ export default function App() {
         .outer-shell {
           background: var(--shell); border: 1px solid var(--border);
           border-radius: var(--r-xl); box-shadow: var(--shadow-lg);
-          display: grid; grid-template-columns: 1fr 1px 1fr;
-          flex: 1; overflow: hidden;
+          display: grid; grid-template-columns: 1fr 1px 1fr; grid-template-rows: 1fr;
+          flex: 1; overflow: hidden; min-height: 0;
         }
         .shell-divider { background: var(--border); align-self: stretch; }
 
         /* LEFT: DOCUMENT PANEL */
         .doc-panel {
-          display: flex; flex-direction: column; overflow: hidden;
+          display: flex; flex-direction: column; overflow: hidden; min-height: 0;
           border: 2px solid rgba(90,50,130,.25); border-radius: var(--r-lg);
           margin: 14px; background: var(--panel-doc);
         }
@@ -1373,7 +1374,7 @@ export default function App() {
         }
         .tool-sep { width: 1px; height: 18px; background: var(--border); margin: 0 2px; }
         .tool-label { font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 0 4px; }
-        .doc-body { display: grid; grid-template-columns: 80px 1fr; flex: 1; overflow: hidden; }
+        .doc-body { display: grid; grid-template-columns: 80px 1fr; grid-template-rows: 1fr; flex: 1; overflow: hidden; min-height: 0; }
         .thumb-col {
           background: rgba(240,235,248,.5); border-right: 1px solid var(--border);
           padding: 10px 8px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto;
@@ -1386,7 +1387,7 @@ export default function App() {
         .thumb.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
         .thumb-n { font-size: 10px; font-weight: 600; color: var(--muted); text-align: center; padding: 2px 0; background: rgba(240,235,248,.7); }
         .doc-page-area {
-          padding: 28px 26px 100px; overflow-y: auto;
+          padding: 28px 26px 100px; overflow-y: auto; flex: 1; min-height: 0;
           background: var(--panel-doc); position: relative;
         }
         .page-wrap-outer { display: flex; flex-direction: column; align-items: center; padding: 16px; width: 100%; }
@@ -1428,7 +1429,7 @@ export default function App() {
 
         /* RIGHT: RESULT PANEL */
         .result-panel {
-          display: flex; flex-direction: column; background: var(--panel-result); overflow: hidden;
+          display: flex; flex-direction: column; background: var(--panel-result); overflow: hidden; min-height: 0;
           border: 1.5px solid var(--border); border-radius: var(--r-lg);
           margin: 14px;
         }
@@ -1679,8 +1680,8 @@ export default function App() {
 
         /* Instruction box (settings state) */
         .instruction-box-wrap {
-          flex: 1; display: flex; align-items: center; justify-content: center;
-          padding: 24px;
+          flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+          padding: 24px; gap: 20px;
         }
         .instruction-box {
           background: var(--accent-soft);
@@ -2167,7 +2168,8 @@ export default function App() {
                       </div>
                       {showTranslatePanel && (
                         <div className="translate-picker no-print" style={{ marginTop: 8 }}>
-                          <select className="translate-lang-select" value={targetLang} onChange={e => setTargetLang(e.target.value)}>
+                          <select className="translate-lang-select" value={targetLang} disabled={loading}
+                            onChange={e => { const l = e.target.value; setTargetLang(l); handleTranslate(l); }}>
                             {translateLangs.map(lang => <option key={lang} value={lang}>{lang}</option>)}
                           </select>
                           <button className="btn btn-primary" style={{ height: 36, fontSize: 13, padding: '0 16px' }}
@@ -2324,7 +2326,8 @@ export default function App() {
                       </div>
                       {showTranslatePanel && (
                         <div className="translate-picker no-print" style={{ marginTop: 8 }}>
-                          <select className="translate-lang-select" value={targetLang} onChange={e => setTargetLang(e.target.value)}>
+                          <select className="translate-lang-select" value={targetLang} disabled={loading}
+                            onChange={e => { const l = e.target.value; setTargetLang(l); handleTranslate(l); }}>
                             {translateLangs.map(lang => <option key={lang} value={lang}>{lang}</option>)}
                           </select>
                           <button className="btn btn-primary" style={{ height: 36, fontSize: 13, padding: '0 16px' }}
@@ -2387,7 +2390,8 @@ export default function App() {
                     </div>
                     {showTranslatePanel && (
                       <div className="translate-picker no-print">
-                        <select className="translate-lang-select" value={targetLang} onChange={e => setTargetLang(e.target.value)}>
+                        <select className="translate-lang-select" value={targetLang} disabled={loading}
+                          onChange={e => { const l = e.target.value; setTargetLang(l); handleTranslate(l); }}>
                           {translateLangs.map(lang => <option key={lang} value={lang}>{lang}</option>)}
                         </select>
                         <button className="btn btn-primary" style={{ height: 40, fontSize: 14, padding: '0 20px' }}
