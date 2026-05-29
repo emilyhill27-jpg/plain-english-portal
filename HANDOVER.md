@@ -1,6 +1,26 @@
 # Plainly — Project Handover
 > Full detail file. For the quick-reference, use CLAUDE.md.
-> Last updated: 28 May 2026
+> Last updated: 29 May 2026
+
+---
+
+## DESKTOP LAYOUT (set up 29 May 2026)
+
+Emily's desktop was cleared so it only holds Plainly things. Keep it this way.
+
+**On the Desktop, only these stay:**
+- `plain-english/` — this project (code + memory files)
+- `Plainly - Design Screenshots/` — was "plainly (10) 2", renamed for clarity (8 PNGs)
+- `test-worksheet.pdf` — worksheet-converter test file
+- `⭐ START HERE.md` — Emily's ADHD-friendly desktop map + routine guide
+- `Filed - Not Plainly/` — everything non-Plainly, sorted into subfolders (Audio, Images, Video, Artwork, Old Desktop, Other Folders, Review Me, Documents). ~2,700 files, nothing deleted.
+
+The outdated `PLAINLY-CONTEXT_2.md` was moved off the Desktop into this folder as
+`_OUTDATED-PLAINLY-CONTEXT.md`. Source of truth remains `CLAUDE.md`.
+
+**~1,893 music files (17 GB) live in `Filed - Not Plainly/`. Emily chose to keep them filed, NOT delete.**
+
+To re-tidy the desktop later, Emily says: *"Clear my desktop — keep only Plainly, file the rest like last time."*
 
 ---
 
@@ -246,6 +266,18 @@ Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 
 **Feature expansion ideas (all same Claude backend):**
 - Contract red-flagger, worksheet leveller, policy compliance checker, form explainer (done), parent letter writer, translate (done)
+
+---
+
+## Session Log — 29 May 2026
+
+**Desktop organisation (Cowork session):**
+- Cleared 612 desktop items down to Plainly-only.
+- Created `Filed - Not Plainly/` with sorted subfolders; moved ~2,700 files in (nothing deleted).
+- Renamed "plainly (10) 2" → "Plainly - Design Screenshots".
+- Created `⭐ START HERE.md` — desktop map, tool guide (Chat vs Cowork vs Code), save-location rules, and the every-time Plainly routine.
+- Moved outdated `PLAINLY-CONTEXT_2.md` into project folder as `_OUTDATED-PLAINLY-CONTEXT.md`.
+- Emily chose to KEEP ~1,893 music files (17 GB) filed rather than delete.
 
 ---
 

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plainly — Pilot Programme</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --purple:       #7c3aed;
+  --purple-hover: #6d28d9;
+  --purple-light: #EDE9FE;
+  --purple-pale:  #F5F3FF;
+  --green:        #00bf63;
+  --green-light:  #D1FAE5;
+  --text:         #1F2937;
+  --text-mid:     #4B5563;
+  --text-soft:    #6B7280;
+  --border:       #E5E7EB;
+  --bg:           #FAFAFA;
+  --white:        #FFFFFF;
+  --shadow:       0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:    0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.03);
+  --radius:       12px;
+  --radius-sm:    8px;
+  --radius-lg:    20px;
+  --font:         'Lexend', 'Open Sans', Arial, sans-serif;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1.5px solid #DDD5F0;
+  padding: 0 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 58px;
+}
+.nav-logo { display: flex; align-items: center; text-decoration: none; }
+.nav-links { display: flex; gap: 28px; align-items: center; }
+.nav-links a {
+  font-size: 14px; color: var(--text-soft);
+  text-decoration: none; font-weight: 500;
+  transition: color 0.15s;
+}
+.nav-links a:hover { color: var(--purple); }
+.nav-links a.active { color: var(--purple); font-weight: 600; }
+.nav-right { display: flex; gap: 12px; align-items: center; }
+.nav-cta {
+  background: var(--purple); color: white;
+  padding: 10px 22px; border-radius: var(--radius-lg);
+  font-size: 14px; font-weight: 600;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: background 0.2s; font-family: var(--font);
+}
+.nav-cta:hover { background: var(--purple-hover); }
+
+/* HERO */
+.hero {
+  background: linear-gradient(135deg, #EDE9FE 0%, #FDF2F8 50%, #FEF3C7 100%);
+  padding: 80px 48px;
+  text-align: center;
+}
+.hero h1 {
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 800; line-height: 1.15;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+}
+.hero p {
+  font-size: 18px; color: var(--text-mid);
+  max-width: 600px; margin: 0 auto 12px;
+  line-height: 1.6;
+}
+
+/* CONTENT */
+.content { max-width: 900px; margin: 0 auto; padding: 60px 48px; }
+.content h2 {
+  font-size: 28px; font-weight: 700;
+  margin-bottom: 16px; letter-spacing: -0.02em;
+}
+.content p { margin-bottom: 16px; color: var(--text-mid); }
+
+/* CARDS */
+.pilot-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 24px; margin: 40px 0;
+}
+.pilot-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px;
+  box-shadow: var(--shadow);
+}
+.pilot-card h3 {
+  font-size: 18px; font-weight: 700;
+  margin-bottom: 10px; display: flex; align-items: center; gap: 10px;
+}
+.pilot-card p { font-size: 15px; color: var(--text-mid); line-height: 1.6; margin: 0; }
+.card-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* WHO LIST */
+.who-list { list-style: none; padding: 0; margin: 20px 0 40px; }
+.who-list li {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+  font-size: 16px; color: var(--text-mid);
+}
+.who-list li:last-child { border-bottom: none; }
+
+/* FORM */
+.pilot-form {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 36px;
+  box-shadow: var(--shadow-md); margin-top: 40px;
+}
+.pilot-form h2 { margin-bottom: 24px; }
+.form-row { margin-bottom: 20px; }
+.form-row label {
+  display: block; font-size: 14px; font-weight: 600;
+  color: var(--text); margin-bottom: 6px;
+}
+.form-row input, .form-row textarea, .form-row select {
+  width: 100%; padding: 12px 14px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); font-family: var(--font);
+  font-size: 15px; color: var(--text); background: white;
+  transition: border-color 0.15s;
+}
+.form-row input:focus, .form-row textarea:focus, .form-row select:focus {
+  outline: none; border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+}
+.form-row textarea { resize: vertical; min-height: 100px; }
+.form-submit {
+  background: var(--purple); color: white;
+  padding: 14px 32px; border-radius: 10px;
+  font-size: 16px; font-weight: 600;
+  border: none; cursor: pointer; font-family: var(--font);
+  transition: background 0.2s;
+}
+.form-submit:hover { background: var(--purple-hover); }
+
+/* FOOTER */
+footer {
+  background: #1F2937;
+  color: rgba(255,255,255,0.7);
+  padding: 40px 48px 24px;
+}
+.footer-inner { max-width: 1100px; margin: 0 auto; }
+.footer-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  flex-wrap: wrap; gap: 24px;
+  padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.footer-brand p { font-size: 13px; margin-top: 10px; line-height: 1.5; color: rgba(255,255,255,0.5); }
+.footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+.footer-links a {
+  font-size: 14px; color: rgba(255,255,255,0.7); text-decoration: none;
+  font-weight: 500; transition: color 0.15s;
+}
+.footer-links a:hover { color: white; }
+.footer-bottom {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px;
+  padding-top: 16px; font-size: 13px; color: rgba(255,255,255,0.4);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .hero { padding: 48px 20px; }
+  .content { padding: 40px 20px; }
+  .pilot-grid { grid-template-columns: 1fr; }
+  .pilot-form { padding: 24px; }
+  footer { padding: 36px 20px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo"><img src="/logo-plainly.png" alt="Plainly" style="height: 44px; display: block;"></a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/#how">How it works</a>
+    <a href="/organisations.html">For organisations</a>
+    <a href="/technology.html">Technology</a>
+    <a href="/#about">About us</a>
+  </div>
+  <div class="nav-right">
+    <a href="/" class="nav-cta">Try it free</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Partner with Plainly</h1>
+  <p>We're looking for one organisation to pilot Plainly — free for a term, in exchange for honest feedback and a case study.</p>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <h2>Who we're looking for</h2>
+  <p>We want to work with organisations that deal with complex documents every day — and care about making them clearer for the people who need them most.</p>
+
+  <ul class="who-list">
+    <li>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"/></svg>
+      <span><strong>Schools</strong> — SENCOs, learning support coordinators, or principals who want to make school communications accessible for every family.</span>
+    </li>
+    <li>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      <span><strong>Community organisations</strong> — Citizens Advice, community law centres, budgeting services, or any group whose clients struggle with complex paperwork.</span>
+    </li>
+    <li>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="15" y2="14"/><line x1="9" y1="18" x2="15" y2="18"/></svg>
+      <span><strong>Local councils</strong> — communications teams mandated to use plain language in public consultations.</span>
+    </li>
+    <li>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span><strong>Property managers</strong> — tenancy agreements, inspection letters, and maintenance notices are some of the most confusing documents families deal with.</span>
+    </li>
+  </ul>
+
+  <!-- WHAT YOU GET / WHAT WE ASK -->
+  <div class="pilot-grid">
+    <div class="pilot-card">
+      <h3>
+        <div class="card-icon" style="background:#EDE9FE;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        What you get
+      </h3>
+      <p>Free access to Plainly for one full term (or 3 months). White-label option with your branding. A training session for your team. Priority support throughout the pilot.</p>
+    </div>
+    <div class="pilot-card">
+      <h3>
+        <div class="card-icon" style="background:#FDF2F8;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EC4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        </div>
+        What we ask
+      </h3>
+      <p>Permission to use your logo on our site. A short testimonial at the end. Two feedback sessions (20 minutes each). Anonymised usage data to help us improve.</p>
+    </div>
+    <div class="pilot-card">
+      <h3>
+        <div class="card-icon" style="background:#D1FAE5;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00bf63" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        What success looks like
+      </h3>
+      <p>80% of users report the document was clearer. Measurable reduction in follow-up calls or queries. A case study we can both be proud of.</p>
+    </div>
+    <div class="pilot-card">
+      <h3>
+        <div class="card-icon" style="background:#EFF6FF;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        No risk
+      </h3>
+      <p>No contracts, no lock-in. If it doesn't work for you, we part ways — no hard feelings. We just want to prove this works.</p>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <div class="pilot-form" id="apply">
+    <h2>Interested? Get in touch.</h2>
+    <p style="color:var(--text-mid); margin-bottom:24px;">Fill in the form below or email us directly at <a href="mailto:hello@tryplainly.co.nz" style="color:var(--purple); font-weight:500;">hello@tryplainly.co.nz</a></p>
+
+    <form action="https://formsubmit.co/hello@tryplainly.co.nz" method="POST">
+      <input type="hidden" name="_subject" value="Plainly Pilot Programme enquiry">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_next" value="https://tryplainly.co.nz/pilot.html#thanks">
+
+      <div class="form-row">
+        <label for="name">Your name</label>
+        <input type="text" id="name" name="name" required placeholder="e.g. Sarah Thompson">
+      </div>
+      <div class="form-row">
+        <label for="org">Organisation</label>
+        <input type="text" id="org" name="organisation" required placeholder="e.g. Kaikohe Intermediate School">
+      </div>
+      <div class="form-row">
+        <label for="role">Your role</label>
+        <input type="text" id="role" name="role" required placeholder="e.g. SENCO / Learning Support Coordinator">
+      </div>
+      <div class="form-row">
+        <label for="type">Type of organisation</label>
+        <select id="type" name="org_type" required>
+          <option value="">Choose one…</option>
+          <option value="school">School</option>
+          <option value="community">Community organisation / CAB / Law centre</option>
+          <option value="council">Local council</option>
+          <option value="property">Property management</option>
+          <option value="health">Health provider</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required placeholder="sarah@school.nz">
+      </div>
+      <div class="form-row">
+        <label for="why">Why are you interested?</label>
+        <textarea id="why" name="message" placeholder="Tell us briefly — what documents do your people struggle with? What would clearer language change for them?"></textarea>
+      </div>
+
+      <button type="submit" class="form-submit">Send enquiry →</button>
+    </form>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="/logo-plainly.png" alt="Plainly" style="height: 28px; display: block; filter: brightness(0) invert(1);">
+        <p>Plain language for everyone.<br>Built in Aotearoa New Zealand.</p>
+      </div>
+      <div class="footer-links">
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/security.html">Security</a>
+        <a href="/pilot.html">Pilot programme</a>
+        <a href="mailto:hello@tryplainly.co.nz">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Plainly. All rights reserved.</span>
+      <span>hello@tryplainly.co.nz</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,6 +1,8 @@
 # Plainly — Claude Working Memory
 > Drop this file into any Claude Chat, Cowork, or Code session to get started.
-> Last updated: 28 May 2026
+> Last updated: 29 May 2026
+
+> **Desktop note (29 May 2026):** Emily's desktop is now Plainly-only. It holds: `plain-english/`, `Plainly - Design Screenshots/`, `test-worksheet.pdf`, `⭐ START HERE.md`, and `Filed - Not Plainly/` (all non-Plainly files, sorted, nothing deleted). The `⭐ START HERE.md` file on the desktop is Emily's plain-English routine guide — keep it accurate.
 
 ---
 

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plainly — Security</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --purple: #7c3aed; --purple-hover: #6d28d9; --purple-light: #EDE9FE;
+  --text: #1F2937; --text-mid: #4B5563; --text-soft: #6B7280;
+  --border: #E5E7EB; --bg: #FAFAFA; --font: 'Lexend', 'Open Sans', Arial, sans-serif;
+}
+body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: 18px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1.5px solid #DDD5F0; padding: 0 48px; display: flex; align-items: center; justify-content: space-between; height: 58px; }
+.nav-logo { display: flex; align-items: center; text-decoration: none; }
+.nav-links { display: flex; gap: 28px; align-items: center; }
+.nav-links a { font-size: 14px; color: var(--text-soft); text-decoration: none; font-weight: 500; transition: color 0.15s; }
+.nav-links a:hover { color: var(--purple); }
+.nav-right { display: flex; gap: 12px; align-items: center; }
+.nav-cta { background: var(--purple); color: white; padding: 10px 22px; border-radius: 20px; font-size: 14px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: background 0.2s; font-family: var(--font); }
+.nav-cta:hover { background: var(--purple-hover); }
+.page { max-width: 720px; margin: 0 auto; padding: 60px 48px; }
+.page h1 { font-size: 36px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 8px; }
+.page .subtitle { font-size: 15px; color: var(--text-soft); margin-bottom: 40px; }
+.page h2 { font-size: 22px; font-weight: 700; margin: 32px 0 12px; }
+.page p, .page li { color: var(--text-mid); margin-bottom: 12px; }
+.page ul { padding-left: 20px; margin-bottom: 16px; }
+.trust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+.trust-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.trust-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+.trust-card p { font-size: 15px; color: var(--text-mid); margin: 0; }
+footer { background: #1F2937; color: rgba(255,255,255,0.7); padding: 40px 48px 24px; }
+.footer-inner { max-width: 1100px; margin: 0 auto; }
+.footer-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 24px; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.footer-brand p { font-size: 13px; margin-top: 10px; line-height: 1.5; color: rgba(255,255,255,0.5); }
+.footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+.footer-links a { font-size: 14px; color: rgba(255,255,255,0.7); text-decoration: none; font-weight: 500; transition: color 0.15s; }
+.footer-links a:hover { color: white; }
+.footer-bottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding-top: 16px; font-size: 13px; color: rgba(255,255,255,0.4); }
+@media (max-width: 768px) { nav { padding: 0 20px; } .page { padding: 40px 20px; } .trust-grid { grid-template-columns: 1fr; } footer { padding: 36px 20px 20px; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo"><img src="/logo-plainly.png" alt="Plainly" style="height: 44px; display: block;"></a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/#how">How it works</a>
+    <a href="/organisations.html">For organisations</a>
+    <a href="/technology.html">Technology</a>
+    <a href="/#about">About us</a>
+  </div>
+  <div class="nav-right">
+    <a href="/" class="nav-cta">Try it free</a>
+  </div>
+</nav>
+
+<div class="page">
+  <h1>Security</h1>
+  <p class="subtitle">How we keep your documents safe</p>
+
+  <div class="trust-grid">
+    <div class="trust-card">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        No document storage
+      </h3>
+      <p>Documents are processed in memory and discarded immediately. Nothing is saved to disk, database, or cloud storage.</p>
+    </div>
+    <div class="trust-card">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Encrypted in transit
+      </h3>
+      <p>All connections use HTTPS/TLS encryption. Your document content is encrypted between your browser and our server.</p>
+    </div>
+    <div class="trust-card">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        No user accounts
+      </h3>
+      <p>We don't require sign-up, login, or personal information. No accounts means no credentials to breach.</p>
+    </div>
+    <div class="trust-card">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+        No third-party tracking
+      </h3>
+      <p>No analytics scripts, no tracking pixels, no cookies. We don't monitor what you do on the site.</p>
+    </div>
+  </div>
+
+  <h2>AI provider</h2>
+  <p>Plainly uses Anthropic's Claude API to process documents. Anthropic is a US-based AI safety company. Under their API terms, your document content is not stored after processing and is not used for model training.</p>
+
+  <h2>Data residency</h2>
+  <p>The Plainly application is hosted on Render.com. AI processing calls are made to Anthropic's API (US-based). Document content passes through US infrastructure during processing but is not retained. We are exploring options for AU/NZ-based processing for organisations with data sovereignty requirements.</p>
+
+  <h2>Accessibility standards</h2>
+  <p>Plainly is designed to meet WCAG 2.2 Level AA and W3C Cognitive Accessibility (COGA) guidelines. This includes colour contrast requirements, keyboard navigation, screen reader support, and neuroinclusive design principles throughout.</p>
+
+  <h2>Report a concern</h2>
+  <p>If you find a security issue or have a concern about how we handle data, please contact us at <a href="mailto:hello@tryplainly.co.nz" style="color:var(--purple);">hello@tryplainly.co.nz</a>. We take every report seriously.</p>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="/logo-plainly.png" alt="Plainly" style="height: 28px; display: block; filter: brightness(0) invert(1);">
+        <p>Plain language for everyone.<br>Built in Aotearoa New Zealand.</p>
+      </div>
+      <div class="footer-links">
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/security.html">Security</a>
+        <a href="/pilot.html">Pilot programme</a>
+        <a href="mailto:hello@tryplainly.co.nz">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 Plainly. All rights reserved.</span>
+      <span>hello@tryplainly.co.nz</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

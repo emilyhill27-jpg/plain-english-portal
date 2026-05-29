@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plainform — Dyslexia Button Demo</title>
+    <style>
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/open-dyslexic-regular.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a5276, #2980b9);
+            color: white;
+            padding: 28px 32px;
+            text-align: center;
+        }
+
+        .header h1 { font-size: 32px; font-weight: 700; margin-bottom: 6px; }
+        .header p { font-size: 16px; opacity: 0.9; }
+
+        .container {
+            max-width: 1300px;
+            margin: 28px auto;
+            padding: 0 24px;
+        }
+
+        .button-row {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .simplify-btn {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            padding: 20px 56px;
+            font-size: 22px;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 18px rgba(39, 174, 96, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .simplify-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(39, 174, 96, 0.5);
+        }
+
+        .simplify-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .panels {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 14px 20px;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 3px solid;
+        }
+
+        .panel-left .panel-header {
+            background: #fafafa;
+            color: #888;
+            border-color: #ddd;
+        }
+
+        .panel-right .panel-header {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-color: #4caf50;
+        }
+
+        .panel-body { padding: 24px; }
+
+        /* Original text — looks like a school worksheet */
+        .original-text {
+            font-family: 'Times New Roman', 'Georgia', serif;
+            font-size: 13.5px;
+            line-height: 1.45;
+            color: #333;
+        }
+        .original-text p { margin-bottom: 11px; }
+        .original-text ul { margin: 6px 0 11px 24px; }
+        .original-text ul li { margin-bottom: 3px; }
+        .worksheet-header {
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+        }
+        .worksheet-header h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        .worksheet-header .fields {
+            font-size: 12px;
+            color: #666;
+        }
+        .worksheet-passage {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 14px;
+            margin-bottom: 14px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .worksheet-questions ol {
+            margin-left: 20px;
+        }
+        .worksheet-questions li {
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        .worksheet-questions .marks {
+            color: #888;
+            font-size: 11px;
+        }
+
+        /* Simplified — dyslexia friendly */
+        .simplified-body {
+            font-family: 'OpenDyslexic', 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+            font-size: 18px;
+            line-height: 2;
+            color: #2c1810;
+            background: #fdf6e3;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .summary-bar {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1565c0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            line-height: 1.5;
+        }
+
+        .section-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border-left: 5px solid;
+            background: white;
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .section-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-icon {
+            font-size: 26px;
+            flex-shrink: 0;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .section-text { flex: 1; }
+
+        .cat-topic      { border-color: #8e44ad; }
+        .cat-topic      .section-icon { background: #f4ecf7; }
+        .cat-key_word   { border-color: #e67e22; }
+        .cat-key_word   .section-icon { background: #fef3e2; }
+        .cat-question   { border-color: #2980b9; }
+        .cat-question   .section-icon { background: #ebf5fb; }
+        .cat-hint       { border-color: #f1c40f; }
+        .cat-hint       .section-icon { background: #fef9e7; }
+        .cat-example    { border-color: #27ae60; }
+        .cat-example    .section-icon { background: #e8f8f0; }
+        .cat-instruction { border-color: #16a085; }
+        .cat-instruction .section-icon { background: #e8f6f3; }
+        .cat-remember   { border-color: #e74c3c; }
+        .cat-remember   .section-icon { background: #fdedec; }
+
+        /* Settings toggles */
+        .settings-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            padding: 12px 14px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .setting-toggle {
+            padding: 7px 16px;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .setting-toggle.active {
+            border-color: #2980b9;
+            background: #ebf5fb;
+            color: #2980b9;
+        }
+
+        .setting-toggle:hover { border-color: #aaa; }
+
+        /* Placeholder */
+        .placeholder {
+            text-align: center;
+            padding: 80px 20px;
+            color: #aaa;
+        }
+        .placeholder .arrow { font-size: 56px; margin-bottom: 16px; }
+        .placeholder p { font-size: 17px; line-height: 1.6; }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .panels { grid-template-columns: 1fr; }
+            .simplify-btn { padding: 16px 36px; font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Plainform</h1>
+        <p>Dyslexia Button Demo &mdash; See how a school worksheet becomes easy to understand</p>
+    </div>
+
+    <div class="container">
+        <div class="button-row">
+            <button class="simplify-btn" id="simplifyBtn" onclick="simplifyText()">
+                Simplify This Text
+            </button>
+        </div>
+
+        <div class="panels">
+            <div class="panel panel-left">
+                <div class="panel-header">Original Worksheet</div>
+                <div class="panel-body">
+                    <div class="original-text" id="originalText">
+                        <div class="worksheet-header">
+                            <h3>SCIENCE &mdash; Year 5/6 &mdash; Living World</h3>
+                            <div class="fields">Name: _____________&nbsp;&nbsp;&nbsp;Date: _____________</div>
+                        </div>
+                        <p><strong>Read the passage below and answer the questions that follow.</strong></p>
+                        <div class="worksheet-passage">
+                            Photosynthesis is the process by which green plants manufacture their own food using sunlight energy. During photosynthesis, plants absorb carbon dioxide from the atmosphere through tiny pores called stomata, located primarily on the underside of leaves. Simultaneously, water is transported from the roots through the xylem vessels to the leaves. Using chlorophyll, the green pigment found in chloroplasts, plants convert these raw materials into glucose and oxygen. The glucose is utilised as an energy source for growth and reproduction, while the oxygen is released into the atmosphere as a by-product.
+                        </div>
+                        <div class="worksheet-questions">
+                            <ol>
+                                <li>Define the term 'photosynthesis' in your own words. <span class="marks">(2 marks)</span></li>
+                                <li>Identify the THREE raw materials required for photosynthesis to occur. <span class="marks">(3 marks)</span></li>
+                                <li>Explain the function of stomata and describe where they are predominantly located. <span class="marks">(3 marks)</span></li>
+                                <li>What role does chlorophyll play in the process of photosynthesis? <span class="marks">(2 marks)</span></li>
+                                <li>Describe TWO products of photosynthesis and explain what happens to each. <span class="marks">(4 marks)</span></li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-right">
+                <div class="panel-header">Simplified Version</div>
+                <div class="panel-body" id="rightPanel">
+                    <div class="placeholder" id="placeholder">
+                        <div class="arrow">&#x1F448;</div>
+                        <p>Click <strong>&ldquo;Simplify This Text&rdquo;</strong> to see the text<br>transformed into an easy-to-read format</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var ICONS = {
+            topic:       '📚',
+            key_word:    '📖',
+            question:    '❓',
+            hint:        '💡',
+            example:     '✏️',
+            instruction: '👉',
+            remember:    '⭐'
+        };
+
+        var FALLBACK = {
+            summary: "This worksheet is about how plants make their own food — it's called photosynthesis",
+            sections: [
+                {category: "topic",     text: "This worksheet is about <strong>photosynthesis</strong> — that's just a fancy word for <strong>how plants make their own food using sunlight</strong>."},
+                {category: "key_word",  text: "<strong>Stomata</strong> = tiny little holes on the bottom of leaves. Plants breathe in air through these holes."},
+                {category: "key_word",  text: "<strong>Chlorophyll</strong> = the green stuff inside leaves. It catches sunlight like a solar panel."},
+                {category: "key_word",  text: "<strong>Glucose</strong> = a type of sugar. It's the food that plants make for themselves."},
+                {category: "question",  text: "<strong>Question 1:</strong> Explain what photosynthesis means, but use your own words. Think: <strong>what does the plant need, and what does it make?</strong>"},
+                {category: "example",   text: "A good answer: <strong>\"Photosynthesis is when a plant uses sunlight, water, and air to make its own food (sugar) and lets out oxygen.\"</strong>"},
+                {category: "question",  text: "<strong>Question 2:</strong> Name the <strong>3 things</strong> a plant needs to do photosynthesis. Look in the passage for what the plant takes in."},
+                {category: "hint",      text: "The 3 things are: <strong>sunlight</strong>, <strong>carbon dioxide</strong> (from the air), and <strong>water</strong> (from the roots)."},
+                {category: "question",  text: "<strong>Question 3:</strong> What are stomata and where are they? Two parts to answer here."},
+                {category: "hint",      text: "Stomata are <strong>tiny holes</strong> and they're mostly on the <strong>bottom of the leaves</strong>."},
+                {category: "question",  text: "<strong>Question 4:</strong> What does chlorophyll do? Think about what its job is in making food."},
+                {category: "hint",      text: "Chlorophyll <strong>catches the sunlight</strong> and uses it to turn water and air into food."},
+                {category: "question",  text: "<strong>Question 5:</strong> Name <strong>2 things</strong> the plant makes, and say what happens to each one."},
+                {category: "example",   text: "The plant makes <strong>glucose (sugar)</strong> — it uses this for energy to grow. It also makes <strong>oxygen</strong> — this goes out into the air for us to breathe."},
+                {category: "remember",  text: "Read each question carefully. <strong>Check how many marks</strong> it's worth — that tells you how many points to include in your answer."}
+            ]
+        };
+
+        var settings = {
+            dyslexicFont: true,
+            largeText: false,
+            extraSpacing: false,
+            creamBg: true
+        };
+
+        function getOriginalText() {
+            return document.getElementById('originalText').innerText;
+        }
+
+        async function simplifyText() {
+            var btn = document.getElementById('simplifyBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Simplifying...';
+
+            var data;
+            try {
+                var resp = await fetch('/api/v1/simplify-text', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({text: getOriginalText()})
+                });
+                if (!resp.ok) throw new Error('API error');
+                data = await resp.json();
+                data.sections = data.sections.map(function(s) {
+                    return {
+                        category: s.category,
+                        text: s.text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                    };
+                });
+            } catch (e) {
+                data = FALLBACK;
+            }
+
+            renderSimplified(data);
+            btn.innerHTML = '↻ Simplify Again';
+            btn.disabled = false;
+        }
+
+        function renderSimplified(data) {
+            var panel = document.getElementById('rightPanel');
+            var html = '';
+
+            html += '<div class="settings-bar">';
+            html += '<button class="setting-toggle' + (settings.dyslexicFont ? ' active' : '') + '" onclick="toggleSetting(\'dyslexicFont\')">Aa Dyslexia Font</button>';
+            html += '<button class="setting-toggle' + (settings.largeText ? ' active' : '') + '" onclick="toggleSetting(\'largeText\')">A+ Larger Text</button>';
+            html += '<button class="setting-toggle' + (settings.extraSpacing ? ' active' : '') + '" onclick="toggleSetting(\'extraSpacing\')">↕ Extra Spacing</button>';
+            html += '<button class="setting-toggle' + (settings.creamBg ? ' active' : '') + '" onclick="toggleSetting(\'creamBg\')">☀ Warm Background</button>';
+            html += '</div>';
+
+            html += '<div class="summary-bar">📋 ' + data.summary + '</div>';
+
+            var bodyStyle = '';
+            if (!settings.dyslexicFont) bodyStyle += "font-family: 'Segoe UI', system-ui, sans-serif;";
+            if (settings.largeText)     bodyStyle += 'font-size: 22px;';
+            if (settings.extraSpacing)  bodyStyle += 'line-height: 2.6; letter-spacing: 0.5px; word-spacing: 4px;';
+            if (!settings.creamBg)      bodyStyle += 'background: white;';
+
+            html += '<div class="simplified-body" style="' + bodyStyle + '">';
+
+            data.sections.forEach(function(section, i) {
+                var icon = ICONS[section.category] || 'ℹ️';
+                html += '<div class="section-card cat-' + section.category + '" style="transition-delay: ' + (i * 0.08) + 's">';
+                html += '<div class="section-icon">' + icon + '</div>';
+                html += '<div class="section-text">' + section.text + '</div>';
+                html += '</div>';
+            });
+
+            html += '</div>';
+            panel.innerHTML = html;
+            panel.dataset.lastData = JSON.stringify(data);
+
+            requestAnimationFrame(function() {
+                document.querySelectorAll('.section-card').forEach(function(card) {
+                    card.classList.add('visible');
+                });
+            });
+        }
+
+        function toggleSetting(key) {
+            settings[key] = !settings[key];
+            var panel = document.getElementById('rightPanel');
+            if (panel.dataset.lastData) {
+                renderSimplified(JSON.parse(panel.dataset.lastData));
+                document.querySelectorAll('.section-card').forEach(function(card) {
+                    card.classList.add('visible');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

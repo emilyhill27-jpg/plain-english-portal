@@ -334,25 +334,36 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
 
         /* Footer */
         .pl-footer {
-          background: white;
-          border-top: 1px solid ${T.border};
-          padding: 24px 48px;
+          background: #1F2937;
+          color: rgba(255,255,255,0.7);
+          padding: 40px 48px 24px;
         }
         .pl-footer-inner {
-          display: flex; align-items: center; justify-content: space-between;
-          flex-wrap: wrap; gap: 16px;
           max-width: 1100px; margin: 0 auto;
         }
-        .pl-footer-left {
-          display: flex; align-items: center; gap: 8px;
-          font-size: 13px; color: ${T.textSoft};
+        .pl-footer-top {
+          display: flex; justify-content: space-between; align-items: flex-start;
+          flex-wrap: wrap; gap: 24px;
+          padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        .pl-footer-right {
-          display: flex; gap: 24px; align-items: center;
-          font-size: 13px; color: ${T.textSoft};
+        .pl-footer-brand p {
+          font-size: 13px; margin-top: 10px; line-height: 1.5;
+          color: rgba(255,255,255,0.5);
         }
-        .pl-footer-right span {
-          display: flex; align-items: center; gap: 6px;
+        .pl-footer-links {
+          display: flex; gap: 24px; flex-wrap: wrap;
+        }
+        .pl-footer-links a {
+          font-size: 14px; color: rgba(255,255,255,0.7);
+          text-decoration: none; font-weight: 500;
+          transition: color 0.15s;
+        }
+        .pl-footer-links a:hover { color: white; }
+        .pl-footer-bottom {
+          display: flex; justify-content: space-between; align-items: center;
+          flex-wrap: wrap; gap: 12px;
+          padding-top: 16px; font-size: 13px;
+          color: rgba(255,255,255,0.4);
         }
 
         /* Drag-drop on hero */
@@ -427,16 +438,14 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
           <div className="pl-nav-links">
             <a href="#" className="active">Home</a>
             <a href="#how">How it works</a>
-            <a href="#school">For schools</a>
             <a href="/organisations.html">For organisations</a>
             <a href="/technology.html">Technology</a>
             <a href="#about">About us</a>
           </div>
           <div className="pl-nav-right">
             <button className={`pl-reader-btn${showReaderSettings ? ' active' : ''}`}
-              onClick={() => setShowReaderSettings(!showReaderSettings)}>Reader settings</button>
-            <a href="#" className="pl-nav-login">Log in</a>
-            <button className="pl-nav-cta" onClick={onGetStarted}>Get started</button>
+              onClick={() => setShowReaderSettings(!showReaderSettings)}>Reader support</button>
+            <button className="pl-nav-cta" onClick={onGetStarted}>Try it free</button>
           </div>
         </nav>
 
@@ -487,7 +496,7 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
         <div className="pl-hero-outer">
         <section className="pl-hero">
           <div>
-            <div className="pl-hero-badge">🔒 Free &nbsp;·&nbsp; No sign-up &nbsp;·&nbsp; No data stored</div>
+            <div className="pl-hero-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Free &nbsp;·&nbsp; No sign-up &nbsp;·&nbsp; No data stored</div>
             <h1>Any document.<br/>Plain and simple.</h1>
             <p className="pl-hero-sub">
               Contracts, government forms, letters, agreements — paste or upload anything and get a clear explanation in plain language.
@@ -496,9 +505,9 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
               <button className="pl-btn-primary" onClick={onGetStarted}>✦ Try a document today</button>
             </div>
             <div className="pl-hero-trust">
-              <span>📄 PDFs, forms &amp; contracts</span>
+              <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:4}}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>PDFs, forms &amp; contracts</span>
               <span style={{ margin: "0 10px", opacity: 0.4 }}>·</span>
-              <span>⚡ Results in seconds</span>
+              <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:4}}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Results in seconds</span>
             </div>
           </div>
 
@@ -507,7 +516,7 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
             {/* Toolbar */}
             <div className="pl-demo-toolbar">
               <div className="pl-demo-toolbar-left">
-                <span>📄</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 <span>tenancy-agreement.pdf</span>
                 <span className="pl-demo-toolbar-badge">PDF</span>
               </div>
@@ -516,7 +525,7 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
             <div className="pl-demo-split">
               {/* Left: real document text */}
               <div className="pl-demo-doc-panel">
-                <div className="pl-demo-panel-label">📄 Document</div>
+                <div className="pl-demo-panel-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:4}}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Document</div>
                 <div className="pl-demo-page">
                   <div className="pl-demo-doc-text pl-demo-doc-faded">TENANCY AGREEMENT</div>
                   <div className="pl-demo-doc-text pl-demo-doc-faded">Clause 7.2 — Repairs</div>
@@ -528,11 +537,11 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
               </div>
               {/* Right: plain English result */}
               <div className="pl-demo-result-panel">
-                <div className="pl-demo-result-label">☀️ Plain English</div>
+                <div className="pl-demo-result-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:4}}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>Plain English</div>
                 <div className="pl-demo-result-text">
                   You pay for all repairs — even if other parts of the agreement say something different.
                 </div>
-                <div className="pl-demo-result-tag">✅ Easier to read</div>
+                <div className="pl-demo-result-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00bf63" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:4}}><polyline points="20 6 9 17 4 12"/></svg>Easier to read</div>
               </div>
             </div>
           </div>
@@ -541,31 +550,31 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
 
         {/* Support section */}
         <section className="pl-support-section" id="how">
-          <div className="pl-support-icon">💜</div>
+          <div className="pl-support-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="#7c3aed" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
           <h2>Support that meets you where you are.</h2>
           <p>Plainly is here to make documents easier — at home, at school, and everywhere in between.</p>
 
           <div className="pl-cards-grid">
             <div className="pl-feature-card">
-              <div className="pl-feature-card-icon" style={{ background: T.purplePale }}>📄</div>
+              <div className="pl-feature-card-icon" style={{ background: T.purplePale }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
               <h3>Simplify documents in seconds</h3>
               <p>Upload any document and get a clear, plain English version that's easier to read and understand.</p>
               <a href="#" className="pl-feature-card-link">Learn more →</a>
             </div>
             <div className="pl-feature-card">
-              <div className="pl-feature-card-icon" style={{ background: T.pinkPale }}>🎒</div>
+              <div className="pl-feature-card-icon" style={{ background: T.pinkPale }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EC4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"/></svg></div>
               <h3>Made for students and schools</h3>
               <p>Plainly supports learning by making school forms, policies and letters easier for students and families.</p>
               <a href="#" className="pl-feature-card-link">Learn more →</a>
             </div>
             <div className="pl-feature-card">
-              <div className="pl-feature-card-icon" style={{ background: T.bluePale }}>🧑‍🤝‍🧑</div>
+              <div className="pl-feature-card-icon" style={{ background: T.bluePale }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
               <h3>Accessible for everyone</h3>
               <p>Designed for people who benefit from clearer language, including neurodivergent readers, ESL users and more.</p>
               <a href="#" className="pl-feature-card-link">Learn more →</a>
             </div>
             <div className="pl-feature-card">
-              <div className="pl-feature-card-icon" style={{ background: T.pinkPale }}>🛡️</div>
+              <div className="pl-feature-card-icon" style={{ background: T.pinkPale }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EC4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
               <h3>Safe, supportive and private</h3>
               <p>Your privacy comes first. We don't store your documents and your information is always safe.</p>
               <a href="#" className="pl-feature-card-link">Learn more →</a>
@@ -579,13 +588,13 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
             <h2>Because everyone deserves to feel in the loop.</h2>
             <p>Plainly believes that clarity creates confidence. We're here to help you understand, participate and feel supported every step of the way.</p>
             <div className="pl-cta-actions">
-              <button className="pl-btn-primary" onClick={onGetStarted}>💜 See how Plainly can help</button>
+              <button className="pl-btn-primary" onClick={onGetStarted}>See how Plainly can help →</button>
               <a href="#how" className="pl-cta-link">How it works →</a>
             </div>
           </div>
           <div className="pl-cta-illustration">
             <div style={{ textAlign: "center", color: T.textSoft }}>
-              <div style={{ fontSize: 64, marginBottom: 12 }}>📝💜</div>
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{marginBottom:12}}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
               <p style={{ fontSize: 14 }}>Making documents clearer for everyone</p>
             </div>
           </div>
@@ -596,13 +605,22 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
         {/* Footer */}
         <footer className="pl-footer">
           <div className="pl-footer-inner">
-            <div className="pl-footer-left">
-              🔒 Plainly is a purpose-led tool created to make information clearer and more inclusive for all.
+            <div className="pl-footer-top">
+              <div className="pl-footer-brand">
+                <img src="/logo-plainly.png" alt="Plainly" style={{ height: 28 }} />
+                <p>Plain language for everyone.<br/>Built in Aotearoa New Zealand.</p>
+              </div>
+              <div className="pl-footer-links">
+                <a href="/privacy.html">Privacy</a>
+                <a href="/terms.html">Terms</a>
+                <a href="/security.html">Security</a>
+                <a href="/pilot.html">Pilot programme</a>
+                <a href="mailto:hello@tryplainly.co.nz">Contact</a>
+              </div>
             </div>
-            <div className="pl-footer-right">
-              <span>🔒 Private by design</span>
-              <span>👥 No data retention</span>
-              <span>💜 Human-first technology</span>
+            <div className="pl-footer-bottom">
+              <span>© 2026 Plainly. All rights reserved.</span>
+              <span>hello@tryplainly.co.nz</span>
             </div>
           </div>
         </footer>
@@ -1123,7 +1141,7 @@ export default function App() {
         onDragEnter={e=>e.preventDefault()} onDragOver={e=>e.preventDefault()}
         onDragLeave={e=>e.preventDefault()} onDrop={handleDrop}>
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>📄</div>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{marginBottom:16}}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
           <strong>Drop a document here</strong>
           <p>PDF, JPG or PNG accepted</p>
           <input id="file-input" type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={handleBrowse} />
@@ -1768,26 +1786,6 @@ export default function App() {
         .print-warning { display: none; }
       `}</style>
 
-      {/* MAIN NAV (same as landing page) */}
-      <nav className="main-nav no-print">
-        <a className="main-nav-left" href="/" onClick={e => { e.preventDefault(); reset(); setShowLanding(true); }}>
-          <img src="/logo-plainly.png" alt="Plainly" style={{ height: 44, display: 'block' }} />
-        </a>
-        <div className="main-nav-links">
-          <a href="#" onClick={e => { e.preventDefault(); reset(); setShowLanding(true); }}>Home</a>
-          <a href="#how">How it works</a>
-          <a href="#schools">For schools</a>
-          <a href="/organisations.html">For organisations</a>
-          <a href="/technology.html">Technology</a>
-          <a href="#about">About us</a>
-        </div>
-        <div className="main-nav-right">
-          <a href="#" className="main-nav-login">Log in</a>
-          <button className="main-nav-cta" onClick={() => setShowReaderSettings(!showReaderSettings)}
-            style={showReaderSettings ? { background:'var(--accent)', opacity: 0.9 } : {}}>Reader support</button>
-        </div>
-      </nav>
-
       {/* APP NAV */}
       <header className="topnav no-print">
         <a href="/" className="logo" onClick={e => { e.preventDefault(); reset(); setShowLanding(true); }}>
@@ -2124,14 +2122,14 @@ export default function App() {
                           }}>
                             <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
                               <span style={{ fontSize: 14, opacity: 0.6 }}>
-                                {field.type === 'checkbox' ? '☑️' : field.type === 'section' ? '📑' : field.type === 'instruction' ? 'ℹ️' : field.type === 'office_only' ? '🏢' : '✏️'}
+                                {field.type === 'checkbox' ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg> : field.type === 'section' ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> : field.type === 'instruction' ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> : field.type === 'office_only' ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="15" y2="14"/><line x1="9" y1="18" x2="15" y2="18"/></svg> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>}
                               </span>
                               <strong style={{ fontSize: 14, color: 'var(--text)' }}>{field.label}</strong>
                             </div>
                             <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--text-mid)', lineHeight: 1.6 }}>{field.explanation}</p>
                             {field.tip && (
                               <p style={{ margin: '6px 0 0', fontSize: 13, color: '#8c52ff', lineHeight: 1.5 }}>
-                                💡 {field.tip}
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8c52ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:4}}><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0018 8 6 6 0 006 8c0 1 .23 2.23 1.5 3.5C8.26 12.26 8.72 13.02 8.91 14"/></svg> {field.tip}
                               </p>
                             )}
                           </div>
@@ -2146,7 +2144,7 @@ export default function App() {
                         <div className="flags-row">
                           {formExplainResult.flags.deadlines?.map((d,i) => <span key={i} className="flag-chip">📅 {d}</span>)}
                           {formExplainResult.flags.amounts?.map((a,i) => <span key={i} className="flag-chip">💰 {a}</span>)}
-                          {formExplainResult.flags.documents_needed?.map((d,i) => <span key={i} className="flag-chip">📄 {d}</span>)}
+                          {formExplainResult.flags.documents_needed?.map((d,i) => <span key={i} className="flag-chip">{d}</span>)}
                         </div>
                       </div>
                     )}
@@ -2280,7 +2278,7 @@ export default function App() {
                         <div className="flags-row">
                           {result.flags.deadlines?.map((d,i) => <span key={i} className="flag-chip">📅 {d}</span>)}
                           {result.flags.amounts?.map((a,i) => <span key={i} className="flag-chip">💰 {a}</span>)}
-                          {result.flags.documents_needed?.map((d,i) => <span key={i} className="flag-chip">📄 {d}</span>)}
+                          {result.flags.documents_needed?.map((d,i) => <span key={i} className="flag-chip">{d}</span>)}
                         </div>
                       </div>
                     )}
@@ -2340,7 +2338,7 @@ export default function App() {
                   </div>
                 ) : !file ? (
                   <div className="empty-result">
-                    <div className="empty-result-icon">📝</div>
+                    <div className="empty-result-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
                     <p style={{ fontFamily:'var(--font-h)', fontSize:18, fontWeight:600, color:'var(--text)', marginBottom:8 }}>
                       Your plain-English version will appear here.
                     </p>
@@ -2348,15 +2346,15 @@ export default function App() {
                       Upload a document, then choose what you want to do with it.
                     </p>
                     <div style={{ marginTop:24, display:'flex', flexDirection:'column', gap:8, fontSize:14, color:'var(--muted)' }}>
-                      <span>✅ We use clear, everyday language.</span>
-                      <span>✅ We keep the meaning the same.</span>
-                      <span>✅ You stay in control.</span>
+                      <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00bf63" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:6}}><polyline points="20 6 9 17 4 12"/></svg>We use clear, everyday language.</span>
+                      <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00bf63" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:6}}><polyline points="20 6 9 17 4 12"/></svg>We keep the meaning the same.</span>
+                      <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00bf63" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:6}}><polyline points="20 6 9 17 4 12"/></svg>You stay in control.</span>
                     </div>
                   </div>
                 ) : (
                   <div className="instruction-box-wrap">
                     <div className="instruction-box">
-                      <div className="instruction-box-icon">✏️</div>
+                      <div className="instruction-box-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
                       <p className="instruction-box-text">
                         {loading ? "Working on it…"
                           : selection ? "Ready. Choose what to do with your selection."
