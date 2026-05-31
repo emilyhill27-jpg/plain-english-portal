@@ -1,6 +1,66 @@
 # Plainly — Project Handover
 > Full detail file. For the quick-reference, use CLAUDE.md.
-> Last updated: 29 May 2026
+> Last updated: 31 May 2026
+
+---
+
+## SESSION LOG — 31 May 2026
+
+Major credibility and UX overhaul based on Emily's thorough site review.
+
+### P0 fixes — credibility (all done)
+1. **Duplicate header killed** — app page had two stacked navs (marketing + stepper). Removed the marketing nav from the app page. Now one clean stepper nav only.
+2. **Nav consistent across all pages** — Home | How it works | For organisations | Technology | About us + Reader support + Try it free. Same links, same logo (44px), same style on landing page, organisations.html, technology.html, and all new pages. Removed broken "For schools" (anchor) and "Log in" (went nowhere).
+3. **Real footer on every page** — dark background, Plainly logo, "Built in Aotearoa New Zealand", links to Privacy, Terms, Security, Pilot programme, Contact. Copyright 2026. Replaced the old emoji footer.
+4. **All emojis replaced with SVG icons** — every emoji used as a UI element (📄🎒🛡️💜✅🔒👥📝) replaced with clean Lucide-style inline SVGs throughout landing page and app page.
+5. **Pilot page created** (`frontend/public/pilot.html`) — hero, who we're looking for (schools, community orgs, councils, property managers), what you get / what we ask / what success looks like / no risk cards, contact form using FormSubmit.co → hello@tryplainly.co.nz.
+6. **Privacy, Terms, Security pages created** — `frontend/public/privacy.html`, `terms.html`, `security.html`. Clean, plain-English content. Privacy covers NZ Privacy Act 2020. Security covers data handling, AI provider (Anthropic), data residency, WCAG 2.2 AA.
+
+### Bug fixes (all done)
+7. **PDF loading speed** — first page renders at 150 DPI (full quality for selection), remaining pages at 96 DPI (thumbnails). Faster upload for multi-page documents.
+8. **Selection highlight visible** — selection box now has 4px purple border, glow shadow, and "Selected area" label. Much more visible than the old 2px faint box.
+9. **TTS fixed** — added 80ms delay between cancel and speak (fixes Safari dropping the speak call). Voice loading retries up to 5 times. Keep-alive interval reduced to 5s. Better error logging.
+10. **Form explainer processes ALL pages** — was only doing the current page. Now loops through every page of a multi-page PDF with progress: "Explaining page 3 of 12…". Results show "Page 1", "Page 2" etc. section headers. Gather-first items deduplicated across pages.
+11. **Page highlight syncs left panel** — as you scroll through form explain results on the right, the left panel auto-scrolls to the matching page. Pulsing purple overlay with "Reading this page →" label. Click any page header on the right to jump.
+12. **Print layout fixed** — document images no longer split across printed pages (page-break-inside: avoid). Each page section starts on a new printed sheet. Thumbnails, toolbars, and overlays hidden in print.
+13. **Click any word for definition** — in form explain results, every word is clickable. Click → popup with plain-English definition + example + "Read it to me" button. Uses Claude API (`POST /api/v1/define-word`). Click anywhere else to close.
+
+### AI prompt overhaul (all done)
+14. **Two shared rule sections added to app.py:**
+    - `SECTION_2_NEUROINCLUSIVE` — 8 sub-rules for dyslexia/ADHD/autism-accessible output (literal language, predictable structure, cognitive load limits, typography rules, spacing, visual clarity, inline definitions, explicit instructions)
+    - `SECTION_4_ACCURACY` — 7 sub-rules that override everything (never drop info, preserve structure, define terms inline, name the actor, be honest about scope, no speculation, output structure requirements)
+15. **GENERAL_PROMPT** — prepended Section 2 + Section 4. Added "Do not shorten text — rewrite for clarity."
+16. **BUSINESS_PLAN_PROMPT** — commented out. Deprecated. Falls back to GENERAL_PROMPT.
+17. **FORM_EXPLAINER_PROMPT** (old one) — commented out. Deprecated. Replaced by FORM_EXPLAINER_FULL_PROMPT.
+18. **FORM_EXPLAINER_FULL_PROMPT** — prepended Section 2 + Section 4. Added field order, accuracy, and no-advice rules.
+19. **DYSLEXIA_BUTTON_PROMPT** — prepended Section 2. Added "Never use all capitals, italics, or underlines."
+20. **WORKSHEET_TRANSLATE_PROMPT_TEMPLATE** — prepended Section 4. Added "Never fill in blank fields" and "Preserve exact field order."
+21. **make_school_prompt** — prepended Section 2. Reading-age logic unchanged.
+22. **Backend max_tokens** — form explain increased from 4000 → 8000 tokens per page.
+
+### Status
+All changes built locally. NOT yet committed or pushed to GitHub/Render.
+
+---
+
+## EMAIL SIGNATURE & BRANDING (30 May 2026)
+
+Created Emily's Plainly email signature.
+- **Final pick:** Option 1 — horizontal layout, logo left + purple divider + name/title/contacts right.
+- **Details used:** Emily Hill · Founder · hello@tryplainly.co.nz · 021 468 719 · tryplainly.co.nz.
+- **Brand tokens:** purple `#7c3aed`, near-black `#1F2937`, grey `#4B5563`; Arial/Liberation Sans for email reliability.
+- **Files on Desktop:** `Plainly Email Signature.html` (clickable links, for Gmail signature box) and `Plainly Email Signature.jpg` (462×132, image version — no clickable links). Logo pulled live from `https://tryplainly.co.nz/logo-plainly.png`.
+- **Open idea (not done):** a "P" icon/badge mark for social avatars + favicon; and a hybrid signature (logo image + clickable text lines).
+
+---
+
+## PROJECT FOLDER TIDY (30 May 2026)
+
+The `plain-english` folder was tidied. Root went from 24 items to 14.
+- **Deleted:** `.DS_Store`, an empty stray folder (` MASTER_CATALOGUE.md` with a leading space), and `b2b-landing.html` (exact duplicate of `frontend/public/b2b.html`).
+- **Archived into `_archive/`** (kept, not deleted): `HANDOVER 2.md` (old version), `_OUTDATED-PLAINLY-CONTEXT.md`, `COWORK_SETUP_LOG.md`, `COWORK_TASK.md`, `dyslexia-button-demo.html`, `.backup-20260515-1029/`.
+- **Untouched (essential):** `app.py`, `frontend/`, `static/` (referenced by app.py), `docs/`, `venv/`, `node_modules/`, `CLAUDE.md`, `HANDOVER.md`, `MASTER_CATALOGUE.md`, all config.
+- **`.gitignore` fix:** added root `/node_modules/` (was previously not ignored).
 
 ---
 
@@ -21,6 +81,21 @@ The outdated `PLAINLY-CONTEXT_2.md` was moved off the Desktop into this folder a
 **~1,893 music files (17 GB) live in `Filed - Not Plainly/`. Emily chose to keep them filed, NOT delete.**
 
 To re-tidy the desktop later, Emily says: *"Clear my desktop — keep only Plainly, file the rest like last time."*
+
+---
+
+## DOWNLOADS CLEANUP (29 May 2026)
+
+The Downloads folder was cleared the same way as the Desktop. It now holds only two folders:
+- `Plainly - from Downloads/` — Plainly assets gathered to review later (NOT merged into the project): `plainly/`, `plainly_logo/`, `Content For Plainly Video/`, `plainly-neuroinclusive-guidelines.pdf`, `brand-landing-page.html`, `brand-calculator.html`.
+- `Filed - Downloads/` — everything else, sorted: Images (78), Documents (45), Installers (7), Personal (8 — incl. the **Bank Statements** folder, kept clearly labelled), Review Me (3).
+
+**Deleted this session (irreversible, done at Emily's request):**
+- Movies: *Ginny & Georgia S02* and *The Croods: A New Age*.
+- Exact duplicate files (numbered/"copy" versions of the same PDFs/JPGs, a duplicate Chrome installer).
+- Old PlainForm: `Plainform - Old/`, the PlainForm HTML export + `_files`, `Copy of Plain Form - Summary.docx`.
+- Outdated Plainly text/versions: `PLAINLY-CONTEXT.md` / `_1` / `_2`, `plainly.zip`, `plainly-landing-v2.html`, `plainly-page3-v2.html` (+ dup), `plainly-research-report.html`, the Master Document HTML export, the "Hidden Cost of Complexity" research-report HTML export.
+- Plainly **assets** (logo, neuroinclusive guidelines PDF, video content) were KEPT, not deleted.
 
 ---
 
@@ -113,13 +188,13 @@ Purple / lavender palette with rounded corners:
 ## Current State — What Is Built and Working
 
 ### Landing page
-- Nav bar: Plainly logo, Home, How it works, For organisations, Technology, About us, Reader support button
-- Hero section: gradient background (lavender/pink/yellow), badge, headline, CTA button, trust badges
+- Nav bar: Plainly logo, Home, How it works, For organisations, Technology, About us, Reader support button, Try it free button
+- Hero section: gradient background (lavender/pink/yellow), badge with lock SVG icon, headline, CTA button, trust badges with SVG icons
 - Demo card: mini split-view showing a tenancy agreement clause on the left and plain English version on the right
-- Feature cards (4): Simplify documents, Made for students and schools, Accessible for everyone, Safe supportive and private
+- Feature cards (4) with SVG icons: Simplify documents, Made for students and schools, Accessible for everyone, Safe supportive and private
 - CTA section
-- Footer
-- Reader settings bar: text size (4 options), font (Lexend/Open Sans/Comic Sans), spacing (3 options)
+- Dark footer with links: Privacy, Terms, Security, Pilot programme, Contact, copyright, email
+- Reader settings bar: text size (4 options), font (Lexend/Open Sans/Arial), spacing (3 options)
 
 ### Organisations page (`frontend/public/organisations.html`)
 - Standalone HTML page, full purple/Lexend design with reader support toolbar
@@ -158,7 +233,7 @@ Purple / lavender palette with rounded corners:
   - Rubber-band drag-to-select any region
 - **Right panel — three tool buttons (NOT modes):**
   1. **Simplify** — draw a box, converts selection to plain English + prompts/examples + checklist + important details.
-  2. **Explain this form** — processes full current page, goes through every field and explains what it's asking, where to find the info, what to gather. Shows: title, "gather first" list, every field with label/explanation/tip, flags, print button, other tools. Backend: `POST /api/v1/explain-form`
+  2. **Explain this form** — processes ALL pages of a multi-page PDF, goes through every field and explains what it's asking, where to find the info, what to gather. Shows progress ("Explaining page 3 of 12…"), page section headers, title, "gather first" list, every field with label/explanation/tip, flags, print button, other tools. Left panel highlights which page is being read. Click any word for a plain-English definition popup. Backend: `POST /api/v1/explain-form` (per page), `POST /api/v1/define-word` (word lookup)
   3. **Translate** — shows language picker (30 languages: te reo Māori, Samoan, Tongan, Mandarin, etc.), translates full page preserving structure. Backend: `POST /api/v1/translate-worksheet`, `GET /api/v1/translate/languages`
 - **Tool buttons stay visible** — after results load, "Other tools" section at bottom shows remaining tools
 - Reading support card (collapsible): year level slider, reading level slider — shows for Simplify and Form Explain results
@@ -215,6 +290,10 @@ Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 | `frontend/public/organisations.html` | Organisations landing page (standalone) |
 | `frontend/public/technology.html` | Technology page (standalone) |
 | `frontend/public/b2b.html` | Old B2B page (terracotta design — outdated) |
+| `frontend/public/pilot.html` | Pilot programme page with contact form |
+| `frontend/public/privacy.html` | Privacy policy page |
+| `frontend/public/terms.html` | Terms of use page |
+| `frontend/public/security.html` | Security and data handling page |
 | `frontend/public/logo-plainly.png` | Site logo |
 | `HANDOVER.md` | This file — update at end of every session |
 | `CLAUDE.md` | Quick reference loaded into every conversation |
@@ -223,14 +302,17 @@ Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 
 ## Pending Tasks — IN ORDER, ONE AT A TIME
 
-1. **Usage tracking/analytics** — log metadata per org (doc count, reading level, timestamp). No document content stored. Shows which docs get simplified most. Feedback loop for customers. This is what makes the product sticky.
-2. **Additional tools** — contract red-flagger, worksheet leveller, policy checker, parent letter writer. All use same Claude backend.
-3. **Logo swap** ✅ Done (26 May 2026)
-4. **Domain** ✅ Done (26 May 2026) — tryplainly.co.nz registered
-5. **First paying customer** — approach one school, community org, or adviser. Don't wait for it to be perfect.
-6. **About us page** — nav link exists (`#about`) but no page built yet.
-7. **Update b2b.html** — still has old terracotta design. Either update to purple/Lexend or remove (organisations.html now covers this).
-8. **Commit and push** — all fixes from 28 May session are built locally but NOT yet pushed to GitHub/Render.
+1. **Commit and push** — all 31 May changes built locally. NOT yet pushed to GitHub/Render.
+2. **First paying customer** — approach one school, community org, or adviser. Pilot page is ready to send. Don't wait for it to be perfect.
+3. **Usage tracking/analytics** — log metadata per org (doc count, reading level, timestamp). No document content stored. Shows which docs get simplified most. Feedback loop for customers. This is what makes the product sticky.
+4. **Additional tools** — contract red-flagger, worksheet leveller, policy checker, parent letter writer. All use same Claude backend.
+5. **About us page** — nav link exists (`#about`) but no page built yet.
+6. **Update or remove b2b.html** — still has old terracotta design. organisations.html now covers this.
+7. **Logo swap** ✅ Done (26 May 2026)
+8. **Domain** ✅ Done (26 May 2026)
+9. **P0 site fixes** ✅ Done (31 May 2026) — nav, footer, emojis, pilot page, privacy/terms/security
+10. **AI prompt overhaul** ✅ Done (31 May 2026) — neuroinclusive + accuracy rules on all prompts
+11. **Form explainer multi-page** ✅ Done (31 May 2026) — processes all pages, highlights, word definitions
 
 ---
 

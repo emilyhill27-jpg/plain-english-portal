@@ -29,3 +29,6 @@ uploads/
 
 # Allow logo files
 !frontend/public/logo-*.png
+
+# Root node deps
+/node_modules/

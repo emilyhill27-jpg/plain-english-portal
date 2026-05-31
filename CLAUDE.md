@@ -1,8 +1,12 @@
 # Plainly — Claude Working Memory
 > Drop this file into any Claude Chat, Cowork, or Code session to get started.
-> Last updated: 29 May 2026
+> Last updated: 31 May 2026
 
-> **Desktop note (29 May 2026):** Emily's desktop is now Plainly-only. It holds: `plain-english/`, `Plainly - Design Screenshots/`, `test-worksheet.pdf`, `⭐ START HERE.md`, and `Filed - Not Plainly/` (all non-Plainly files, sorted, nothing deleted). The `⭐ START HERE.md` file on the desktop is Emily's plain-English routine guide — keep it accurate.
+> **Major site overhaul (31 May 2026):** P0 credibility fixes done — consistent nav + footer on all pages, emojis replaced with SVG icons, pilot page + privacy/terms/security pages created. AI prompts overhauled with neuroinclusive (Section 2) and accuracy (Section 4) shared rules. Form explainer now processes ALL pages of a PDF with progress + page highlighting + click-any-word-for-definition. Print layout fixed. TTS fixed. All changes built locally — NOT yet pushed.
+
+> **Email signature (30 May 2026):** Option 1 — logo + purple divider + Emily Hill / Founder / hello@tryplainly.co.nz / 021 468 719 / tryplainly.co.nz. On Desktop: `.html` (clickable) and `.jpg` (image).
+
+> **Desktop note (29 May 2026):** Emily's desktop is Plainly-only: `plain-english/`, `Plainly - Design Screenshots/`, `test-worksheet.pdf`, `⭐ START HERE.md`, `Filed - Not Plainly/`.
 
 ---
 
@@ -93,13 +97,13 @@ Frontend: `cd frontend && npm run dev` → http://localhost:5173
 
 ## What's Built and Working
 
-**Landing page:** Nav, hero with gradient, demo card (tenancy agreement example), feature cards, CTA, footer, reader settings bar
+**Landing page:** Nav (Home, How it works, For organisations, Technology, About us, Reader support, Try it free), hero with gradient, demo card (tenancy agreement example), feature cards with SVG icons, CTA, dark footer (Privacy, Terms, Security, Pilot programme, Contact), reader settings bar
 
 **Browser tab title:** "Plainly | Understand forms and documents in plain English"
 
 **Three tools (NOT modes — there is NO mode toggle):**
 1. **Simplify** — draw a box on the document → plain English + prompts/examples + checklist + important details + reading level support
-2. **Explain this form** — processes full page, shows: title, "gather first" list, every field explained with label/explanation/tip, important details, print button, TTS. Backend: `POST /api/v1/explain-form`
+2. **Explain this form** — processes ALL pages of a multi-page PDF with progress ("Explaining page 3 of 12…"). Shows: page section headers, title, "gather first" list, every field with label/explanation/tip, important details, print button, TTS. Left panel highlights and auto-scrolls to matching page. Click any word for a plain-English definition popup + "Read it to me". Backend: `POST /api/v1/explain-form` (per page), `POST /api/v1/define-word` (word lookup)
 3. **Translate** — 30 languages (te reo Māori, Samoan, Tongan, Mandarin, etc.), translates full page. Backend: `POST /api/v1/translate-worksheet`
 
 **After results load:** "Other tools" section at bottom shows remaining tool buttons — they never disappear.
@@ -109,9 +113,14 @@ Frontend: `cd frontend && npm run dev` → http://localhost:5173
 **Standalone pages:**
 - `frontend/public/organisations.html` — B2B landing page (current purple design)
 - `frontend/public/technology.html` — Technology page (current purple design)
+- `frontend/public/pilot.html` — Pilot programme page with contact form
+- `frontend/public/privacy.html` — Privacy policy
+- `frontend/public/terms.html` — Terms of use
+- `frontend/public/security.html` — Security and data handling
 - `frontend/public/b2b.html` — OLD terracotta design, needs updating or removing
 
 **Nav tabs (all pages):** Home | How it works | For organisations | Technology | About us
+**Footer (all pages):** Privacy | Terms | Security | Pilot programme | Contact | © 2026 Plainly
 
 ---
 
@@ -197,6 +206,18 @@ The technology page states: *"Designed to WCAG 2.2 AA and COGA cognitive accessi
 
 ---
 
+## AI Prompt Architecture (as of 31 May 2026)
+
+Two shared rule sections in `app.py`, prepended to specific prompts:
+- **SECTION_2_NEUROINCLUSIVE** — 8 sub-rules for dyslexia/ADHD/autism-accessible output. Used by: GENERAL_PROMPT, make_school_prompt, DYSLEXIA_BUTTON_PROMPT, FORM_EXPLAINER_FULL_PROMPT.
+- **SECTION_4_ACCURACY** — 7 non-negotiable rules (never drop info, preserve order, define terms, name actors, no speculation). Used by: GENERAL_PROMPT, WORKSHEET_TRANSLATE_PROMPT_TEMPLATE, FORM_EXPLAINER_FULL_PROMPT.
+
+Deprecated prompts (commented out, fall back to GENERAL_PROMPT):
+- `BUSINESS_PLAN_PROMPT` — retired WINZ Flexi-Wage helper
+- `FORM_EXPLAINER_PROMPT` — replaced by FORM_EXPLAINER_FULL_PROMPT
+
+---
+
 ## CRITICAL — NO MODES
 
 There is NO mode toggle. No Business Plan mode. No School mode. These are gone.
@@ -208,14 +229,17 @@ There is NO mode toggle. No Business Plan mode. No School mode. These are gone.
 
 ## Pending Tasks — In Order, One at a Time
 
-1. **Commit and push** — 28 May fixes are built locally but NOT pushed to GitHub/Render yet
-2. **Usage tracking/analytics** — log metadata per org (doc count, reading level, timestamp). No document content stored.
-3. **Additional tools** — contract red-flagger, worksheet leveller, policy checker, parent letter writer
-4. **Logo swap** ✅ Done (26 May 2026)
-5. **Domain** ✅ Done (26 May 2026) — tryplainly.co.nz registered, DNS pointed, added to Render dashboard.
-6. **First paying customer** — approach one school, CAB, or adviser. Don't wait for perfect.
-7. **About us page** — nav link exists but no page built yet
-8. **Update b2b.html** — old terracotta design. Either update to purple/Lexend or remove
+1. **Commit and push** — all 31 May changes built locally. NOT yet pushed to GitHub/Render.
+2. **First paying customer** — approach one school, community org, or adviser. Pilot page is ready to send.
+3. **Usage tracking/analytics** — log metadata per org (doc count, reading level, timestamp). No document content stored.
+4. **Additional tools** — contract red-flagger, worksheet leveller, policy checker, parent letter writer
+5. **About us page** — nav link exists but no page built yet
+6. **Update or remove b2b.html** — old terracotta design. organisations.html now covers this.
+7. **Logo swap** ✅ Done (26 May 2026)
+8. **Domain** ✅ Done (26 May 2026)
+9. **P0 site fixes** ✅ Done (31 May 2026)
+10. **AI prompt overhaul** ✅ Done (31 May 2026)
+11. **Form explainer multi-page + word definitions** ✅ Done (31 May 2026)
 
 ---
 

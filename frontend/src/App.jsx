@@ -658,6 +658,62 @@ export default function App() {
   // controls
   const [zoom, setZoom]             = useState(1.0);
   const [loading, setLoading]       = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState("");
+  const [explainPageIdx, setExplainPageIdx] = useState(-1);  // which page is currently visible in form explain results
+  const resultScrollRef = useRef(null);
+
+  // Word definition popup
+  const [wordPopup, setWordPopup] = useState(null); // { word, definition, example, x, y, loading }
+  async function handleWordClick(e, word, context) {
+    const clean = word.replace(/[^a-zA-ZÀ-ÿ'-]/g, '');
+    if (!clean || clean.length < 2) return;
+    const rect = e.target.getBoundingClientRect();
+    setWordPopup({ word: clean, definition: null, example: null, x: rect.left, y: rect.bottom + 4, loading: true });
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/define-word`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word: clean, context: context || '' }),
+      });
+      if (!res.ok) throw new Error('Could not define word');
+      const data = await res.json();
+      setWordPopup(prev => prev ? { ...prev, definition: data.definition, example: data.example, loading: false } : null);
+    } catch {
+      setWordPopup(prev => prev ? { ...prev, definition: 'Could not look up this word right now.', loading: false } : null);
+    }
+  }
+  function speakDefinition(text) {
+    if (!text || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.9;
+    const allV = window.speechSynthesis.getVoices();
+    const found = allV.find(v => v.name === voiceName);
+    if (found) u.voice = found;
+    window.speechSynthesis.speak(u);
+  }
+
+  // Close word popup when clicking elsewhere
+  useEffect(() => {
+    if (!wordPopup) return;
+    const close = () => setWordPopup(null);
+    window.addEventListener('click', close);
+    return () => window.removeEventListener('click', close);
+  }, [wordPopup]);
+
+  // Render text with clickable words for definitions
+  function renderClickableText(text, style) {
+    if (!text) return null;
+    return text.split(/(\s+)/).map((part, i) => {
+      if (/^\s+$/.test(part)) return <span key={i}>{part}</span>;
+      return (
+        <span key={i} className="word-define"
+          onClick={e => handleWordClick(e, part, text)}
+          title="Click for meaning">
+          {part}
+        </span>
+      );
+    });
+  }
   const [error, setError]           = useState("");
 
   // reader settings
@@ -760,9 +816,14 @@ export default function App() {
       for (const t of tests) { const f = en.find(t); if (f) return f; }
       return en[0] || list[0] || null;
     }
+    let retryCount = 0;
     function load() {
       const list = window.speechSynthesis?.getVoices() || [];
-      if (!list.length) return;
+      if (!list.length) {
+        // Some browsers need a retry — voices load async
+        if (retryCount < 5) { retryCount++; setTimeout(load, 200); }
+        return;
+      }
       const en = list.filter(v => v.lang.startsWith("en"));
       setVoices(en);
       setVoiceName(n => n || pickBest(list)?.name || "");
@@ -952,21 +1013,60 @@ export default function App() {
     finally { setLoading(false); }
   }
 
-  // form explainer
+  // form explainer — processes ALL pages of a PDF
   async function handleFormExplain() {
     if (!file) { setError("Upload a file first."); return; }
     window.speechSynthesis?.cancel();
     setIsPlaying(false); setCurrentCharRange(null);
-    setLoading(true); setError(""); setResult(null); setTranslateResult(null); setFormExplainResult(null);
+    setLoading(true); setLoadingMsg(""); setError(""); setResult(null); setTranslateResult(null); setFormExplainResult(null);
+    setSelection(null); setScreenSel(null); setExplainPageIdx(0);
+
+    const totalPages = isPdf ? pages.length : 1;
+    const allFields = [];
+    const allGatherFirst = [];
+    const allFlags = { deadlines: [], amounts: [], documents_needed: [] };
+    let title = "";
+
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("page_num", String(pageIdx + 1));
-      const res = await fetch(`${API_BASE}/api/v1/explain-form`, { method: "POST", body: fd });
-      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || `Error ${res.status}`);
-      setFormExplainResult(await res.json());
+      for (let p = 0; p < totalPages; p++) {
+        setLoadingMsg(`Explaining page ${p + 1} of ${totalPages}…`);
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("page_num", String(p + 1));
+        const res = await fetch(`${API_BASE}/api/v1/explain-form`, { method: "POST", body: fd });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || `Error ${res.status}`);
+        const pageResult = await res.json();
+
+        // Use the title from page 1
+        if (!title && pageResult.title) title = pageResult.title;
+
+        // Accumulate fields with page number label and _page tag
+        if (pageResult.fields?.length) {
+          if (totalPages > 1) {
+            allFields.push({ type: "page_break", label: `Page ${p + 1}`, explanation: "", tip: null, number: null, _page: p });
+          }
+          pageResult.fields.forEach(f => { f._page = p; });
+          allFields.push(...pageResult.fields);
+        }
+        if (pageResult.gather_first?.length) allGatherFirst.push(...pageResult.gather_first);
+        if (pageResult.flags) {
+          if (pageResult.flags.deadlines?.length) allFlags.deadlines.push(...pageResult.flags.deadlines);
+          if (pageResult.flags.amounts?.length) allFlags.amounts.push(...pageResult.flags.amounts);
+          if (pageResult.flags.documents_needed?.length) allFlags.documents_needed.push(...pageResult.flags.documents_needed);
+        }
+      }
+
+      // Deduplicate gather_first
+      const uniqueGather = [...new Set(allGatherFirst)];
+
+      setFormExplainResult({
+        title: title || "Form explained",
+        fields: allFields,
+        gather_first: uniqueGather,
+        flags: allFlags,
+      });
     } catch (e) { setError(e.message); }
-    finally { setLoading(false); }
+    finally { setLoading(false); setLoadingMsg(""); }
   }
 
   // simplify
@@ -991,6 +1091,15 @@ export default function App() {
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
   }
+
+  // Scroll the left panel to match the page being read on the right
+  useEffect(() => {
+    if (explainPageIdx < 0 || !docViewerRef.current) return;
+    const pageEls = docViewerRef.current.querySelectorAll(".page-wrap-outer");
+    if (pageEls[explainPageIdx]) {
+      pageEls[explainPageIdx].scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [explainPageIdx]);
 
   // speech
   const speechInfo = useMemo(() => {
@@ -1060,28 +1169,44 @@ export default function App() {
     if (!speechInfo.fullText || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     if (keepAliveRef.current) clearInterval(keepAliveRef.current);
-    const u = new SpeechSynthesisUtterance(speechInfo.fullText.slice(charStart));
-    u.rate = audioSpeed;
-    if (voiceName) {
-      const v = window.speechSynthesis.getVoices().find(v => v.name === voiceName);
-      if (v) u.voice = v;
-    }
-    u.onboundary = (e) => {
-      if (e.name !== "word") return;
-      const abs = charStart + (e.charIndex || 0);
-      setCurrentCharRange({ start: abs, end: abs + (e.charLength || 1) });
-    };
-    u.onend   = () => { setIsPlaying(false); setCurrentCharRange(null); if (keepAliveRef.current) clearInterval(keepAliveRef.current); };
-    u.onerror = () => { setIsPlaying(false); setCurrentCharRange(null); if (keepAliveRef.current) clearInterval(keepAliveRef.current); };
-    utterRef.current = u;
-    setIsPlaying(true);
-    window.speechSynthesis.speak(u);
-    keepAliveRef.current = setInterval(() => {
-      if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-        window.speechSynthesis.pause();
-        window.speechSynthesis.resume();
+
+    // Small delay after cancel — some browsers (Safari) drop speak() if called immediately after cancel()
+    setTimeout(() => {
+      const text = speechInfo.fullText.slice(charStart);
+      if (!text) return;
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = audioSpeed;
+
+      // Try to set chosen voice; reload voices if list is empty
+      const allVoices = window.speechSynthesis.getVoices();
+      if (voiceName && allVoices.length) {
+        const found = allVoices.find(v => v.name === voiceName);
+        if (found) u.voice = found;
       }
-    }, 10000);
+
+      u.onboundary = (e) => {
+        if (e.name !== "word") return;
+        const abs = charStart + (e.charIndex || 0);
+        setCurrentCharRange({ start: abs, end: abs + (e.charLength || 1) });
+      };
+      u.onend   = () => { setIsPlaying(false); setCurrentCharRange(null); if (keepAliveRef.current) clearInterval(keepAliveRef.current); };
+      u.onerror = (e) => {
+        console.error("TTS error:", e);
+        setIsPlaying(false); setCurrentCharRange(null);
+        if (keepAliveRef.current) clearInterval(keepAliveRef.current);
+      };
+      utterRef.current = u;
+      setIsPlaying(true);
+      window.speechSynthesis.speak(u);
+
+      // Keep-alive: Safari/Chrome stop speaking long text after ~15s unless poked
+      keepAliveRef.current = setInterval(() => {
+        if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+          window.speechSynthesis.pause();
+          window.speechSynthesis.resume();
+        }
+      }, 5000);
+    }, 80);
   }
   function speak()       { speakFrom(0); }
   function stopSpeech()  { window.speechSynthesis?.cancel(); setIsPlaying(false); setCurrentCharRange(null); if (keepAliveRef.current) clearInterval(keepAliveRef.current); }
@@ -1225,6 +1350,12 @@ export default function App() {
                   )}
                   {i===dragPageIdx && screenSel && (
                     <div className="rubberband rubberband-done" style={{ left:screenSel.x, top:screenSel.y, width:screenSel.w, height:screenSel.h }} />
+                  )}
+                  {formExplainResult && !screenSel && i===(explainPageIdx >= 0 ? explainPageIdx : pageIdx) && (
+                    <div className="page-active-overlay" />
+                  )}
+                  {translateResult && !formExplainResult && !screenSel && i===pageIdx && (
+                    <div className="page-active-overlay" />
                   )}
                 </div>
               </div>
@@ -1414,11 +1545,64 @@ export default function App() {
           background: white; box-shadow: var(--shadow-md);
           border-radius: 4px; overflow: hidden; margin: 0 auto;
         }
+        /* Word definition popup */
+        .word-define { cursor: pointer; border-radius: 2px; transition: background 0.1s; }
+        .word-define:hover { background: rgba(124,58,237,.12); text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 3px; }
+        .word-popup {
+          position: fixed; z-index: 9999;
+          background: white; border: 2px solid var(--accent);
+          border-radius: 12px; padding: 16px 18px;
+          box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+          max-width: 340px; min-width: 220px;
+          font-family: var(--font-b); font-size: 14px; line-height: 1.6;
+        }
+        .word-popup-word { font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+        .word-popup-def { color: var(--text); margin-bottom: 6px; }
+        .word-popup-example { color: var(--muted); font-size: 13px; font-style: italic; margin-bottom: 10px; }
+        .word-popup-actions { display: flex; gap: 8px; }
+        .word-popup-btn {
+          padding: 5px 14px; border-radius: 999px; font-size: 12px; font-weight: 600;
+          border: 1.5px solid var(--accent); background: white; color: var(--accent);
+          cursor: pointer; font-family: inherit; transition: all 0.15s;
+        }
+        .word-popup-btn:hover { background: var(--accent); color: white; }
+        .word-popup-close {
+          position: absolute; top: 8px; right: 10px;
+          background: none; border: none; font-size: 18px; color: var(--muted);
+          cursor: pointer; line-height: 1;
+        }
+
         .rubberband {
           position: absolute; border: 2px dashed var(--accent);
           background: rgba(138,86,176,.08); pointer-events: none; border-radius: 2px;
         }
-        .rubberband-done { border-style: solid; background: rgba(138,86,176,.12); }
+        .rubberband-done {
+          border: 3px solid var(--accent); background: rgba(124,58,237,.15);
+          box-shadow: 0 0 0 3px rgba(124,58,237,.2), 0 2px 8px rgba(124,58,237,.15);
+        }
+        .rubberband-done::before {
+          content: 'Selected area'; position: absolute; top: -22px; left: 0;
+          font-size: 11px; font-weight: 700; color: white; background: var(--accent);
+          padding: 2px 8px; border-radius: 4px 4px 0 0;
+          font-family: var(--font-b); letter-spacing: 0.02em;
+        }
+        @keyframes page-highlight-pulse {
+          0%, 100% { box-shadow: 0 0 0 4px rgba(124,58,237,.35), 0 0 20px rgba(124,58,237,.15); }
+          50% { box-shadow: 0 0 0 6px rgba(124,58,237,.5), 0 0 30px rgba(124,58,237,.25); }
+        }
+        .page-active-overlay {
+          position: absolute; inset: -4px;
+          border: 4px solid var(--accent);
+          background: rgba(124,58,237,.1);
+          border-radius: 6px; pointer-events: none;
+          animation: page-highlight-pulse 2s ease-in-out infinite;
+        }
+        .page-active-overlay::before {
+          content: 'Reading this page →'; position: absolute; top: -28px; left: 8px;
+          font-size: 12px; font-weight: 700; color: white; background: var(--accent);
+          padding: 4px 14px; border-radius: 6px 6px 0 0;
+          font-family: var(--font-b); letter-spacing: 0.02em;
+        }
         .simplify-float {
           position: sticky; bottom: 16px;
           display: flex; justify-content: center; padding: 0 20px; pointer-events: none;
@@ -1765,23 +1949,53 @@ export default function App() {
         }
         @media print {
           .no-print { display: none !important; }
-          .app-shell { height: auto; }
-          .outer-shell { display: flex; }
+          * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+          /* Reset the full-height app shell so content flows naturally */
+          .app-shell, main, .page-pad { height: auto !important; overflow: visible !important; display: block !important; }
+
+          /* Side-by-side layout: document left, explanation right */
+          .outer-shell {
+            display: grid !important; grid-template-columns: 45% 1px 1fr !important;
+            grid-template-rows: auto !important;
+            height: auto !important; overflow: visible !important;
+            box-shadow: none; border: none;
+          }
+          .shell-divider { background: #ddd; }
+
+          /* Document panel */
           .doc-panel {
-            flex: 1; overflow: visible; max-height: none;
-            border: 1px solid #ddd; border-radius: 4px;
-            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            overflow: visible !important; max-height: none !important;
+            border: 1px solid #ddd; border-radius: 4px; margin: 8px;
+            break-inside: avoid;
           }
-          .doc-panel img { width: 100% !important; height: auto !important; display: block; }
           .doc-panel .doc-toolbar { display: none !important; }
-          .doc-panel .thumb-sidebar { display: none !important; }
-          .shell-divider { display: block; width: 1px; background: #ddd; flex-shrink: 0; margin: 0 8px; }
+          .doc-panel .thumb-col { display: none !important; }
+          .doc-body { display: block !important; }
+          .doc-page-area { overflow: visible !important; padding: 12px !important; }
+          .page-wrap-outer { break-inside: avoid; page-break-inside: avoid; margin-bottom: 16px; }
+          .page-wrap { width: 100% !important; }
+          .doc-panel img { width: 100% !important; height: auto !important; display: block; break-inside: avoid; page-break-inside: avoid; }
+
+          /* Hide selection overlays in print */
+          .rubberband, .rubberband-done, .page-active-overlay { display: none !important; }
+
+          /* Result panel */
           .result-panel {
-            flex: 1; overflow: visible; max-height: none;
-            background: white;
+            overflow: visible !important; max-height: none !important;
+            background: white; margin: 8px;
           }
-          .result-scroll { overflow: visible; max-height: none; }
-          .bubble-label { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .result-scroll { overflow: visible !important; max-height: none !important; }
+
+          /* Keep result cards together */
+          .result-outer-box { break-inside: avoid; page-break-inside: avoid; }
+          .plain-english-box > div > div { break-inside: avoid; page-break-inside: avoid; }
+
+          /* Page break headers in form explain */
+          .form-explain-page-break {
+            break-before: page; page-break-before: always;
+            position: static !important;
+          }
         }
         .print-warning { display: none; }
       `}</style>
@@ -1924,7 +2138,7 @@ export default function App() {
             )}
 
             {/* Scroll container */}
-            <div className="result-scroll">
+            <div className="result-scroll" ref={resultScrollRef}>
 
               {/* Main content area */}
               <div className="simplified-area" style={{
@@ -2113,6 +2327,29 @@ export default function App() {
                       <h2 className="r-h">Every field explained</h2>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                         {formExplainResult.fields?.map((field, i) => (
+                          field.type === 'page_break' ? (
+                            <div key={i} className="form-explain-page-break" data-page={field._page}
+                              ref={el => {
+                                if (!el) return;
+                                const obs = new IntersectionObserver(([entry]) => {
+                                  if (entry.isIntersecting) setExplainPageIdx(field._page);
+                                }, { root: resultScrollRef.current, threshold: 0.5 });
+                                obs.observe(el);
+                              }}
+                              onClick={() => setExplainPageIdx(field._page)}
+                              style={{
+                                position: 'sticky', top: 0, zIndex: 10,
+                                padding: '10px 14px', margin: '8px -18px 0',
+                                background: 'linear-gradient(135deg, #7c3aed, #6366F1)',
+                                color: 'white', fontWeight: 700, fontSize: 14,
+                                borderRadius: 8, cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', gap: 8,
+                              }}>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                              {field.label}
+                              <span style={{ fontSize: 11, fontWeight: 400, opacity: 0.8, marginLeft: 'auto' }}>Click to jump to this page</span>
+                            </div>
+                          ) : (
                           <div key={i} style={{
                             padding: '12px 14px',
                             background: field.type === 'office_only' ? '#f9fafb' : '#fff',
@@ -2126,13 +2363,14 @@ export default function App() {
                               </span>
                               <strong style={{ fontSize: 14, color: 'var(--text)' }}>{field.label}</strong>
                             </div>
-                            <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--text-mid)', lineHeight: 1.6 }}>{field.explanation}</p>
+                            <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--text-mid)', lineHeight: 1.6 }}>{renderClickableText(field.explanation)}</p>
                             {field.tip && (
                               <p style={{ margin: '6px 0 0', fontSize: 13, color: '#8c52ff', lineHeight: 1.5 }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8c52ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:4}}><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0018 8 6 6 0 006 8c0 1 .23 2.23 1.5 3.5C8.26 12.26 8.72 13.02 8.91 14"/></svg> {field.tip}
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8c52ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:4}}><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0018 8 6 6 0 006 8c0 1 .23 2.23 1.5 3.5C8.26 12.26 8.72 13.02 8.91 14"/></svg> {renderClickableText(field.tip)}
                               </p>
                             )}
                           </div>
+                          )
                         ))}
                       </div>
                     </div>
@@ -2356,7 +2594,7 @@ export default function App() {
                     <div className="instruction-box">
                       <div className="instruction-box-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
                       <p className="instruction-box-text">
-                        {loading ? "Working on it…"
+                        {loading ? (loadingMsg || "Working on it…")
                           : selection ? "Ready. Choose what to do with your selection."
                           : "Draw a box around the section you want help with — or use a full-page tool below."}
                       </p>
@@ -2410,6 +2648,30 @@ export default function App() {
       </main>
 
       <div className="print-warning">This is a personal helper note only — do not submit this to any agency.</div>
+
+      {/* Word definition popup */}
+      {wordPopup && (
+        <div className="word-popup" style={{ left: Math.min(wordPopup.x, window.innerWidth - 360), top: Math.min(wordPopup.y, window.innerHeight - 200) }}
+          onClick={e => e.stopPropagation()}>
+          <button className="word-popup-close" onClick={() => setWordPopup(null)}>&times;</button>
+          <div className="word-popup-word">{wordPopup.word}</div>
+          {wordPopup.loading ? (
+            <div className="word-popup-def" style={{ color: 'var(--muted)' }}>Looking up meaning…</div>
+          ) : (
+            <>
+              <div className="word-popup-def">{wordPopup.definition}</div>
+              {wordPopup.example && <div className="word-popup-example">Example: {wordPopup.example}</div>}
+              <div className="word-popup-actions">
+                <button className="word-popup-btn" onClick={() => speakDefinition(`${wordPopup.word}. ${wordPopup.definition}`)}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:4}}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+                  Read it to me
+                </button>
+                <button className="word-popup-btn" onClick={() => setWordPopup(null)}>Got it</button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
