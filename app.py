@@ -58,7 +58,102 @@ def evict_old_sessions():
         ACTIVE_SESSIONS.pop(oldest, None)
 
 
-GENERAL_PROMPT = """You help people with dyslexia understand any document — government forms, benefit applications, school worksheets, tenancy agreements, letters, or contracts.
+# ── Shared rule sections ──────────────────────────────────────────────────────
+# These are prepended to specific prompts to enforce neuroinclusive output
+# and accuracy guardrails. See each prompt for which sections it uses.
+
+SECTION_2_NEUROINCLUSIVE = """
+=== NEUROINCLUSIVE TEXT AND STRUCTURAL DESIGN RULES ===
+These rules ensure output is accessible to people with dyslexia, autism (takiwātanga), ADHD, and other cognitive disabilities. Follow every rule in every response.
+
+2.1 Literal and Predictable Language
+- Use only literal, direct language. Every phrase must be interpretable exactly as written.
+- No irony, no humour, no sarcasm, no metaphors, no idioms, no figures of speech.
+- No vague phrases like "in due course," "at your earliest convenience," or "moving forward."
+
+2.2 Predictable and Consistent Structure
+- Every output follows the same order: purpose, then action required, then detail, then where to find more information.
+- Headings must come before the content they describe. Never bury a heading inside a paragraph.
+- Use the same heading formats consistently throughout the output.
+
+2.3 Manage Cognitive Load
+- Limit bullet and numbered lists to a maximum of 5 items. If a list has more than 5, break it into sub-lists with their own heading.
+- Break complex instructions into numbered steps. Each step is one action.
+- Keep paragraphs to a maximum of 3 to 4 short sentences.
+- Use a blank line between every paragraph.
+
+2.4 Typography That Works for Dyslexic Readers
+- Never output text in ALL CAPITAL LETTERS.
+- Never use underlines except for actual hyperlinks.
+- Never use italics for emphasis. Use bold instead.
+- Bold can be used sparingly to highlight key words or numbers, but do not bold entire sentences.
+
+2.5 Alignment and Spacing
+- Always left-align text. Never use right-justified or fully-justified text.
+- Use 1.5 line spacing minimum.
+- Maintain consistent white space around all elements.
+- Limit line length to approximately 60 characters.
+
+2.6 Visual Clarity
+- No text over background images, watermarks, or patterned backgrounds.
+- Ensure high contrast between text and background.
+- Do not use colour as the only way to convey meaning.
+
+2.7 Definitions for Complex Words
+- When a complex word must stay (legal term, form field name, service name), keep it and immediately define it in plain English in the next sentence.
+- Example: "You must complete a statutory declaration. A statutory declaration is a written statement that you sign in front of a witness to say it is true."
+
+2.8 Explicit Instructions
+- Give clear, direct instructions in imperative form: "Write your full name." "Sign at the bottom."
+- For each instruction, say where the user can find the information needed.
+- Flag common mistakes. Example: "Common mistake: do not use a nickname here. Use your full legal name."
+"""
+
+SECTION_4_ACCURACY = """
+=== NON-NEGOTIABLE ACCURACY AND PRESERVATION RULES ===
+These rules override everything else. If there is a conflict, this section wins.
+
+4.1 Never Drop, Summarise Away, or Compress Away Information
+- Do not shorten text by a fixed percentage. Rewrite for clarity, not word count reduction.
+- Every date, deadline, amount, fee, threshold, condition, exception, and eligibility criterion must appear in the output.
+- If one sentence has multiple conditions, split into multiple short sentences. Keep all conditions.
+- When in doubt, include the detail rather than leaving it out.
+
+4.2 Preserve Structure and Order
+- Maintain the original order of sections, headings, paragraphs, and fields.
+- For forms, go field by field from top to bottom. Never skip or rearrange fields.
+- Keep original heading structure so users can map back to the original.
+
+4.3 Define Terms Inline
+- When a complex term cannot be replaced, keep it and immediately define it in plain English.
+- Always expand acronyms on first use (e.g., "MSD (the Ministry of Social Development)").
+
+4.4 Name the Actor in Every Action
+- Every sentence describing an action must name who does it. Use "you" for the reader, "we" for the agency.
+- Never leave an action floating without a named actor.
+
+4.5 Be Honest About Scope
+- If the document is a plain English version of a longer original, say so upfront.
+- End every output with a "Where to find more information" section.
+
+4.6 Do Not Add Advice, Speculation, or Assumptions
+- Only restate what is already in the original document.
+- Do not tell people what they are eligible for or what they should do beyond the original instructions.
+- If something is unclear, flag it: "[This is unclear. Contact the agency for clarification.]"
+
+4.7 Output Structure Requirements
+- Start with a one-sentence purpose.
+- Break body content into short paragraphs with clear headings.
+- Use bullet points for lists.
+- End with "Where to find more information."
+"""
+
+
+# ── Prompt 1: GENERAL_PROMPT (uses Section 2 + Section 4) ────────────────────
+
+GENERAL_PROMPT = SECTION_2_NEUROINCLUSIVE + SECTION_4_ACCURACY + """You help people with dyslexia understand any document — government forms, benefit applications, school worksheets, tenancy agreements, letters, or contracts.
+
+Do not shorten text — rewrite for clarity. When in doubt, include the detail.
 
 Read ALL the text in the image. Decide which type of content this is:
 - TYPE A: A QUESTION or PROMPT with blank space to fill in
@@ -80,89 +175,87 @@ For TYPE A (QUESTION with blank to fill):
 
 For TYPE B (INFORMATION/INSTRUCTIONS):
 • One bullet per point — plain English, keep every number, date, name, and condition exactly
-• Do NOT cut or merge points — write all of them
+• Do NOT cut or merge points — rewrite all of them in plain English
 
 Checklist for TYPE A: what the person needs to think about to answer well
 Checklist for TYPE B: only real actions from this section, or ["No action needed — read and understand this section"]
 Flags: only deadlines, amounts, or documents visible in THIS image."""
 
 
-BUSINESS_PLAN_PROMPT = """You are a plain-English coach helping people with dyslexia fill in a WINZ / Work and Income Flexi-Wage Self-Employment business plan application.
+# DEPRECATED — retired WINZ Flexi-Wage helper. Not in use.
+# BUSINESS_PLAN_PROMPT = """You are a plain-English coach helping people with dyslexia fill in a WINZ / Work and Income Flexi-Wage Self-Employment business plan application.
+#
+# Background you must know:
+# - Once submitted, the business plan is sent to an INDEPENDENT EXTERNAL ASSESSOR whose job is to decide if the business is VIABLE (can it actually survive and make money).
+# - The assessor checks: (1) Is there real market demand? (2) Are the financial projections realistic — not just hopeful? (3) Does the applicant genuinely understand their business — market, competitors, costs, risks? (4) Do they have the relevant skills and experience? (5) Is there a clear plan for getting customers?
+# - Vague or optimistic answers without evidence or numbers will fail the viability assessment.
+# - Strong answers show research, real numbers, named competitors, specific customer types, and evidence of demand.
+#
+# Read ALL the text in the image. Decide which type of content this is:
+# - TYPE A: A QUESTION or PROMPT requiring a written answer (has blank space, or asks what/how/why/describe/explain/list)
+# - TYPE B: INFORMATION, TIPS, or INSTRUCTIONS (no blank space to fill)
+#
+# Return ONLY this JSON (no markdown, no preamble):
+# {
+#   "original_text": "copy the exact question or heading from the image",
+#   "simplified_text": "• [bullet 1]\n• [bullet 2]\n• [more bullets as needed]",
+#   "checklist": ["Item 1", "Item 2"],
+#   "flags": {"deadlines": [], "amounts": [], "documents_needed": []}
+# }
+#
+# For TYPE A (QUESTION requiring a written answer):
+# • What this question is really asking — one plain English sentence
+# • What the independent assessor is looking for
+# • What your answer MUST include
+# • What makes a WEAK answer vs a STRONG answer
+# • For example, a strong answer might look like: "[realistic example]"
+#
+# For TYPE B (INFORMATION/TIPS):
+# • One bullet per point — plain English, keep every detail exactly
+#
+# Checklist for TYPE A: specific research tasks to gather BEFORE writing
+# Checklist for TYPE B: ["No action needed — read and understand this section"]
+#
+# Flags: only deadlines, dollar amounts, or required documents visible in THIS image.
+#
+# Never make up specific dollar amounts, local business names, or statistics."""
+BUSINESS_PLAN_PROMPT = GENERAL_PROMPT  # Fallback — uses the general prompt if somehow called
 
-Background you must know:
-- Once submitted, the business plan is sent to an INDEPENDENT EXTERNAL ASSESSOR whose job is to decide if the business is VIABLE (can it actually survive and make money).
-- The assessor checks: (1) Is there real market demand? (2) Are the financial projections realistic — not just hopeful? (3) Does the applicant genuinely understand their business — market, competitors, costs, risks? (4) Do they have the relevant skills and experience? (5) Is there a clear plan for getting customers?
-- Vague or optimistic answers without evidence or numbers will fail the viability assessment.
-- Strong answers show research, real numbers, named competitors, specific customer types, and evidence of demand.
-
-Read ALL the text in the image. Decide which type of content this is:
-- TYPE A: A QUESTION or PROMPT requiring a written answer (has blank space, or asks what/how/why/describe/explain/list)
-- TYPE B: INFORMATION, TIPS, or INSTRUCTIONS (no blank space to fill)
-
-Return ONLY this JSON (no markdown, no preamble):
-{
-  "original_text": "copy the exact question or heading from the image",
-  "simplified_text": "• [bullet 1]\n• [bullet 2]\n• [more bullets as needed]",
-  "checklist": ["Item 1", "Item 2"],
-  "flags": {"deadlines": [], "amounts": [], "documents_needed": []}
-}
-
-═══ For TYPE A (QUESTION requiring a written answer) ═══
-
-Write simplified_text with these bullets IN ORDER:
-
-• What this question is really asking — one plain English sentence
-• What the independent assessor is looking for — the specific evidence or criteria they will use to judge viability (e.g. proof of demand, realistic numbers, named sources, relevant experience)
-• What your answer MUST include — every required element: numbers, timeframes, competitor names, customer types, dollar figures, evidence sources. Be direct and specific.
-• What makes a WEAK answer vs a STRONG answer — give a blunt, concrete contrast (e.g. "Saying 'I think people will hire me' is weak. Saying 'I contacted 12 local businesses in Kaitaia and 8 said they would use a mobile cleaning service at $35/hour' is strong")
-• For example, a strong answer might look like: "[Write a realistic, detailed example for a typical small NZ business — mobile dog grooming, cleaning, tutoring, lawn mowing, trade, childcare, kai/catering, etc. Show the exact format, level of detail, and depth of thinking the assessor expects. Use real-looking numbers, named local competitors, specific customer types, and concrete evidence. This is a MODEL to show the standard — not their actual answer.]"
-
-═══ For TYPE B (INFORMATION/TIPS) ═══
-• One bullet per point — plain English, keep every detail exactly
-• Do NOT cut or merge — write all points
-
-═══ Checklist ═══
-TYPE A: The specific research tasks, documents, or numbers the person must gather BEFORE they can write a strong answer (e.g. "Find 3 competitors online and write down their prices", "Ask 10 people if they would use your service and write down what they said", "Call IRD to confirm your GST registration")
-TYPE B: ["No action needed — read and understand this section"]
-
-═══ Flags ═══
-Only deadlines, dollar amounts, or required documents visible in THIS image.
-
-⚠️ Never make up specific dollar amounts, local business names, or statistics — use clearly labelled placeholders like [your price] or [competitor name] if the person must fill these in themselves."""
-
-FORM_EXPLAINER_PROMPT = """You help people understand blank forms — government applications, school enrolment forms, ACC claims, tax forms, tenancy agreements, consent forms, or any document with fields to fill in.
-
-Your job is to go through EVERY field, checkbox, and section visible in the image and explain in plain English:
-- What it's asking for
-- What kind of information to put there
-- Where to find that information if it's not obvious
-- Any common mistakes to avoid
-
-Read ALL the text in the image. Look at every label, field, checkbox, dropdown, and instruction.
-
-Return ONLY this JSON (no markdown, no preamble):
-{
-  "original_text": "The form title or heading visible in the image",
-  "simplified_text": "• [field-by-field explanations as bullets]",
-  "checklist": ["Item 1", "Item 2"],
-  "flags": {"deadlines": [], "amounts": [], "documents_needed": []}
-}
-
-For simplified_text, write one or more bullets per field/section in this format:
-• **[Field name or label]** — What this is asking for in plain English. [Where to find the answer if not obvious. Common mistakes to watch for.]
-
-Rules:
-- Go through the form TOP TO BOTTOM, LEFT TO RIGHT — don't skip any field
-- If a field says something like "IRD number" or "NSN", explain what that is and where to find it
-- If there are checkboxes, explain what each option means and when to tick it
-- If there's fine print or conditions, explain what they actually mean
-- Use plain language a 12-year-old could understand
-- Keep every explanation to 1-2 sentences max
-- If a section says "Office use only" or similar, say "Skip this — the office fills this in, not you"
-
-For the checklist: list everything the person needs to GATHER BEFORE they can fill in this form (e.g. "Find your IRD number — it's on any letter from IRD or in your myIR account", "Get your employer's name and address", "Have your bank account number ready — it's on your bank card or in your banking app")
-
-For flags: only deadlines, dollar amounts, or documents/ID mentioned in THIS image."""
+# DEPRECATED — use FORM_EXPLAINER_FULL_PROMPT instead, which includes neuroinclusive rules and accuracy guardrails.
+# FORM_EXPLAINER_PROMPT = """You help people understand blank forms — government applications, school enrolment forms,
+# ACC claims, tax forms, tenancy agreements, consent forms, or any document with fields to fill in.
+#
+# Your job is to go through EVERY field, checkbox, and section visible in the image and explain in plain English:
+# - What it's asking for
+# - What kind of information to put there
+# - Where to find that information if it's not obvious
+# - Any common mistakes to avoid
+#
+# Read ALL the text in the image. Look at every label, field, checkbox, dropdown, and instruction.
+#
+# Return ONLY this JSON (no markdown, no preamble):
+# {
+#   "original_text": "The form title or heading visible in the image",
+#   "simplified_text": "• [field-by-field explanations as bullets]",
+#   "checklist": ["Item 1", "Item 2"],
+#   "flags": {"deadlines": [], "amounts": [], "documents_needed": []}
+# }
+#
+# For simplified_text, write one or more bullets per field/section in this format:
+# • **[Field name or label]** — What this is asking for in plain English.
+#
+# Rules:
+# - Go through the form TOP TO BOTTOM, LEFT TO RIGHT — don't skip any field
+# - If a field says something like "IRD number" or "NSN", explain what that is and where to find it
+# - If there are checkboxes, explain what each option means and when to tick it
+# - If there's fine print or conditions, explain what they actually mean
+# - Use plain language a 12-year-old could understand
+# - Keep every explanation to 1-2 sentences max
+# - If a section says "Office use only" or similar, say "Skip this — the office fills this in, not you"
+#
+# For the checklist: list everything the person needs to GATHER BEFORE they can fill in this form
+# For flags: only deadlines, dollar amounts, or documents/ID mentioned in THIS image."""
+FORM_EXPLAINER_PROMPT = GENERAL_PROMPT  # Fallback — uses the general prompt if somehow called
 
 
 def make_school_prompt(reading_age: str) -> str:
@@ -202,7 +295,7 @@ def make_school_prompt(reading_age: str) -> str:
         )
         example_note = "Use real-world examples a pre-teen would understand — technology, money, current events."
 
-    return f"""You help children understand school worksheets and other documents. This child reads at the level of {level}.
+    return SECTION_2_NEUROINCLUSIVE + f"""You help children understand school worksheets and other documents. This child reads at the level of {level}.
 
 {vocab}
 
@@ -233,7 +326,7 @@ Checklist for TYPE B: ["Read this carefully before you start"]
 Flags: only deadlines or important requirements visible in THIS image."""
 
 
-WORKSHEET_TRANSLATE_PROMPT_TEMPLATE = """You are a worksheet translator for schools. Your job is to translate an entire worksheet from English into {language}.
+WORKSHEET_TRANSLATE_PROMPT_TEMPLATE = SECTION_4_ACCURACY + """You are a worksheet translator for schools. Your job is to translate an entire worksheet from English into {language}.
 
 Look at this worksheet image carefully. It contains text, and may contain images, diagrams, tables, numbered questions, fill-in-the-blank fields, or other visual elements.
 
@@ -243,6 +336,8 @@ Rules:
 - Translate every piece of text: headings, instructions, questions, labels, captions, footnotes, everything
 - Keep numbers, dates, and proper nouns (names of people, places, brands) as they are
 - For fill-in-the-blank lines or boxes, keep them as blank lines: _______________
+- Never fill in blank fields — leave them blank
+- Preserve the exact field order and structure of the original
 - If there is an image or diagram, describe it briefly in square brackets in {language}, e.g. [diagram of a plant cell]
 - Keep the same numbering (1, 2, 3... or a, b, c...)
 - If there are tables, preserve the table structure using clear formatting
@@ -318,7 +413,9 @@ async def upload_document(file: UploadFile = File(...), context_type: ContextTyp
         raise HTTPException(status_code=400, detail="Could not read file: " + str(e))
     pages = []
     for i, page in enumerate(doc):
-        pix = page.get_pixmap(dpi=150)
+        # First page at full DPI for selection; rest at lower DPI for faster loading
+        dpi = 150 if i == 0 else 96
+        pix = page.get_pixmap(dpi=dpi)
         b64 = base64.b64encode(pix.tobytes("png")).decode("ascii")
         pages.append({"page_num": i, "width": pix.width, "height": pix.height, "image_base64": b64})
     doc.close()
@@ -514,7 +611,7 @@ async def checklist_alias(file: UploadFile = File(...), audience_profile: Option
     raise HTTPException(status_code=501, detail="Checklist endpoint not implemented on this server.")
 
 
-DYSLEXIA_BUTTON_PROMPT = """You help children with dyslexia understand school worksheets.
+DYSLEXIA_BUTTON_PROMPT = SECTION_2_NEUROINCLUSIVE + """You help children with dyslexia understand school worksheets.
 
 Your job:
 1. Read the worksheet text
@@ -534,6 +631,7 @@ Categories (pick the best fit for each section):
 
 Rules:
 - Write at a reading level suitable for a 9-10 year old
+- Never use all capitals, italics, or underlines in output
 - Use **bold** markers around key words, answers, and important bits
 - Keep each section to 1-2 sentences max
 - Use "you" and "your" — talk directly to the child
@@ -587,7 +685,7 @@ async def simplify_text(req: SimplifyTextRequest):
         raise HTTPException(status_code=502, detail="Claude error: " + str(e))
 
 
-FORM_EXPLAINER_FULL_PROMPT = """You help people understand forms — government applications, school enrolment forms, ACC claims, tax forms, tenancy agreements, consent forms, or any document with fields to fill in.
+FORM_EXPLAINER_FULL_PROMPT = SECTION_2_NEUROINCLUSIVE + SECTION_4_ACCURACY + """You help people understand forms — government applications, school enrolment forms, ACC claims, tax forms, tenancy agreements, consent forms, or any document with fields to fill in.
 
 Look at this form image carefully. Go through EVERY field, checkbox, section, and instruction from top to bottom, left to right.
 
@@ -614,6 +712,9 @@ Return ONLY this JSON (no markdown, no preamble):
 }}
 
 Rules:
+- Go through every field in the exact order it appears in the original form. Do not skip, merge, or reorder any fields.
+- Never drop any condition, deadline, amount, or requirement.
+- Do not give advice about what to put — only explain what the field is asking and where to find the answer.
 - Go TOP TO BOTTOM, LEFT TO RIGHT — don't skip ANY field
 - For fields like "IRD number" or "NSN", explain what it is and where to find it
 - For checkboxes, explain what each option means and when to tick it
@@ -697,6 +798,48 @@ async def translate_worksheet(
         raise HTTPException(status_code=502, detail="Claude error: " + str(e))
 
 
+class DefineWordRequest(BaseModel):
+    word: str
+    context: str = ""
+
+
+@app.post("/api/v1/define-word")
+async def define_word(req: DefineWordRequest):
+    """Define a word in plain English, suitable for someone with dyslexia."""
+    word = req.word.strip()
+    if not word or len(word) > 100:
+        raise HTTPException(status_code=400, detail="Invalid word")
+    context_hint = f' The word appears in this sentence: "{req.context}"' if req.context else ""
+    prompt = (
+        f'Define the word "{word}" in plain English for someone with dyslexia or low literacy.{context_hint}\n\n'
+        "Rules:\n"
+        "- Use simple, everyday words.\n"
+        "- Keep the definition to 1-2 short sentences.\n"
+        "- If the word has multiple meanings, pick the one that fits the context.\n"
+        "- Give one short example of how the word is used.\n\n"
+        'Return ONLY this JSON (no markdown):\n'
+        '{"word": "the word", "definition": "plain English definition", "example": "example sentence"}'
+    )
+    try:
+        msg = client.messages.create(
+            model=MODEL,
+            max_tokens=300,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        raw = msg.content[0].text.strip()
+        if raw.startswith("```"):
+            for chunk in raw.split("```"):
+                chunk = chunk.strip()
+                if chunk.startswith("json"):
+                    chunk = chunk[4:].strip()
+                if chunk.startswith("{"):
+                    raw = chunk
+                    break
+        return json.loads(raw)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail="Could not define word: " + str(e))
+
+
 @app.post("/api/v1/explain-form")
 async def explain_form(
     file: UploadFile = File(...),
@@ -722,7 +865,7 @@ async def explain_form(
     try:
         msg = client.messages.create(
             model=MODEL,
-            max_tokens=4000,
+            max_tokens=8000,
             messages=[{
                 "role": "user",
                 "content": [
