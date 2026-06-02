@@ -1050,6 +1050,14 @@ def get_skill_prompt(category: str) -> str:
     return SKILL_PROMPTS.get(category) or GENERAL_PROMPT
 
 
+def get_form_explain_prompt(category: str) -> str:
+    """Build a form explainer prompt: skill domain rules + form explainer task + JSON format."""
+    skill = SKILL_PROMPTS.get(category)
+    if skill:
+        return skill + "\n\n" + TASK_FORM_EXPLAINER + "\n\n" + FORM_JSON_FORMAT
+    return FORM_EXPLAINER_FULL_PROMPT
+
+
 class ValidateRequest(BaseModel):
     original_text: str
     draft_output: str
@@ -1171,7 +1179,7 @@ async def explain_form(
                 "role": "user",
                 "content": [
                     {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": img_b64}},
-                    {"type": "text", "text": get_skill_prompt(category) if category else FORM_EXPLAINER_FULL_PROMPT},
+                    {"type": "text", "text": get_form_explain_prompt(category) if category else FORM_EXPLAINER_FULL_PROMPT},
                 ],
             }],
         )
