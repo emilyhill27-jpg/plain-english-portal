@@ -921,7 +921,7 @@ export default function App() {
       setSessionId(data.session_id);
       setPages(data.pages || []);
     } catch (e) { setError(e.message); }
-    finally { setLoading(false); }
+    finally { setLoading(false); setLoadingMsg(""); }
   }
 
   const handleDrop   = (e) => { e.preventDefault(); handleFile(e.dataTransfer.files?.[0]); };
@@ -1027,7 +1027,7 @@ export default function App() {
     if (!lang) { setError("Pick a language first."); return; }
     window.speechSynthesis?.cancel();
     setIsPlaying(false); setCurrentCharRange(null);
-    setLoading(true); setError(""); setResult(null); setTranslateResult(null);
+    setLoading(true); setLoadingMsg("Translating…"); setError(""); setResult(null); setTranslateResult(null);
     try {
       const fd = new FormData();
       fd.append("file", file);
@@ -1039,7 +1039,7 @@ export default function App() {
       setTranslateResult(tdata);
       setDocMode("translate");
     } catch (e) { setError(e.message); }
-    finally { setLoading(false); }
+    finally { setLoading(false); setLoadingMsg(""); }
   }
 
   // form explainer — processes ALL pages of a PDF
@@ -1104,7 +1104,7 @@ export default function App() {
     if (!file) { setError("Upload a file first."); return; }
     window.speechSynthesis?.cancel();
     setIsPlaying(false); setCurrentCharRange(null);
-    setLoading(true); setError(""); setResult(null);
+    setLoading(true); setLoadingMsg("Simplifying your selection…"); setError(""); setResult(null);
     try {
       const fd = new FormData();
       if (isPdf && screenSel && pageImgRefs.current[dragPageIdx]) {
@@ -1119,7 +1119,7 @@ export default function App() {
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || `Error ${res.status}`);
       setResult(await res.json());
     } catch (e) { setError(e.message); }
-    finally { setLoading(false); }
+    finally { setLoading(false); setLoadingMsg(""); }
   }
 
   // Scroll the left panel to match the page being read on the right
@@ -1674,7 +1674,26 @@ export default function App() {
           font-size: 12px; font-weight: 700; color: var(--faint);
           letter-spacing: .06em; text-transform: uppercase; margin-right: auto;
         }
-        .result-scroll { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        .result-scroll { flex: 1; overflow-y: auto; display: flex; flex-direction: column; position: relative; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-overlay {
+          position: sticky; top: 0; z-index: 20;
+          display: flex; flex-direction: column; align-items: center; justify-content: center;
+          padding: 40px 24px; margin: 0 -22px;
+          background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
+          border-bottom: 2px solid var(--accent);
+        }
+        .loading-spinner {
+          width: 36px; height: 36px; border: 3px solid var(--border);
+          border-top-color: var(--accent); border-radius: 50%;
+          animation: spin 0.8s linear infinite; margin-bottom: 14px;
+        }
+        .loading-text {
+          font-size: 16px; font-weight: 600; color: var(--text);
+          font-family: var(--font-h); margin-bottom: 4px;
+        }
+        .loading-subtext { font-size: 13px; color: var(--muted); }
 
         /* Listen inline (under plain-english label) */
         .listen-inline {
@@ -2199,6 +2218,15 @@ export default function App() {
 
             {/* Scroll container */}
             <div className="result-scroll" ref={resultScrollRef}>
+
+              {/* Loading overlay — always visible when processing */}
+              {loading && (
+                <div className="loading-overlay">
+                  <div className="loading-spinner" />
+                  <div className="loading-text">{loadingMsg || "Working on it…"}</div>
+                  <div className="loading-subtext">This can take a minute for long documents</div>
+                </div>
+              )}
 
               {/* Main content area */}
               <div className="simplified-area" style={{
