@@ -659,8 +659,14 @@ export default function App() {
   const [zoom, setZoom]             = useState(1.0);
   const [loading, setLoading]       = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
-  const [explainPageIdx, setExplainPageIdx] = useState(-1);  // which page is currently visible in form explain results
+  const [explainPageIdx, setExplainPageIdx] = useState(-1);
   const resultScrollRef = useRef(null);
+
+  // Document classification
+  const [docCategory, setDocCategory] = useState("");      // e.g. "MSD/BENEFITS"
+  const [docCategoryLabel, setDocCategoryLabel] = useState(""); // e.g. "Work & Income / Benefits"
+  const [categoryOptions, setCategoryOptions] = useState([]);   // dropdown options
+  const [classifying, setClassifying] = useState(false);
 
   // Word definition popup
   const [wordPopup, setWordPopup] = useState(null); // { word, definition, example, x, y, loading }
@@ -869,7 +875,26 @@ export default function App() {
     setCropPreviewUrl(null);
     setTranslateResult(null);
     setFormExplainResult(null);
+    setDocCategory(""); setDocCategoryLabel(""); setCategoryOptions([]);
     if (keepAliveRef.current) clearInterval(keepAliveRef.current);
+  }
+
+  // Classify document in background after upload
+  async function classifyDocument(fileToClassify) {
+    setClassifying(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", fileToClassify);
+      fd.append("page_num", "1");
+      const res = await fetch(`${API_BASE}/api/v1/classify`, { method: "POST", body: fd });
+      if (res.ok) {
+        const data = await res.json();
+        setDocCategory(data.category || "OTHER");
+        setDocCategoryLabel(data.label || "General Document");
+        setCategoryOptions(data.categories || []);
+      }
+    } catch { /* Classification is best-effort — don't block on failure */ }
+    finally { setClassifying(false); }
   }
 
   async function handleFile(candidate) {
@@ -878,6 +903,10 @@ export default function App() {
     if (!ok.includes(candidate.type)) { setError("Only PDF, JPG or PNG accepted."); return; }
     reset();
     setFile(candidate);
+
+    // Start classifying in parallel
+    classifyDocument(candidate);
+
     const pdf = candidate.type === "application/pdf";
     setIsPdf(pdf);
     if (!pdf) { setPreviewUrl(URL.createObjectURL(candidate)); return; }
@@ -1033,6 +1062,7 @@ export default function App() {
         const fd = new FormData();
         fd.append("file", file);
         fd.append("page_num", String(p + 1));
+        if (docCategory) fd.append("category", docCategory);
         const res = await fetch(`${API_BASE}/api/v1/explain-form`, { method: "POST", body: fd });
         if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || `Error ${res.status}`);
         const pageResult = await res.json();
@@ -2082,6 +2112,36 @@ export default function App() {
       )}
 
       {/* PAGE */}
+      {/* Document classification badge */}
+      {file && (docCategory || classifying) && (
+        <div className="doc-category-bar no-print" style={{
+          display: 'flex', alignItems: 'center', gap: 10, padding: '6px 24px',
+          background: 'rgba(124,58,237,.06)', borderBottom: '1px solid rgba(124,58,237,.12)',
+          fontSize: 13, color: 'var(--text)', flexShrink: 0,
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          {classifying ? (
+            <span style={{ color: 'var(--muted)' }}>Identifying document type…</span>
+          ) : (
+            <>
+              <span style={{ fontWeight: 600 }}>Detected:</span>
+              <select value={docCategory} onChange={e => {
+                const opt = categoryOptions.find(o => o.value === e.target.value);
+                setDocCategory(e.target.value);
+                setDocCategoryLabel(opt?.label || e.target.value);
+              }} style={{
+                padding: '3px 8px', borderRadius: 6, border: '1.5px solid rgba(124,58,237,.25)',
+                background: 'white', fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
+                color: '#7c3aed', cursor: 'pointer',
+              }}>
+                {categoryOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+              <span style={{ color: 'var(--muted)', fontSize: 12 }}>Change if wrong</span>
+            </>
+          )}
+        </div>
+      )}
+
       <main>
       <div className="page-pad">
         <div className="outer-shell">
