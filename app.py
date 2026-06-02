@@ -110,11 +110,11 @@ def build_prompt(task_type: str, client_name: Optional[str] = None) -> str:
 
 NON_NEGOTIABLES = load_text("core/non_negotiables.md")
 TASK_REWRITE = load_text("prompts/tasks/rewrite.md")
-TASK_FORM_EXPLAINER = load_text("prompts/tasks/form_explainer_full_prompt.md")
-TASK_VALIDATOR = load_text("prompts/tasks/validator_prompt.md")
+TASK_FORM_EXPLAINER = load_text("prompts/tasks/form_explainer.md")
+TASK_VALIDATOR = load_text("prompts/tasks/validator.md")
 CLASSIFIER_PROMPT_TEXT = load_text("prompts/tasks/classifier.md")
-GENERAL_JSON_FORMAT = load_text("prompts/formats/general_plain_english_json_format.md")
-FORM_JSON_FORMAT = load_text("prompts/formats/form_explainer_json_format.md")
+GENERAL_JSON_FORMAT = load_text("prompts/formats/rewrite_output.json.md")
+FORM_JSON_FORMAT = load_text("prompts/formats/form_explainer_output.json.md")
 
 # Legacy aliases so existing code still works
 SECTION_2_STYLE = NON_NEGOTIABLES
