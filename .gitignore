@@ -32,3 +32,4 @@ uploads/
 
 # Root node deps
 /node_modules/
+_archive/

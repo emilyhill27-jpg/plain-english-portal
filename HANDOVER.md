@@ -1,6 +1,22 @@
 # Plainly — Project Handover
 > Full detail file. For the quick-reference, use CLAUDE.md.
-> Last updated: 31 May 2026
+> Last updated: 3 June 2026
+
+---
+
+## SESSION LOG — 3 June 2026
+
+Three bugs fixed in `frontend/src/App.jsx`:
+
+### Bug fixes (all done)
+1. **Explain button fixed** — the tool buttons (Simplify, Explain this form, Translate) were laid out in a horizontal row beside the instruction box instead of below it. On most screens, buttons got squeezed off-screen or were impossible to click. Fixed by changing `.instruction-box-wrap` from `flex-direction: row` (default) to `flex-direction: column` with a `gap: 20px`. Buttons now stack vertically below the instruction text.
+
+2. **Independent panel scrolling fixed** — left document panel and right result panel were still scrolling together as one. Root cause: CSS Grid and Flex containers were missing `min-height: 0` (which lets flex/grid items shrink below their content size) and `grid-template-rows: 1fr` (which constrains row height to the container). Fixed on: `.outer-shell`, `.doc-panel`, `.doc-body`, `.doc-page-area`, `.result-panel`. Each panel now scrolls on its own — scroll the document without moving the result, and vice versa.
+
+3. **Translate auto-triggers on language select** — previously, selecting a language from the dropdown did nothing visible. The user had to find and click a small "Go" button to start the translation. Fixed: `handleTranslate()` now accepts an optional language parameter, and all three translate dropdowns call it immediately when a language is selected. The dropdown also disables during loading so you can't accidentally fire two translations. The "Go" button remains as a retry option.
+
+### Status
+All changes built locally (`npm run build` passes). NOT yet committed or pushed to GitHub/Render.
 
 ---
 
@@ -302,7 +318,7 @@ Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 
 ## Pending Tasks — IN ORDER, ONE AT A TIME
 
-1. **Commit and push** — all 31 May changes built locally. NOT yet pushed to GitHub/Render.
+1. **Commit and push** — all 31 May + 3 June changes built locally. NOT yet pushed to GitHub/Render.
 2. **First paying customer** — approach one school, community org, or adviser. Pilot page is ready to send. Don't wait for it to be perfect.
 3. **Usage tracking/analytics** — log metadata per org (doc count, reading level, timestamp). No document content stored. Shows which docs get simplified most. Feedback loop for customers. This is what makes the product sticky.
 4. **Additional tools** — contract red-flagger, worksheet leveller, policy checker, parent letter writer. All use same Claude backend.
@@ -313,6 +329,7 @@ Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 9. **P0 site fixes** ✅ Done (31 May 2026) — nav, footer, emojis, pilot page, privacy/terms/security
 10. **AI prompt overhaul** ✅ Done (31 May 2026) — neuroinclusive + accuracy rules on all prompts
 11. **Form explainer multi-page** ✅ Done (31 May 2026) — processes all pages, highlights, word definitions
+12. **Explain/Translate/scrolling bugs** ✅ Done (3 June 2026) — tool button layout, independent scrolling, translate auto-trigger
 
 ---
 

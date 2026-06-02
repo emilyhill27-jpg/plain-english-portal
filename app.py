@@ -63,76 +63,109 @@ def evict_old_sessions():
 # ══════════════════════════════════════════════════════════════════════════════
 
 def load_text(relative_path: str) -> str:
+    """Read a UTF-8 text file. Raises a clear error if the file is missing."""
     path = BASE_DIR / relative_path
+    if not path.exists():
+        raise FileNotFoundError(f"Required prompt file missing: {relative_path}")
     return path.read_text(encoding="utf-8").strip()
 
 
-def load_client_file(client_name: str, relative_path: str) -> str:
-    path = BASE_DIR / "client_docs" / client_name / relative_path
+def load_optional_text(relative_path: str) -> str:
+    """Read a UTF-8 text file, or return empty string if the file does not exist."""
+    path = BASE_DIR / relative_path
     if not path.exists():
         return ""
     return path.read_text(encoding="utf-8").strip()
 
 
 def build_client_context(client_name: str) -> str:
-    style_notes = load_client_file(client_name, "style_notes.md")
-    exclusions = load_client_file(client_name, "exclusions.md")
-    if not style_notes and not exclusions:
+    """Load a client content pack: glossary, style notes, and exclusions."""
+    glossary = load_optional_text(f"client_docs/{client_name}/glossary.csv")
+    style_notes = load_optional_text(f"client_docs/{client_name}/style_notes.md")
+    exclusions = load_optional_text(f"client_docs/{client_name}/exclusions.md")
+    if not glossary and not style_notes and not exclusions:
         return ""
-    return f"""
-CLIENT CONTENT PACK
-Client: {client_name}
-
-Style notes:
-{style_notes}
-
-Exclusions:
-{exclusions}
-""".strip()
+    parts = [f"CLIENT CONTENT PACK — {client_name}"]
+    if style_notes:
+        parts.append(f"Style notes:\n{style_notes}")
+    if exclusions:
+        parts.append(f"Exclusions:\n{exclusions}")
+    if glossary:
+        parts.append(f"Glossary:\n{glossary}")
+    return "\n\n".join(parts)
 
 
-def build_prompt(task_type: str, client_name: Optional[str] = None) -> str:
-    client_context = build_client_context(client_name) if client_name else ""
-    if task_type == "form_explainer":
-        task_prompt = TASK_FORM_EXPLAINER
-    elif task_type == "validator":
-        task_prompt = TASK_VALIDATOR
-    else:
-        task_prompt = TASK_REWRITE
+def build_prompt(
+    task: str,
+    format_name: Optional[str] = None,
+    domain: Optional[str] = None,
+    client_name: Optional[str] = None,
+) -> str:
+    """Assemble a complete prompt from files.
+
+    Order: non_negotiables → client context → domain rules → task prompt → format schema.
+
+    Args:
+        task:        File stem in prompts/tasks/ (e.g. "rewrite", "form_explainer", "validator")
+        format_name: File stem in prompts/formats/ (e.g. "rewrite_output.json", "form_explainer_output.json")
+        domain:      File stem in prompts/domains/ (e.g. "msd_benefits", "health_patient")
+        client_name: Folder name in client_docs/ (e.g. "msd")
+    """
     parts = [NON_NEGOTIABLES]
-    if client_context:
-        parts.append(client_context)
-    parts.append(task_prompt)
+
+    # Client context (style notes, exclusions, glossary)
+    if client_name:
+        ctx = build_client_context(client_name)
+        if ctx:
+            parts.append(ctx)
+
+    # Domain-specific rules (optional)
+    if domain:
+        domain_text = load_optional_text(f"prompts/domains/{domain}.md")
+        if domain_text:
+            parts.append(domain_text)
+
+    # Task prompt (required)
+    parts.append(load_text(f"prompts/tasks/{task}.md"))
+
+    # Output format schema (optional)
+    if format_name:
+        fmt = load_optional_text(f"prompts/formats/{format_name}.md")
+        if fmt:
+            parts.append(fmt)
+
     return "\n\n".join(parts)
 
 
 # ── Load core prompts from files ─────────────────────────────────────────────
 
 NON_NEGOTIABLES = load_text("core/non_negotiables.md")
-TASK_REWRITE = load_text("prompts/tasks/rewrite.md")
-TASK_FORM_EXPLAINER = load_text("prompts/tasks/form_explainer.md")
-TASK_VALIDATOR = load_text("prompts/tasks/validator.md")
-CLASSIFIER_PROMPT_TEXT = load_text("prompts/tasks/classifier.md")
-GENERAL_JSON_FORMAT = load_text("prompts/formats/rewrite_output.json.md")
-FORM_JSON_FORMAT = load_text("prompts/formats/form_explainer_output.json.md")
-
-# Legacy aliases so existing code still works
-SECTION_2_STYLE = NON_NEGOTIABLES
-SECTION_2_NEUROINCLUSIVE = NON_NEGOTIABLES
-SECTION_4_ACCURACY = ""
-SECTION_5_NEURO = ""
+CLASSIFIER_PROMPT = load_text("prompts/tasks/classifier.md")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# CLASSIFIER — categorises documents before applying a skill prompt
-# ══════════════════════════════════════════════════════════════════════════════
+# ── Assembled prompts used by API endpoints ──────────────────────────────────
 
-CLASSIFIER_PROMPT = CLASSIFIER_PROMPT_TEXT
+GENERAL_PROMPT = build_prompt(task="rewrite", format_name="rewrite_output.json")
+FORM_EXPLAINER_FULL_PROMPT = build_prompt(task="form_explainer", format_name="form_explainer_output.json")
 
-VALID_CATEGORIES = [
-    "MSD/BENEFITS", "HEALTH/PATIENT", "LEGAL/TRIBUNAL", "IRD/TAX",
-    "INSURANCE/FINANCIAL", "PROPERTY/TENANCY", "GENERAL GOVT", "OTHER",
-]
+# Legacy aliases — kept so the PROMPTS dict and simplify_alias still work
+BUSINESS_PLAN_PROMPT = GENERAL_PROMPT
+FORM_EXPLAINER_PROMPT = GENERAL_PROMPT
+
+
+# ── Domain prompts — loaded from prompts/domains/ ────────────────────────────
+
+DOMAIN_FILES = {
+    "MSD/BENEFITS":       "msd_benefits",
+    "HEALTH/PATIENT":     "health_patient",
+    "LEGAL/TRIBUNAL":     "legal_tribunal",
+    "IRD/TAX":            "ird_tax",
+    "INSURANCE/FINANCIAL": "insurance_financial",
+    "PROPERTY/TENANCY":   "property_tenancy",
+    "GENERAL GOVT":       "general_govt",
+}
+
+VALID_CATEGORIES = list(DOMAIN_FILES.keys()) + ["OTHER"]
 
 CATEGORY_LABELS = {
     "MSD/BENEFITS": "Work & Income / Benefits",
@@ -146,43 +179,20 @@ CATEGORY_LABELS = {
 }
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SKILL PROMPTS — loaded from prompts/skills/ and prepended with NON_NEGOTIABLES
-# ══════════════════════════════════════════════════════════════════════════════
-
-def load_skill(filename: str) -> str:
-    return NON_NEGOTIABLES + "\n\n" + load_text(f"prompts/domains/{filename}")
-
-SKILL_MSD = load_skill("msd_benefits.md")
-SKILL_HEALTH = load_skill("health_patient.md")
-SKILL_LEGAL = load_skill("legal_tribunal.md")
-SKILL_GENERAL_GOVT = load_skill("general_govt.md")
-SKILL_IRD_TAX = load_skill("ird_tax.md")
-SKILL_INSURANCE = load_skill("insurance_financial.md")
-SKILL_PROPERTY = load_skill("property_tenancy.md")
+def get_skill_prompt(category: str) -> str:
+    """Return a rewrite prompt for a category, with domain rules if available."""
+    domain = DOMAIN_FILES.get(category)
+    if domain:
+        return build_prompt(task="rewrite", format_name="rewrite_output.json", domain=domain)
+    return GENERAL_PROMPT
 
 
-# ── Map categories to skill prompts ──────────────────────────────────────────
-
-SKILL_PROMPTS = {
-    "MSD/BENEFITS": SKILL_MSD,
-    "HEALTH/PATIENT": SKILL_HEALTH,
-    "LEGAL/TRIBUNAL": SKILL_LEGAL,
-    "IRD/TAX": SKILL_IRD_TAX,
-    "INSURANCE/FINANCIAL": SKILL_INSURANCE,
-    "PROPERTY/TENANCY": SKILL_PROPERTY,
-    "GENERAL GOVT": SKILL_GENERAL_GOVT,
-    "OTHER": None,  # Falls back to GENERAL_PROMPT
-}
-
-
-# ── GENERAL_PROMPT — used for OTHER category and as fallback ─────────────────
-
-GENERAL_PROMPT = NON_NEGOTIABLES + "\n\n" + TASK_REWRITE + "\n\n" + GENERAL_JSON_FORMAT
-
-# Legacy aliases — kept so the PROMPTS dict and simplify_alias still work
-BUSINESS_PLAN_PROMPT = GENERAL_PROMPT
-FORM_EXPLAINER_PROMPT = GENERAL_PROMPT
+def get_form_explain_prompt(category: str) -> str:
+    """Return a form explainer prompt, adding category context if detected."""
+    if category and category != "OTHER":
+        label = CATEGORY_LABELS.get(category, category)
+        return FORM_EXPLAINER_FULL_PROMPT + f"\n\nThis document has been identified as: {label}. Apply any relevant domain knowledge for this type of document."
+    return FORM_EXPLAINER_FULL_PROMPT
 
 
 def make_school_prompt(reading_age: str) -> str:

@@ -1,8 +1,8 @@
 # Plainly — Claude Working Memory
 > Drop this file into any Claude Chat, Cowork, or Code session to get started.
-> Last updated: 31 May 2026
+> Last updated: 3 June 2026
 
-> **Major site overhaul (31 May 2026):** P0 credibility fixes done — consistent nav + footer on all pages, emojis replaced with SVG icons, pilot page + privacy/terms/security pages created. AI prompts overhauled with neuroinclusive (Section 2) and accuracy (Section 4) shared rules. Form explainer now processes ALL pages of a PDF with progress + page highlighting + click-any-word-for-definition. Print layout fixed. TTS fixed. All changes built locally — NOT yet pushed.
+> **Bug fixes (3 June 2026):** Explain button wasn't working (tool buttons were laid out horizontally off-screen — now stacked vertically). Left and right panels were scrolling together (CSS grid/flex height constraints fixed — now independent). Translate wasn't triggering (required hidden "Go" button — now auto-translates when you pick a language). All changes built locally — NOT yet pushed.
 
 > **Email signature (30 May 2026):** Option 1 — logo + purple divider + Emily Hill / Founder / hello@tryplainly.co.nz / 021 468 719 / tryplainly.co.nz. On Desktop: `.html` (clickable) and `.jpg` (image).
 
@@ -229,7 +229,7 @@ There is NO mode toggle. No Business Plan mode. No School mode. These are gone.
 
 ## Pending Tasks — In Order, One at a Time
 
-1. **Commit and push** — all 31 May changes built locally. NOT yet pushed to GitHub/Render.
+1. **Commit and push** — all 31 May + 3 June changes built locally. NOT yet pushed to GitHub/Render.
 2. **First paying customer** — approach one school, community org, or adviser. Pilot page is ready to send.
 3. **Usage tracking/analytics** — log metadata per org (doc count, reading level, timestamp). No document content stored.
 4. **Additional tools** — contract red-flagger, worksheet leveller, policy checker, parent letter writer
@@ -240,6 +240,7 @@ There is NO mode toggle. No Business Plan mode. No School mode. These are gone.
 9. **P0 site fixes** ✅ Done (31 May 2026)
 10. **AI prompt overhaul** ✅ Done (31 May 2026)
 11. **Form explainer multi-page + word definitions** ✅ Done (31 May 2026)
+12. **Explain/Translate/scrolling bugs** ✅ Done (3 June 2026) — tool button layout, independent scrolling, translate auto-trigger
 
 ---
 
