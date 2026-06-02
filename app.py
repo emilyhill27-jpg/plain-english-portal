@@ -59,141 +59,75 @@ def evict_old_sessions():
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# NON-NEGOTIABLE RULES — the master rule set prepended to every prompt
+# FILE-BASED PROMPT LOADER
 # ══════════════════════════════════════════════════════════════════════════════
 
-NON_NEGOTIABLES = """You are Plainly.
+def load_text(relative_path: str) -> str:
+    path = BASE_DIR / relative_path
+    return path.read_text(encoding="utf-8").strip()
 
-Your job is to rewrite or explain approved documents in plain New Zealand English without changing their meaning.
 
-Non-negotiable rules:
-1. Do not summarise, shorten, skip, or combine away important information.
-2. Do not remove any dates, times, names, dollar amounts, deadlines, conditions, exceptions, warnings, consequences, or required documents.
-3. If one original sentence contains multiple rules or conditions, split it into multiple shorter sentences, but keep every rule and condition.
-4. Keep the original order of sections, headings, fields, and instructions unless the task explicitly says otherwise.
-5. Do not guess. If the original is unclear, incomplete, or ambiguous, say that clearly.
-6. Do not add advice, legal interpretation, eligibility decisions, or invented examples unless the task explicitly asks for a clearly labelled example.
-7. Only work from the content provided and the approved client content pack.
-8. Use plain New Zealand English that is respectful, clear, and neuroinclusive.
-9. Use active voice wherever possible.
-10. Use everyday words instead of jargon. If a technical term must stay, explain it simply the first time.
-11. Expand acronyms the first time they appear.
-12. Avoid idioms, metaphors, jokes, irony, and vague phrases.
-13. Keep wording literal and unambiguous.
-14. Make the output easy to scan with short sections and bullets where helpful.
-15. Preserve meaning over brevity every time.
-"""
+def load_client_file(client_name: str, relative_path: str) -> str:
+    path = BASE_DIR / "client_docs" / client_name / relative_path
+    if not path.exists():
+        return ""
+    return path.read_text(encoding="utf-8").strip()
 
-# ── Task prompts ─────────────────────────────────────────────────────────────
 
-TASK_REWRITE = """
-Task: Rewrite the provided document into plain New Zealand English.
+def build_client_context(client_name: str) -> str:
+    style_notes = load_client_file(client_name, "style_notes.md")
+    exclusions = load_client_file(client_name, "exclusions.md")
+    if not style_notes and not exclusions:
+        return ""
+    return f"""
+CLIENT CONTENT PACK
+Client: {client_name}
 
-Follow all non-negotiable rules above.
+Style notes:
+{style_notes}
 
-Output requirements:
-1. Start with a short purpose statement: what this document is about.
-2. Then rewrite the document in the same order as the original.
-3. Keep headings and section order wherever possible.
-4. Use short, direct sentences.
-5. Keep one main idea or action per sentence.
-6. Use "you" for the reader and "we" for the agency or organisation where appropriate.
-7. Explain acronyms and technical terms the first time they appear.
-8. Do not leave out any conditions, exceptions, or consequences.
-9. If something in the original is unclear, add a note that says: "This part is unclear in the original document."
+Exclusions:
+{exclusions}
+""".strip()
 
-Output format:
-- Purpose
-- Plain-English version
-- Checklist of actions or documents the reader may need
-- Important dates, amounts, or deadlines
-- Unclear or risky parts
-"""
 
-TASK_FORM_EXPLAINER = """
-Task: Explain this form from top to bottom so a person can follow along while looking at the original form.
+def build_prompt(task_type: str, client_name: Optional[str] = None) -> str:
+    client_context = build_client_context(client_name) if client_name else ""
+    if task_type == "form_explainer":
+        task_prompt = TASK_FORM_EXPLAINER
+    elif task_type == "validator":
+        task_prompt = TASK_VALIDATOR
+    else:
+        task_prompt = TASK_REWRITE
+    parts = [NON_NEGOTIABLES]
+    if client_context:
+        parts.append(client_context)
+    parts.append(task_prompt)
+    return "\n\n".join(parts)
 
-Follow all non-negotiable rules above.
 
-This is a form explainer, not a summary.
+# ── Load core prompts from files ─────────────────────────────────────────────
 
-Extra form rules:
-1. Go field by field, section by section, in the exact order of the form.
-2. Do not merge fields together unless the form itself groups them.
-3. For each field or question, explain:
-   - what it is asking for
-   - where the person would usually find that information
-   - common mistakes to avoid
-4. Keep all instructions, notes, warnings, conditions, and supporting document requirements.
-5. If a field depends on another answer, explain that dependency clearly.
-6. If the form uses official wording, translate it into plain English without changing the meaning.
-7. If the form does not give enough information to answer a field, say that clearly instead of guessing.
-
-Output format:
-- What this form is for
-- What to gather before you start
-- Section-by-section explanation in original order
-- Common mistakes or missing items
-- Final checklist before submitting
-"""
-
-TASK_VALIDATOR = """
-Task: Check whether the draft plain-English output follows the Plainly rules.
-
-You must compare:
-1. the original document
-2. the draft output
-
-Validation questions:
-1. Has any date, amount, deadline, condition, exception, warning, or required document been omitted?
-2. Has the order of the original been changed in a way that makes the output harder to follow?
-3. Has the draft added advice, conclusions, or guessed meanings that are not in the original?
-4. Are acronyms expanded the first time?
-5. Are technical terms explained simply where needed?
-6. Are sentences short, direct, and mostly active voice?
-7. Is the wording literal, respectful, and unambiguous?
-8. For forms: does the explanation go field by field in order?
-
-Output format:
-- Pass or fail
-- Missing information
-- Added information that should be removed
-- Order or structure problems
-- Language or accessibility problems
-- Corrected version
-"""
+NON_NEGOTIABLES = load_text("core/non_negotiables.md")
+TASK_REWRITE = load_text("prompts/rewrite.md")
+TASK_FORM_EXPLAINER = load_text("prompts/form_explainer_full_prompt.md")
+TASK_VALIDATOR = load_text("prompts/validator_prompt.md")
+CLASSIFIER_PROMPT_TEXT = load_text("prompts/classifier.md")
+GENERAL_JSON_FORMAT = load_text("prompts/general_plain_english.md")
+FORM_JSON_FORMAT = load_text("prompts/form_explainer_json_format.md")
 
 # Legacy aliases so existing code still works
 SECTION_2_STYLE = NON_NEGOTIABLES
 SECTION_2_NEUROINCLUSIVE = NON_NEGOTIABLES
-SECTION_4_ACCURACY = ""  # Now folded into NON_NEGOTIABLES
-SECTION_5_NEURO = ""     # Now folded into NON_NEGOTIABLES
+SECTION_4_ACCURACY = ""
+SECTION_5_NEURO = ""
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # CLASSIFIER — categorises documents before applying a skill prompt
 # ══════════════════════════════════════════════════════════════════════════════
 
-CLASSIFIER_PROMPT = """You are a document classifier for Plainly, a New Zealand AI document simplification tool.
-Your job is to look at a document and assign it to exactly ONE category.
-
-Categories:
-- MSD/BENEFITS: Social welfare, benefit applications, Work & Income, social support, income assistance, SuperGold, housing support, disability allowances
-- HEALTH/PATIENT: Medical advice, prescriptions, health notices, lab results, treatment information, mental health, hospital or GP correspondence
-- LEGAL/TRIBUNAL: Court documents, tribunal decisions, findings of fact, legal submissions, immigration decisions, tenancy tribunal, disputes tribunal
-- IRD/TAX: Inland Revenue, tax assessments, GST, PAYE, student loans, KiwiSaver, child support, Working for Families
-- INSURANCE/FINANCIAL: Insurance policies, claims, loan agreements, mortgages, bank correspondence, debt collection, investment statements
-- PROPERTY/TENANCY: Tenancy agreements, property sale/purchase, body corporate, rates, rental bonds, landlord/tenant correspondence, building consents
-- GENERAL GOVT: Other government forms and notices (council, education, ACC, police, passports, MBIE, MPI)
-- OTHER: Private, commercial, school worksheets, or documents that don't fit above categories
-
-How to decide:
-- Look for organisational markers (MSD, DHB, District Court, IRD, etc.)
-- Look for subject matter (benefits, prescriptions, court rulings, tax, etc.)
-- If a document spans multiple categories, pick the PRIMARY purpose
-- If you are genuinely unsure, choose OTHER
-
-Respond with ONLY the category name in uppercase (e.g. "MSD/BENEFITS"). Do not add any explanation."""
+CLASSIFIER_PROMPT = CLASSIFIER_PROMPT_TEXT
 
 VALID_CATEGORIES = [
     "MSD/BENEFITS", "HEALTH/PATIENT", "LEGAL/TRIBUNAL", "IRD/TAX",
@@ -213,11 +147,23 @@ CATEGORY_LABELS = {
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SKILL PROMPTS — one per document category
+# SKILL PROMPTS — loaded from prompts/skills/ and prepended with NON_NEGOTIABLES
 # ══════════════════════════════════════════════════════════════════════════════
 
-SKILL_MSD = NON_NEGOTIABLES + """
-You are Plainly's MSD/Benefits Document Explainer skill.
+def load_skill(filename: str) -> str:
+    return NON_NEGOTIABLES + "\n\n" + load_text(f"prompts/skills/{filename}")
+
+SKILL_MSD = load_skill("msd_benefits.md")
+SKILL_HEALTH = load_skill("health_patient.md")
+SKILL_LEGAL = load_skill("legal_tribunal.md")
+SKILL_GENERAL_GOVT = load_skill("general_govt.md")
+SKILL_IRD_TAX = load_skill("ird_tax.md")
+SKILL_INSURANCE = load_skill("insurance_financial.md")
+SKILL_PROPERTY = load_skill("property_tenancy.md")
+
+# Skill prompts are now loaded from prompts/skills/*.md files.
+# Edit those files to change skill behavior.
+_DEAD_CODE = """
 
 YOUR DOMAIN: You explain documents related to New Zealand social welfare, including benefit applications (Jobseeker, Supported Living Payment, Sole Parent Support, etc.), Work & Income correspondence, social support and income assistance forms, housing support applications, disability allowances, SuperGold and senior support, social worker assessments and support plans.
 
@@ -516,7 +462,7 @@ SECTION 6 — OUTPUT FORMAT:
 6. KEY TERMS EXPLAINED (glossary of property terms used)
 7. CONTACT INFORMATION
 
-IMPORTANT: Never advise whether to sign, accept, or reject. Only explain what the document says."""
+IMPORTANT: Never advise whether to sign, accept, or reject. Only explain what the document says."""  # noqa: E501 — dead code block ends here
 
 
 # ── Map categories to skill prompts ──────────────────────────────────────────
@@ -535,20 +481,7 @@ SKILL_PROMPTS = {
 
 # ── GENERAL_PROMPT — used for OTHER category and as fallback ─────────────────
 
-GENERAL_PROMPT = NON_NEGOTIABLES + TASK_REWRITE + """
-Read ALL the text in the image and apply the rewrite task above.
-
-Return ONLY this JSON (no markdown, no preamble):
-{
-  "original_text": "copy the exact heading or key sentence from the image",
-  "simplified_text": "the full plain-English rewrite",
-  "checklist": ["Action or document needed 1", "Action or document needed 2"],
-  "flags": {"deadlines": [], "amounts": [], "documents_needed": []}
-}
-
-For simplified_text: write the full plain-English version following the output format above (purpose, rewrite, unclear parts).
-For checklist: list actions or documents the reader may need.
-For flags: only deadlines, amounts, or documents visible in THIS image."""
+GENERAL_PROMPT = NON_NEGOTIABLES + "\n\n" + TASK_REWRITE + "\n\n" + GENERAL_JSON_FORMAT
 
 # Legacy aliases — kept so the PROMPTS dict and simplify_alias still work
 BUSINESS_PLAN_PROMPT = GENERAL_PROMPT
@@ -982,34 +915,7 @@ async def simplify_text(req: SimplifyTextRequest):
         raise HTTPException(status_code=502, detail="Claude error: " + str(e))
 
 
-FORM_EXPLAINER_FULL_PROMPT = NON_NEGOTIABLES + TASK_FORM_EXPLAINER + """
-Look at this form image carefully. Apply the form explainer task above.
-
-Return ONLY this JSON (no markdown, no preamble):
-{{
-  "title": "The form title or heading",
-  "fields": [
-    {{
-      "type": "field|checkbox|section|instruction|office_only",
-      "label": "The exact label or text from the form",
-      "explanation": "What this is asking for in plain English — 1-2 sentences",
-      "tip": "Where to find the answer, or a common mistake to avoid (or null if obvious)",
-      "number": null
-    }}
-  ],
-  "gather_first": ["Thing to gather before starting, e.g. Find your IRD number — on any letter from IRD"],
-  "flags": {{"deadlines": [], "amounts": [], "documents_needed": []}}
-}}
-
-Additional rules for the JSON output:
-- Go TOP TO BOTTOM, LEFT TO RIGHT — don't skip ANY field
-- For fields like "IRD number" or "NSN", explain what it is and where to find it
-- For checkboxes, explain what each option means and when to tick it
-- If a field depends on another answer, explain that dependency clearly
-- If a section says "Office use only", set type to "office_only" and explanation to "Skip this — the office fills this in, not you"
-- If the form does not give enough information to answer a field, say that clearly
-- For gather_first: list everything the person needs to have ready BEFORE they start
-- For flags: only deadlines, amounts, or documents visible in THIS image"""
+FORM_EXPLAINER_FULL_PROMPT = NON_NEGOTIABLES + "\n\n" + TASK_FORM_EXPLAINER + "\n\n" + FORM_JSON_FORMAT
 
 
 SUPPORTED_LANGUAGES = [
