@@ -748,10 +748,10 @@ def get_skill_prompt(category: str) -> str:
 
 
 def get_form_explain_prompt(category: str) -> str:
-    """Build a form explainer prompt: skill domain rules + form explainer task + JSON format."""
-    skill = SKILL_PROMPTS.get(category)
-    if skill:
-        return skill + "\n\n" + TASK_FORM_EXPLAINER + "\n\n" + FORM_JSON_FORMAT
+    """Build a form explainer prompt. Uses FORM_EXPLAINER_FULL_PROMPT with category as context."""
+    if category and category != "OTHER":
+        label = CATEGORY_LABELS.get(category, category)
+        return FORM_EXPLAINER_FULL_PROMPT + f"\n\nThis document has been identified as: {label}. Apply any relevant domain knowledge for this type of document."
     return FORM_EXPLAINER_FULL_PROMPT
 
 

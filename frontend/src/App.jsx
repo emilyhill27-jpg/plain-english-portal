@@ -1063,7 +1063,17 @@ export default function App() {
         fd.append("file", file);
         fd.append("page_num", String(p + 1));
         if (docCategory) fd.append("category", docCategory);
-        const res = await fetch(`${API_BASE}/api/v1/explain-form`, { method: "POST", body: fd });
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 90000); // 90s timeout per page
+        let res;
+        try {
+          res = await fetch(`${API_BASE}/api/v1/explain-form`, { method: "POST", body: fd, signal: controller.signal });
+        } catch (fetchErr) {
+          clearTimeout(timeout);
+          if (fetchErr.name === 'AbortError') throw new Error(`Page ${p + 1} timed out. The document may be too complex.`);
+          throw fetchErr;
+        }
+        clearTimeout(timeout);
         if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || `Error ${res.status}`);
         const pageResult = await res.json();
 
@@ -2225,6 +2235,23 @@ export default function App() {
                   <div className="loading-spinner" />
                   <div className="loading-text">{loadingMsg || "Working on it…"}</div>
                   <div className="loading-subtext">This can take a minute for long documents</div>
+                </div>
+              )}
+
+              {/* Error message — shown prominently when something goes wrong */}
+              {error && !loading && (
+                <div style={{
+                  margin: 16, padding: '16px 20px', background: '#FEF2F2',
+                  border: '1.5px solid #FECACA', borderRadius: 10, color: '#991B1B',
+                  fontSize: 14, lineHeight: 1.6,
+                }}>
+                  <strong style={{ display: 'block', marginBottom: 4 }}>Something went wrong</strong>
+                  {error}
+                  <button onClick={() => setError("")} style={{
+                    display: 'block', marginTop: 10, padding: '6px 14px', borderRadius: 6,
+                    border: '1px solid #FECACA', background: 'white', color: '#991B1B',
+                    fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                  }}>Dismiss</button>
                 </div>
               )}
 
