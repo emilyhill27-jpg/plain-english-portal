@@ -499,13 +499,13 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
         <div className="pl-hero-outer">
         <section className="pl-hero">
           <div>
-            <div className="pl-hero-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Free &nbsp;·&nbsp; No sign-up &nbsp;·&nbsp; No data stored</div>
-            <h1>Documents you can<br/>actually understand.</h1>
+            <div className="pl-hero-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> No data stored &nbsp;·&nbsp; Your documents stay private</div>
+            <h1>Clear language for the<br/>documents that matter.</h1>
             <p className="pl-hero-sub">
-              Government forms, tenancy agreements, school letters — upload the document and get a clear explanation in plain English.
+              Plainly turns your organisation's forms, letters and agreements into plain English — so the people you serve can actually understand them.
             </p>
             <div className="pl-hero-actions">
-              <button className="pl-btn-primary" onClick={onGetStarted}>✦ Try a document today</button>
+              <button className="pl-btn-primary" onClick={onGetStarted}>See it in action</button>
             </div>
             <div className="pl-hero-trust">
             </div>
@@ -551,20 +551,20 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
         {/* Support section */}
         <section className="pl-support-section" id="how">
           <div className="pl-support-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="#7c3aed" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
-          <h2>Support that meets you where you are.</h2>
-          <p>Plainly is here to make documents easier — at home, at school, and everywhere in between.</p>
+          <h2>How Plainly works for your organisation.</h2>
+          <p>You choose the documents. Plainly makes them clear.</p>
 
           <div className="pl-cards-grid">
             <div className="pl-feature-card">
               <div className="pl-feature-card-icon" style={{ background: T.purplePale }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-              <h3>Simplify documents in seconds</h3>
-              <p>Upload any document and get a clear, plain English version that's easier to read and understand.</p>
+              <h3>Your documents, explained clearly</h3>
+              <p>Choose which forms, letters and policies Plainly supports. Each one gets a plain-English explanation your users can trust.</p>
               <a href="#" className="pl-feature-card-link">Learn more →</a>
             </div>
             <div className="pl-feature-card">
               <div className="pl-feature-card-icon" style={{ background: T.pinkPale }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EC4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"/></svg></div>
-              <h3>Made for students and schools</h3>
-              <p>Plainly supports learning by making school forms, policies and letters easier for students and families.</p>
+              <h3>Schools and community organisations</h3>
+              <p>Enrolment forms, consent letters, policy documents — Plainly helps the families you work with understand what they're reading.</p>
               <a href="#" className="pl-feature-card-link">Learn more →</a>
             </div>
             <div className="pl-feature-card">
@@ -575,8 +575,8 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
             </div>
             <div className="pl-feature-card">
               <div className="pl-feature-card-icon" style={{ background: T.pinkPale }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EC4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-              <h3>Safe, supportive and private</h3>
-              <p>Your privacy comes first. We don't store your documents and your information is always safe.</p>
+              <h3>Private and secure</h3>
+              <p>Documents are processed in real time and never stored. No accounts, no tracking, no data retention.</p>
               <a href="#" className="pl-feature-card-link">Learn more →</a>
             </div>
           </div>
@@ -585,17 +585,17 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
         {/* CTA */}
         <section className="pl-cta-section" id="try">
           <div>
-            <h2>Because everyone deserves to feel in the loop.</h2>
-            <p>Plainly believes that clarity creates confidence. We're here to help you understand, participate and feel supported every step of the way.</p>
+            <h2>Give your people the clarity they deserve.</h2>
+            <p>When people understand the documents you give them, they act sooner, ask fewer questions, and trust you more.</p>
             <div className="pl-cta-actions">
-              <button className="pl-btn-primary" onClick={onGetStarted}>See how Plainly can help →</button>
-              <a href="#how" className="pl-cta-link">How it works →</a>
+              <button className="pl-btn-primary" onClick={() => { window.location.href = '/pilot.html'; }}>Start a pilot →</button>
+              <a href="/organisations.html" className="pl-cta-link">For organisations →</a>
             </div>
           </div>
           <div className="pl-cta-illustration">
             <div style={{ textAlign: "center", color: T.textSoft }}>
               <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{marginBottom:12}}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-              <p style={{ fontSize: 14 }}>Making documents clearer for everyone</p>
+              <p style={{ fontSize: 14 }}>Plain language, delivered by your organisation</p>
             </div>
           </div>
         </section>
@@ -608,7 +608,7 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
             <div className="pl-footer-top">
               <div className="pl-footer-brand">
                 <img src="/logo-plainly.png" alt="Plainly" style={{ height: 28 }} />
-                <p>Plain language for everyone.<br/>Built in Aotearoa New Zealand.</p>
+                <p>Plain language for organisations.<br/>Built in Aotearoa New Zealand.</p>
               </div>
               <div className="pl-footer-links">
                 <a href="/privacy.html">Privacy</a>
