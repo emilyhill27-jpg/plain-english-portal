@@ -1042,7 +1042,7 @@ export default function App() {
     finally { setLoading(false); setLoadingMsg(""); }
   }
 
-  // form explainer — processes ALL pages of a PDF
+  // form explainer — processes ALL pages of a PDF in parallel
   async function handleFormExplain() {
     if (!file) { setError("Upload a file first."); return; }
     window.speechSynthesis?.cancel();
@@ -1051,36 +1051,39 @@ export default function App() {
     setSelection(null); setScreenSel(null); setExplainPageIdx(0);
 
     const totalPages = isPdf ? pages.length : 1;
-    const allFields = [];
-    const allGatherFirst = [];
-    const allFlags = { deadlines: [], amounts: [], documents_needed: [] };
-    let title = "";
 
     try {
-      for (let p = 0; p < totalPages; p++) {
-        setLoadingMsg(`Explaining page ${p + 1} of ${totalPages}…`);
+      setLoadingMsg(totalPages > 1 ? `Explaining all ${totalPages} pages…` : "Explaining form…");
+
+      const pagePromises = Array.from({ length: totalPages }, (_, p) => {
         const fd = new FormData();
         fd.append("file", file);
         fd.append("page_num", String(p + 1));
         if (docCategory) fd.append("category", docCategory);
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 90000); // 90s timeout per page
-        let res;
-        try {
-          res = await fetch(`${API_BASE}/api/v1/explain-form`, { method: "POST", body: fd, signal: controller.signal });
-        } catch (fetchErr) {
-          clearTimeout(timeout);
-          if (fetchErr.name === 'AbortError') throw new Error(`Page ${p + 1} timed out. The document may be too complex.`);
-          throw fetchErr;
-        }
-        clearTimeout(timeout);
-        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || `Error ${res.status}`);
-        const pageResult = await res.json();
+        const timeout = setTimeout(() => controller.abort(), 90000);
+        return fetch(`${API_BASE}/api/v1/explain-form`, { method: "POST", body: fd, signal: controller.signal })
+          .then(async (res) => {
+            clearTimeout(timeout);
+            if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || `Error ${res.status}`);
+            return res.json();
+          })
+          .catch((err) => {
+            clearTimeout(timeout);
+            if (err.name === 'AbortError') throw new Error(`Page ${p + 1} timed out. The document may be too complex.`);
+            throw err;
+          });
+      });
 
-        // Use the title from page 1
+      const pageResults = await Promise.all(pagePromises);
+
+      const allFields = [];
+      const allGatherFirst = [];
+      const allFlags = { deadlines: [], amounts: [], documents_needed: [] };
+      let title = "";
+
+      pageResults.forEach((pageResult, p) => {
         if (!title && pageResult.title) title = pageResult.title;
-
-        // Accumulate fields with page number label and _page tag
         if (pageResult.fields?.length) {
           if (totalPages > 1) {
             allFields.push({ type: "page_break", label: `Page ${p + 1}`, explanation: "", tip: null, number: null, _page: p });
@@ -1094,15 +1097,12 @@ export default function App() {
           if (pageResult.flags.amounts?.length) allFlags.amounts.push(...pageResult.flags.amounts);
           if (pageResult.flags.documents_needed?.length) allFlags.documents_needed.push(...pageResult.flags.documents_needed);
         }
-      }
-
-      // Deduplicate gather_first
-      const uniqueGather = [...new Set(allGatherFirst)];
+      });
 
       setFormExplainResult({
         title: title || "Form explained",
         fields: allFields,
-        gather_first: uniqueGather,
+        gather_first: [...new Set(allGatherFirst)],
         flags: allFlags,
       });
     } catch (e) { setError(e.message); }
