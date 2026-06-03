@@ -14,7 +14,7 @@ export default function FormExplainResult({
     <div className="result-outer-box">
       <div className="bubble-label" style={{ background: 'linear-gradient(135deg, #8c52ff 0%, #6366F1 100%)' }}>
         <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.6 3.2L12 5l-2.6 2.5.6 3.7L7 9.5l-3 1.7.6-3.7L2 5l3.4-.8L7 1z" fill="#fff" opacity=".9"/></svg>
-        Form explained
+        Document explained
       </div>
 
       {formExplainResult.title && (

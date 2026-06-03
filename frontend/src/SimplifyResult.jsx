@@ -123,7 +123,7 @@ export default function SimplifyResult({
         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Other tools</div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="tool-btn-small" onClick={handleFormExplain} disabled={loading}>
-            <span>📋</span> Explain this form
+            <span>📋</span> Explain this document
           </button>
           <button className="tool-btn-small" onClick={() => setShowTranslatePanel(p => !p)} disabled={loading}>
             <span>🌍</span> Translate

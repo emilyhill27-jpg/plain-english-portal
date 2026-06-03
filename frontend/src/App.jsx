@@ -1057,7 +1057,7 @@ export default function App() {
     const totalPages = isPdf ? pages.length : 1;
 
     try {
-      setLoadingMsg(totalPages > 1 ? `Explaining all ${totalPages} pages…` : "Explaining form…");
+      setLoadingMsg(totalPages > 1 ? `Explaining all ${totalPages} pages…` : "Explaining document…");
 
       const pagePromises = Array.from({ length: totalPages }, (_, p) => {
         const fd = new FormData();
@@ -1104,7 +1104,7 @@ export default function App() {
       });
 
       setFormExplainResult({
-        title: title || "Form explained",
+        title: title || "Document explained",
         fields: allFields,
         gather_first: [...new Set(allGatherFirst)],
         flags: allFlags,
@@ -2376,8 +2376,8 @@ export default function App() {
                       <button className="tool-btn tool-btn-explain" onClick={handleFormExplain} disabled={loading}>
                         <span className="tool-btn-icon">📋</span>
                         <span className="tool-btn-text">
-                          <strong>Explain this form</strong>
-                          <span>Every field explained — what to write and where to find it</span>
+                          <strong>Explain this document</strong>
+                          <span>Every section explained — what it means and what to do</span>
                         </span>
                       </button>
                       <button className="tool-btn tool-btn-translate" onClick={() => setShowTranslatePanel(true)} disabled={loading}>
