@@ -142,6 +142,10 @@ def build_prompt(
 NON_NEGOTIABLES = load_text("core/non_negotiables.md")
 CLASSIFIER_PROMPT = load_text("prompts/tasks/classifier.md")
 
+# Legacy aliases — inline prompts below still reference these names
+SECTION_2_NEUROINCLUSIVE = NON_NEGOTIABLES
+SECTION_4_ACCURACY = NON_NEGOTIABLES
+
 
 # ── Assembled prompts used by API endpoints ──────────────────────────────────
 
@@ -622,9 +626,6 @@ async def simplify_text(req: SimplifyTextRequest):
         raise HTTPException(status_code=502, detail="Claude error: " + str(e))
 
 
-FORM_EXPLAINER_FULL_PROMPT = NON_NEGOTIABLES + "\n\n" + TASK_FORM_EXPLAINER + "\n\n" + FORM_JSON_FORMAT
-
-
 SUPPORTED_LANGUAGES = [
     "te reo Māori", "Samoan", "Tongan", "Cook Islands Māori", "Niuean", "Fijian",
     "Hindi", "Mandarin Chinese", "Cantonese Chinese", "Korean", "Japanese",
@@ -752,19 +753,6 @@ async def classify_document(
                 "error": str(e)}
 
 
-def get_skill_prompt(category: str) -> str:
-    """Return the skill prompt for a given category, falling back to GENERAL_PROMPT."""
-    return SKILL_PROMPTS.get(category) or GENERAL_PROMPT
-
-
-def get_form_explain_prompt(category: str) -> str:
-    """Build a form explainer prompt. Uses FORM_EXPLAINER_FULL_PROMPT with category as context."""
-    if category and category != "OTHER":
-        label = CATEGORY_LABELS.get(category, category)
-        return FORM_EXPLAINER_FULL_PROMPT + f"\n\nThis document has been identified as: {label}. Apply any relevant domain knowledge for this type of document."
-    return FORM_EXPLAINER_FULL_PROMPT
-
-
 class ValidateRequest(BaseModel):
     original_text: str
     draft_output: str
@@ -775,7 +763,7 @@ class ValidateRequest(BaseModel):
 async def validate_output(req: ValidateRequest):
     """Run the Plainly validator: check draft output against original for accuracy."""
     form_note = " This was a form explainer — check that it goes field by field in order." if req.is_form else ""
-    prompt = NON_NEGOTIABLES + TASK_VALIDATOR + f"""
+    prompt = NON_NEGOTIABLES + "\n\n" + load_text("prompts/tasks/validator.md") + f"""
 Now validate this output.{form_note}
 
 ORIGINAL DOCUMENT:
