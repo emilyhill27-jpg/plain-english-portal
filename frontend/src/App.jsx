@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./index.css";
+import FormExplainResult from "./FormExplainResult";
+import TranslateResult from "./TranslateResult";
+import SimplifyResult from "./SimplifyResult";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 
@@ -497,17 +500,14 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
         <section className="pl-hero">
           <div>
             <div className="pl-hero-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Free &nbsp;·&nbsp; No sign-up &nbsp;·&nbsp; No data stored</div>
-            <h1>Any document.<br/>Plain and simple.</h1>
+            <h1>Documents you can<br/>actually understand.</h1>
             <p className="pl-hero-sub">
-              Contracts, government forms, letters, agreements — paste or upload anything and get a clear explanation in plain language.
+              Government forms, tenancy agreements, school letters — upload the document and get a clear explanation in plain English.
             </p>
             <div className="pl-hero-actions">
               <button className="pl-btn-primary" onClick={onGetStarted}>✦ Try a document today</button>
             </div>
             <div className="pl-hero-trust">
-              <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:4}}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>PDFs, forms &amp; contracts</span>
-              <span style={{ margin: "0 10px", opacity: 0.4 }}>·</span>
-              <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:4}}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Results in seconds</span>
             </div>
           </div>
 
@@ -569,8 +569,8 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
             </div>
             <div className="pl-feature-card">
               <div className="pl-feature-card-icon" style={{ background: T.bluePale }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
-              <h3>Accessible for everyone</h3>
-              <p>Designed for people who benefit from clearer language, including neurodivergent readers, ESL users and more.</p>
+              <h3>Built for how you read</h3>
+              <p>Adjust text size, font, spacing and background to suit your reading style. Designed to WCAG 2.2 AA and COGA accessibility standards.</p>
               <a href="#" className="pl-feature-card-link">Learn more →</a>
             </div>
             <div className="pl-feature-card">
@@ -748,11 +748,7 @@ export default function App() {
   // output
   const [result, setResult]         = useState(null);
   const [checklistOpen, setChecklistOpen] = useState(false);
-  const [showPrompts, setShowPrompts] = useState(false);
   const [showReadingSupport, setShowReadingSupport] = useState(false);
-  const [showExamples, setShowExamples] = useState(false);
-  const [showChecklistInline, setShowChecklistInline] = useState(false);
-  const [checkedItems, setCheckedItems] = useState({});
   const [cropPreviewUrl, setCropPreviewUrl] = useState(null);
 
   // audio
@@ -1255,6 +1251,13 @@ export default function App() {
     if (window.speechSynthesis.paused) { window.speechSynthesis.resume(); setIsPlaying(true); }
     else { window.speechSynthesis.pause(); setIsPlaying(false); }
   }
+
+  const listenProps = {
+    isPlaying, speak, pauseResume, stopSpeech,
+    speechDisabled: !speechInfo.fullText,
+    groupedVoices, voiceName, setVoiceName, voiceRegions, formatVoiceName,
+    audioSpeed, setAudioSpeed,
+  };
 
   // clickable words
   function renderClickableWords(text, globalOffset) {
@@ -2272,423 +2275,31 @@ export default function App() {
                   </div>
                 )}
 
-                {/* TRANSLATE RESULT */}
+                {/* RESULT DISPLAYS — extracted to separate visual components */}
                 {translateResult ? (
-                  <div className="result-outer-box">
-                    <div className="bubble-label" style={{ background: 'linear-gradient(135deg, #8c52ff 0%, #6366F1 100%)' }}>
-                      <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.6 3.2L12 5l-2.6 2.5.6 3.7L7 9.5l-3 1.7.6-3.7L2 5l3.4-.8L7 1z" fill="#fff" opacity=".9"/></svg>
-                      Translated to {translateResult.target_language}
-                    </div>
-
-                    {translateResult.title && (
-                      <div style={{ padding: '16px 18px 0', fontFamily: 'var(--font-h)', fontWeight: 700, fontSize: 20, color: 'var(--text)' }}>
-                        {translateResult.title}
-                      </div>
-                    )}
-
-                    {/* Listen controls */}
-                    <div className="listen-inline no-print" aria-label="Listen controls">
-                      <span className="listen-inline-label">Listen to translation</span>
-                      <button className="play-btn" onClick={isPlaying ? pauseResume : speak} disabled={!speechInfo.fullText}>
-                        {isPlaying ? (
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="1" width="3" height="10" rx="1" fill="#fff"/><rect x="7" y="1" width="3" height="10" rx="1" fill="#fff"/></svg>
-                        ) : (
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polygon points="2,1 11,6 2,11" fill="#fff"/></svg>
-                        )}
-                      </button>
-                      <button className="stop-btn" onClick={() => { window.speechSynthesis?.cancel(); setIsPlaying(false); setCurrentCharRange(null); }}>
-                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1" y="1" width="8" height="8" rx="1.5" fill="currentColor"/></svg>
-                      </button>
-                      {groupedVoices.length > 0 && (
-                        <select className="voice-sel" value={voiceName} onChange={e => setVoiceName(e.target.value)}>
-                          {groupedVoices.map(g => (
-                            <optgroup key={g.region} label={(voiceRegions[g.region]?.flag || "\u{1F310}") + " " + (voiceRegions[g.region]?.label || "English")}>
-                              {g.voices.map(v => <option key={v.name} value={v.name}>{formatVoiceName(v)}</option>)}
-                            </optgroup>
-                          ))}
-                        </select>
-                      )}
-                    </div>
-                    <div className="listen-inline no-print" style={{ marginTop: 4 }}>
-                      <span style={{ fontSize: 11, color: 'var(--muted)', marginRight: 6 }}>Speed</span>
-                      {[0.5, 0.75, 1, 1.25].map(spd => (
-                        <button key={spd} className={`rs-option${audioSpeed === spd ? ' active' : ''}`}
-                          style={{ padding: '2px 8px', fontSize: 11, height: 24, minWidth: 0 }}
-                          onClick={() => setAudioSpeed(spd)}>
-                          {spd === 1 ? '1x' : spd + 'x'}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Side-by-side print layout: original + translation */}
-                    <div className="translate-print-layout" style={{ display: 'none' }}>
-                      <div className="translate-print-original">
-                        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B7280', marginBottom: 8 }}>Original worksheet</div>
-                        {isPdf && currentPage ? (
-                          <img src={`data:image/png;base64,${currentPage.image_base64}`} alt="Original worksheet" />
-                        ) : previewUrl ? (
-                          <img src={previewUrl} alt="Original worksheet" />
-                        ) : null}
-                      </div>
-                      <div className="translate-print-translated">
-                        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8c52ff', marginBottom: 8 }}>Translated — {translateResult.target_language}</div>
-                        {translateResult.title && (
-                          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10 }}>{translateResult.title}</div>
-                        )}
-                        {translateResult.sections?.map((sec, i) => (
-                          <div key={i} style={{ marginBottom: 8 }}>
-                            {sec.number && <span style={{ fontWeight: 700, marginRight: 4 }}>{sec.number}.</span>}
-                            {sec.type === "heading" ? (
-                              <div style={{ fontWeight: 700, fontSize: 14, marginTop: 8 }}>{sec.translated}</div>
-                            ) : sec.type === "image_note" ? (
-                              <div style={{ fontSize: 11, color: '#6B7280', fontStyle: 'italic' }}>{sec.translated}</div>
-                            ) : (
-                              <span style={{ fontSize: 13, lineHeight: 1.6 }}>{sec.translated}</span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* On-screen: translation only */}
-                    <div className="plain-english-box no-print" style={{ marginTop: 8 }}>
-                      {translateResult.sections?.map((sec, i) => (
-                        <div key={i} className="translate-section" style={{ marginBottom: 14 }}>
-                          {sec.number && <span style={{ fontWeight: 700, color: 'var(--purple)', marginRight: 6 }}>{sec.number}.</span>}
-                          {sec.type === "heading" ? (
-                            <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)', margin: '12px 0 4px' }}>{sec.translated}</h3>
-                          ) : sec.type === "image_note" ? (
-                            <div style={{ padding: '8px 12px', background: '#F3F4F6', borderRadius: 8, fontSize: 13, color: '#6B7280', fontStyle: 'italic' }}>
-                              {sec.translated}
-                            </div>
-                          ) : (
-                            <p style={{ margin: 0, lineHeight: 1.7 }}>{sec.translated}</p>
-                          )}
-                          {sec.original && sec.type !== "image_note" && (
-                            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9CA3AF', fontStyle: 'italic' }}>{sec.original}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="bottom-actions no-print">
-                      <button className="action-btn" onClick={() => window.print()}>
-                        <span className="action-btn-icon">🖨️</span> Print side-by-side (original + translation)
-                      </button>
-                    </div>
-                  </div>
-
+                  <TranslateResult
+                    translateResult={translateResult} isPdf={isPdf} currentPage={currentPage} previewUrl={previewUrl} pageIdx={pageIdx}
+                    listenProps={listenProps}
+                  />
                 ) : formExplainResult ? (
-                  <div className="result-outer-box">
-                    <div className="bubble-label" style={{ background: 'linear-gradient(135deg, #8c52ff 0%, #6366F1 100%)' }}>
-                      <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.6 3.2L12 5l-2.6 2.5.6 3.7L7 9.5l-3 1.7.6-3.7L2 5l3.4-.8L7 1z" fill="#fff" opacity=".9"/></svg>
-                      Form explained
-                    </div>
-
-                    {formExplainResult.title && (
-                      <div style={{ padding: '16px 18px 0', fontFamily: 'var(--font-h)', fontWeight: 700, fontSize: 20, color: 'var(--text)' }}>
-                        {formExplainResult.title}
-                      </div>
-                    )}
-
-                    {/* Listen controls */}
-                    <div className="listen-inline no-print" aria-label="Listen controls">
-                      <span className="listen-inline-label">Listen to this explanation</span>
-                      <button className="play-btn" onClick={isPlaying ? pauseResume : speak} disabled={!speechInfo.fullText}>
-                        {isPlaying ? (
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="1" width="3" height="10" rx="1" fill="#fff"/><rect x="7" y="1" width="3" height="10" rx="1" fill="#fff"/></svg>
-                        ) : (
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polygon points="2,1 11,6 2,11" fill="#fff"/></svg>
-                        )}
-                      </button>
-                      <button className="stop-btn" onClick={() => { window.speechSynthesis?.cancel(); setIsPlaying(false); setCurrentCharRange(null); }}>
-                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1" y="1" width="8" height="8" rx="1.5" fill="currentColor"/></svg>
-                      </button>
-                      {groupedVoices.length > 0 && (
-                        <select className="voice-sel" value={voiceName} onChange={e => setVoiceName(e.target.value)}>
-                          {groupedVoices.map(g => (
-                            <optgroup key={g.region} label={(voiceRegions[g.region]?.flag || "\u{1F310}") + " " + (voiceRegions[g.region]?.label || "English")}>
-                              {g.voices.map(v => <option key={v.name} value={v.name}>{formatVoiceName(v)}</option>)}
-                            </optgroup>
-                          ))}
-                        </select>
-                      )}
-                    </div>
-                    <div className="listen-inline no-print" style={{ marginTop: 4 }}>
-                      <span style={{ fontSize: 11, color: 'var(--muted)', marginRight: 6 }}>Speed</span>
-                      {[0.5, 0.75, 1, 1.25].map(spd => (
-                        <button key={spd} className={`rs-option${audioSpeed === spd ? ' active' : ''}`}
-                          style={{ padding: '2px 8px', fontSize: 11, height: 24, minWidth: 0 }}
-                          onClick={() => setAudioSpeed(spd)}>
-                          {spd === 1 ? '1x' : spd + 'x'}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Gather first */}
-                    {formExplainResult.gather_first?.length > 0 && (
-                      <div className="result-section" style={{ padding: '16px 18px' }}>
-                        <h2 className="r-h" style={{ color: '#8c52ff' }}>Before you start — gather these</h2>
-                        <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                          {formExplainResult.gather_first.map((item, i) => (
-                            <li key={i} style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-mid)' }}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {/* Fields */}
-                    <div className="plain-english-box" style={{ padding: '16px 18px' }}>
-                      <h2 className="r-h">Every field explained</h2>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        {formExplainResult.fields?.map((field, i) => (
-                          field.type === 'page_break' ? (
-                            <div key={i} className="form-explain-page-break" data-page={field._page}
-                              ref={el => {
-                                if (!el) return;
-                                const obs = new IntersectionObserver(([entry]) => {
-                                  if (entry.isIntersecting) setExplainPageIdx(field._page);
-                                }, { root: resultScrollRef.current, threshold: 0.5 });
-                                obs.observe(el);
-                              }}
-                              onClick={() => setExplainPageIdx(field._page)}
-                              style={{
-                                position: 'sticky', top: 0, zIndex: 10,
-                                padding: '10px 14px', margin: '8px -18px 0',
-                                background: 'linear-gradient(135deg, #7c3aed, #6366F1)',
-                                color: 'white', fontWeight: 700, fontSize: 14,
-                                borderRadius: 8, cursor: 'pointer',
-                                display: 'flex', alignItems: 'center', gap: 8,
-                              }}>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                              {field.label}
-                              <span style={{ fontSize: 11, fontWeight: 400, opacity: 0.8, marginLeft: 'auto' }}>Click to jump to this page</span>
-                            </div>
-                          ) : (
-                          <div key={i} style={{
-                            padding: '12px 14px',
-                            background: field.type === 'office_only' ? '#f9fafb' : '#fff',
-                            border: '1px solid var(--border)',
-                            borderRadius: 10,
-                            opacity: field.type === 'office_only' ? 0.7 : 1,
-                          }}>
-                            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
-                              <span style={{ fontSize: 14, opacity: 0.6 }}>
-                                {field.type === 'checkbox' ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg> : field.type === 'section' ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> : field.type === 'instruction' ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> : field.type === 'office_only' ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="15" y2="14"/><line x1="9" y1="18" x2="15" y2="18"/></svg> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>}
-                              </span>
-                              <strong style={{ fontSize: 14, color: 'var(--text)' }}>{field.label}</strong>
-                            </div>
-                            <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--text-mid)', lineHeight: 1.6 }}>{renderClickableText(field.explanation)}</p>
-                            {field.tip && (
-                              <p style={{ margin: '6px 0 0', fontSize: 13, color: '#8c52ff', lineHeight: 1.5 }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8c52ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:'middle',marginRight:4}}><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0018 8 6 6 0 006 8c0 1 .23 2.23 1.5 3.5C8.26 12.26 8.72 13.02 8.91 14"/></svg> {renderClickableText(field.tip)}
-                              </p>
-                            )}
-                          </div>
-                          )
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Important details / flags */}
-                    {formExplainResult.flags && Object.values(formExplainResult.flags).some(v => v?.length > 0) && (
-                      <div className="result-section" style={{ padding: '16px 18px' }}>
-                        <h2 className="r-h">Important details</h2>
-                        <div className="flags-row">
-                          {formExplainResult.flags.deadlines?.map((d,i) => <span key={i} className="flag-chip">📅 {d}</span>)}
-                          {formExplainResult.flags.amounts?.map((a,i) => <span key={i} className="flag-chip">💰 {a}</span>)}
-                          {formExplainResult.flags.documents_needed?.map((d,i) => <span key={i} className="flag-chip">{d}</span>)}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Print */}
-                    <div className="bottom-actions no-print">
-                      <button className="action-btn" onClick={() => window.print()}>
-                        <span className="action-btn-icon">🖨️</span> Print side by side — form + explanation
-                      </button>
-                    </div>
-
-                    {/* Other tools */}
-                    <div className="other-tools no-print" style={{ marginTop: 16, padding: '16px 0', borderTop: '1px solid var(--border)' }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Other tools</div>
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button className="tool-btn-small" onClick={() => setShowTranslatePanel(p => !p)} disabled={loading}>
-                          <span>🌍</span> Translate
-                        </button>
-                      </div>
-                      {showTranslatePanel && (
-                        <div className="translate-picker no-print" style={{ marginTop: 8 }}>
-                          <select className="translate-lang-select" value={targetLang} disabled={loading}
-                            onChange={e => { const l = e.target.value; setTargetLang(l); handleTranslate(l); }}>
-                            {translateLangs.map(lang => <option key={lang} value={lang}>{lang}</option>)}
-                          </select>
-                          <button className="btn btn-primary" style={{ height: 36, fontSize: 13, padding: '0 16px' }}
-                            onClick={handleTranslate} disabled={loading || !targetLang}>
-                            {loading ? "Translating…" : "Go"}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
+                  <FormExplainResult
+                    formExplainResult={formExplainResult} renderClickableText={renderClickableText}
+                    setExplainPageIdx={setExplainPageIdx} resultScrollRef={resultScrollRef}
+                    listenProps={listenProps}
+                    showTranslatePanel={showTranslatePanel} setShowTranslatePanel={setShowTranslatePanel}
+                    translateLangs={translateLangs} targetLang={targetLang} setTargetLang={setTargetLang}
+                    handleTranslate={handleTranslate} loading={loading}
+                  />
                 ) : result ? (
-                  <div className="result-outer-box">
-                    {/* Plain-English version label */}
-                    <div className="bubble-label">
-                      <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.6 3.2L12 5l-2.6 2.5.6 3.7L7 9.5l-3 1.7.6-3.7L2 5l3.4-.8L7 1z" fill="#fff" opacity=".9"/></svg>
-                      Plain-English version
-                    </div>
-
-                    {/* Listen controls — inline under label */}
-                    <div className="listen-inline no-print" aria-label="Listen controls">
-                      <span className="listen-inline-label">Listen to this version</span>
-                      <button className="play-btn" onClick={isPlaying ? pauseResume : speak} disabled={!speechInfo.fullText}>
-                        {isPlaying ? (
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="1" width="3" height="10" rx="1" fill="#fff"/><rect x="7" y="1" width="3" height="10" rx="1" fill="#fff"/></svg>
-                        ) : (
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polygon points="2,1 11,6 2,11" fill="#fff"/></svg>
-                        )}
-                      </button>
-                      <button className="stop-btn" onClick={() => { window.speechSynthesis?.cancel(); setIsPlaying(false); setCurrentCharRange(null); }}>
-                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1" y="1" width="8" height="8" rx="1.5" fill="currentColor"/></svg>
-                      </button>
-                      {groupedVoices.length > 0 && (
-                        <select className="voice-sel" value={voiceName} onChange={e => setVoiceName(e.target.value)}>
-                          {groupedVoices.map(g => (
-                            <optgroup key={g.region} label={(voiceRegions[g.region]?.flag || "\u{1F310}") + " " + (voiceRegions[g.region]?.label || "English")}>
-                              {g.voices.map(v => <option key={v.name} value={v.name}>{formatVoiceName(v)}</option>)}
-                            </optgroup>
-                          ))}
-                        </select>
-                      )}
-                    </div>
-                    <div className="listen-inline no-print" style={{ marginTop: 4 }}>
-                      <span style={{ fontSize: 11, color: 'var(--muted)', marginRight: 6 }}>Speed</span>
-                      {[0.5, 0.75, 1, 1.25].map(spd => (
-                        <button key={spd} className={`rs-option${audioSpeed === spd ? ' active' : ''}`}
-                          style={{ padding: '2px 8px', fontSize: 11, height: 24, minWidth: 0 }}
-                          onClick={() => setAudioSpeed(spd)}>
-                          {spd === 1 ? '1x' : spd + 'x'}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Inner box — plain-English text */}
-                    <div className="plain-english-box">
-                      <div className="result-section">
-                        <h2 className="r-h">What this is about</h2>
-                        <div className="r-p">
-                          {renderClickableWords(result.simplified_text, simpSection?.offset ?? 0)}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Prompts & examples button */}
-                    <button className={`prompts-btn${showPrompts ? ' on' : ''}`}
-                      onClick={() => setShowPrompts(!showPrompts)}>
-                      <span className="action-btn-icon">💬</span>
-                      Prompts & examples
-                      <span style={{ marginLeft:'auto', fontSize:18, color:'var(--muted)' }}>{showPrompts ? '−' : '+'}</span>
-                    </button>
-                    {showPrompts && (
-                      <div className="prompts-content">
-                        {result?.simplified_text ? (
-                          <>
-                            {result.simplified_text.split('\n').filter(line => {
-                              const t = line.trim().replace(/^[•\-]\s*/, '');
-                              return /example|for example|could write|could say|might look|might say|strong answer|weak answer/i.test(t);
-                            }).length > 0 ? (
-                              <div style={{ marginBottom: 12 }}>
-                                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Examples from the explanation</div>
-                                <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                  {result.simplified_text.split('\n').filter(line => {
-                                    const t = line.trim().replace(/^[•\-]\s*/, '');
-                                    return /example|for example|could write|could say|might look|might say|strong answer|weak answer/i.test(t);
-                                  }).map((line, i) => (
-                                    <li key={i} style={{ fontSize: 14, color: 'var(--text-mid)', lineHeight: 1.6 }}>{line.trim().replace(/^[•\-]\s*/, '')}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            ) : (
-                              <p style={{ color:'var(--muted)', fontStyle:'italic' }}>
-                                No specific prompts or examples for this section. The plain English version above has all the guidance.
-                              </p>
-                            )}
-                          </>
-                        ) : (
-                          <p style={{ color:'var(--muted)', fontStyle:'italic' }}>
-                            No prompts available for this selection.
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Important details */}
-                    {result?.flags && Object.values(result.flags).some(v => v?.length > 0) && (
-                      <div className="result-section">
-                        <h2 className="r-h">Important details</h2>
-                        <div className="flags-row">
-                          {result.flags.deadlines?.map((d,i) => <span key={i} className="flag-chip">📅 {d}</span>)}
-                          {result.flags.amounts?.map((a,i) => <span key={i} className="flag-chip">💰 {a}</span>)}
-                          {result.flags.documents_needed?.map((d,i) => <span key={i} className="flag-chip">{d}</span>)}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Checklist — at bottom */}
-                    {result?.checklist?.length > 0 && (
-                      <div className="result-section">
-                        <h2 className="r-h">What you need to do</h2>
-                        <div className="checklist-box">
-                          <ul className="chk-list">
-                            {result.checklist.map((item, i) => (
-                              <li key={i}>
-                                <button className={`chk${checkedItems[i] ? ' ticked' : ''}`}
-                                  onClick={() => setCheckedItems(prev => ({...prev, [i]: !prev[i]}))}
-                                  type="button" role="checkbox" aria-checked={!!checkedItems[i]}>
-                                  {checkedItems[i] ? '✓' : ''}
-                                </button>
-                                <span>{item}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Print — at very bottom */}
-                    <div className="bottom-actions no-print">
-                      <button className="action-btn" onClick={() => window.print()}>
-                        <span className="action-btn-icon">🖨️</span> Print side by side — form + explanation
-                      </button>
-                    </div>
-
-                    {/* Other tools — always visible */}
-                    <div className="other-tools no-print" style={{ marginTop: 16, padding: '16px 0', borderTop: '1px solid var(--border)' }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Other tools</div>
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button className="tool-btn-small" onClick={handleFormExplain} disabled={loading}>
-                          <span>📋</span> Explain this form
-                        </button>
-                        <button className="tool-btn-small" onClick={() => setShowTranslatePanel(p => !p)} disabled={loading}>
-                          <span>🌍</span> Translate
-                        </button>
-                      </div>
-                      {showTranslatePanel && (
-                        <div className="translate-picker no-print" style={{ marginTop: 8 }}>
-                          <select className="translate-lang-select" value={targetLang} disabled={loading}
-                            onChange={e => { const l = e.target.value; setTargetLang(l); handleTranslate(l); }}>
-                            {translateLangs.map(lang => <option key={lang} value={lang}>{lang}</option>)}
-                          </select>
-                          <button className="btn btn-primary" style={{ height: 36, fontSize: 13, padding: '0 16px' }}
-                            onClick={handleTranslate} disabled={loading || !targetLang}>
-                            {loading ? "Translating…" : "Go"}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <SimplifyResult
+                    result={result} renderClickableWords={renderClickableWords}
+                    simpSection={simpSection} checkSection={checkSection}
+                    listenProps={listenProps}
+                    handleFormExplain={handleFormExplain} loading={loading}
+                    showTranslatePanel={showTranslatePanel} setShowTranslatePanel={setShowTranslatePanel}
+                    translateLangs={translateLangs} targetLang={targetLang} setTargetLang={setTargetLang}
+                    handleTranslate={handleTranslate}
+                  />
                 ) : !file ? (
                   <div className="empty-result">
                     <div className="empty-result-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
