@@ -1,8 +1,8 @@
 # Plainly — Claude Working Memory
 > Drop this file into any Claude Chat, Cowork, or Code session to get started.
-> Last updated: 3 June 2026
+> Last updated: 4 June 2026
 
-> **Bug fixes (3 June 2026):** Explain button wasn't working (tool buttons were laid out horizontally off-screen — now stacked vertically). Left and right panels were scrolling together (CSS grid/flex height constraints fixed — now independent). Translate wasn't triggering (required hidden "Go" button — now auto-translates when you pick a language). All changes built locally — NOT yet pushed.
+> **Major update (4 June 2026):** Form explainer parallelised (12 pages now ~60-90s instead of ~10min). App.jsx split into presentational components. All 6 rulebook gaps fixed (domain rules, legislation, 3 new sectors, validator UI, page-anchored output). Full site copy aligned to B2B model — Plainly-branded by default, not white-label. All pages updated and pushed live.
 
 > **Email signature (30 May 2026):** Option 1 — logo + purple divider + Emily Hill / Founder / hello@tryplainly.co.nz / 021 468 719 / tryplainly.co.nz. On Desktop: `.html` (clickable) and `.jpg` (image).
 
@@ -49,7 +49,10 @@ Built from lived experience: Emily's family can't navigate complex paperwork —
 ## Business Model — Locked In
 
 - **Always free for end users** — no exceptions, no upsells
-- **White-label B2B** — organisations pay a licence fee (pricing TBD)
+- **B2B organisation licences** — organisations pay a licence fee (pricing TBD)
+- **Plainly-branded by default** — not white-label. Optional co-branding available where appropriate
+- **Plainly handles support** — organisations do not field software/product questions
+- **Approved document sets** — orgs select supported document types from a predefined list, not upload files
 - **Target first:** Schools, community law, CAB, insurance brokers, GP practices, small councils — small orgs who can decide fast
 - **Do NOT pitch big government first** (WINZ/IRD) — too slow, 12–18 month cycles
 - **Funding path:** 2–3 paying customers → Callaghan Innovation grant → polish → then investors
@@ -103,7 +106,7 @@ Frontend: `cd frontend && npm run dev` → http://localhost:5173
 
 **Three tools (NOT modes — there is NO mode toggle):**
 1. **Simplify** — draw a box on the document → plain English + prompts/examples + checklist + important details + reading level support
-2. **Explain this form** — processes ALL pages of a multi-page PDF with progress ("Explaining page 3 of 12…"). Shows: page section headers, title, "gather first" list, every field with label/explanation/tip, important details, print button, TTS. Left panel highlights and auto-scrolls to matching page. Click any word for a plain-English definition popup + "Read it to me". Backend: `POST /api/v1/explain-form` (per page), `POST /api/v1/define-word` (word lookup)
+2. **Explain this document** — processes ALL pages of a multi-page PDF in parallel with progress. Shows: page section headers, title, "gather first" list, every field with section heading + original text + explanation + tip, important details, quality check button, print button, TTS. Left panel highlights and auto-scrolls to matching page. Click any word for a plain-English definition popup + "Read it to me". Backend: `POST /api/v1/explain-form` (per page, parallel), `POST /api/v1/define-word` (word lookup), `POST /api/v1/validate` (quality check)
 3. **Translate** — 30 languages (te reo Māori, Samoan, Tongan, Mandarin, etc.), translates full page. Backend: `POST /api/v1/translate-worksheet`
 
 **After results load:** "Other tools" section at bottom shows remaining tool buttons — they never disappear.
@@ -206,15 +209,22 @@ The technology page states: *"Designed to WCAG 2.2 AA and COGA cognitive accessi
 
 ---
 
-## AI Prompt Architecture (as of 31 May 2026)
+## AI Prompt Architecture (as of 4 June 2026)
 
-Two shared rule sections in `app.py`, prepended to specific prompts:
-- **SECTION_2_NEUROINCLUSIVE** — 8 sub-rules for dyslexia/ADHD/autism-accessible output. Used by: GENERAL_PROMPT, make_school_prompt, DYSLEXIA_BUTTON_PROMPT, FORM_EXPLAINER_FULL_PROMPT.
-- **SECTION_4_ACCURACY** — 7 non-negotiable rules (never drop info, preserve order, define terms, name actors, no speculation). Used by: GENERAL_PROMPT, WORKSHEET_TRANSLATE_PROMPT_TEMPLATE, FORM_EXPLAINER_FULL_PROMPT.
+**Four-layer rulebook:**
+1. **Non-Negotiables** (`core/non_negotiables.md`) — 15 rules loaded into every prompt
+2. **Domain Vocabulary** (`prompts/domains/*.md`) — sector-specific terms + governing NZ legislation
+3. **Sector Rules** — S3.x rules per domain (vocabulary, output format, "no advice" guardrail)
+4. **Compliance Check** (`prompts/tasks/validator.md`) — connected to UI via "Check quality" button
 
-Deprecated prompts (commented out, fall back to GENERAL_PROMPT):
-- `BUSINESS_PLAN_PROMPT` — retired WINZ Flexi-Wage helper
-- `FORM_EXPLAINER_PROMPT` — replaced by FORM_EXPLAINER_FULL_PROMPT
+**11 sector categories (all with domain files):**
+MSD/Benefits, Health/Patient, Legal/Tribunal, Criminal/Law, HS/Safety, Employment/HR, IRD/Tax, Insurance/Financial, Property/Tenancy, General Govt, Other (catch-all)
+
+**Prompt assembly:** `build_prompt()` in app.py assembles: non_negotiables → client docs → domain rules → task prompt → output format. Both Simplify and Explain this document now load domain rules.
+
+**Client docs:** Only MSD has client docs so far (`client_docs/msd/exclusions.md`, `style_notes.md`). Add more as clients come on.
+
+**Page-anchored output:** Form explainer prompt requires `section_heading` and `original_text` fields — each explanation quotes the original document text.
 
 ---
 
@@ -229,18 +239,25 @@ There is NO mode toggle. No Business Plan mode. No School mode. These are gone.
 
 ## Pending Tasks — In Order, One at a Time
 
-1. **Commit and push** — all 31 May + 3 June changes built locally. NOT yet pushed to GitHub/Render.
-2. **First paying customer** — approach one school, community org, or adviser. Pilot page is ready to send.
+1. **First paying customer** — approach one school, community org, or adviser. Pilot page is ready to send.
+2. **Fix frontend timeout** — parallel requests can hit 90s timeout on long documents. Options: increase timeout, batch pages in groups of 3-4, or both.
 3. **Usage tracking/analytics** — log metadata per org (doc count, reading level, timestamp). No document content stored.
-4. **Additional tools** — contract red-flagger, worksheet leveller, policy checker, parent letter writer
+4. **Write sector-specific compliance checks** — Layer 4 validator is generic. Needs per-sector rules for each of the 11 categories.
 5. **About us page** — nav link exists but no page built yet
-6. **Update or remove b2b.html** — old terracotta design. organisations.html now covers this.
-7. **Logo swap** ✅ Done (26 May 2026)
-8. **Domain** ✅ Done (26 May 2026)
-9. **P0 site fixes** ✅ Done (31 May 2026)
-10. **AI prompt overhaul** ✅ Done (31 May 2026)
-11. **Form explainer multi-page + word definitions** ✅ Done (31 May 2026)
-12. **Explain/Translate/scrolling bugs** ✅ Done (3 June 2026) — tool button layout, independent scrolling, translate auto-trigger
+6. **Remove b2b.html** — old terracotta design, fully replaced by organisations.html
+7. **Additional tools** — contract red-flagger, worksheet leveller, policy checker, parent letter writer
+8. **Logo swap** ✅ Done (26 May 2026)
+9. **Domain** ✅ Done (26 May 2026)
+10. **P0 site fixes** ✅ Done (31 May 2026)
+11. **AI prompt overhaul** ✅ Done (31 May 2026)
+12. **Form explainer multi-page + word definitions** ✅ Done (31 May 2026)
+13. **Explain/Translate/scrolling bugs** ✅ Done (3 June 2026)
+14. **Parallel form explainer** ✅ Done (4 June 2026)
+15. **Component split** ✅ Done (4 June 2026)
+16. **Rulebook gaps 1-6** ✅ Done (4 June 2026)
+17. **B2B site copy overhaul** ✅ Done (4 June 2026)
+18. **Trust pages alignment** ✅ Done (4 June 2026)
+19. **Language consistency** ✅ Done (4 June 2026)
 
 ---
 
@@ -252,7 +269,7 @@ There is NO mode toggle. No Business Plan mode. No School mode. These are gone.
 - Client-side canvas crop (server-side had coordinate bugs)
 - No guiding questions (removed — users couldn't answer them)
 - ONE universal prompt — NO separate modes
-- Three tool BUTTONS not modes: Simplify, Explain this form, Translate
+- Three tool BUTTONS not modes: Simplify, Explain this document, Translate
 - Start small orgs, not big government
 - TTS = browser-native speechSynthesis (zero API cost)
 - Nav: Home, How it works, For organisations, Technology, About us (no Pricing or Resources)
@@ -267,7 +284,13 @@ There is NO mode toggle. No Business Plan mode. No School mode. These are gone.
 | `HANDOVER.md` | Full detail — everything about the project | `~/Desktop/plain-english/HANDOVER.md` |
 | `MASTER_CATALOGUE.md` | Session history log — what was built when | `~/Desktop/plain-english/MASTER_CATALOGUE.md` |
 | `app.py` | Backend — all AI prompts and API routes | `~/Desktop/plain-english/app.py` |
-| `App.jsx` | Frontend — entire React UI | `~/Desktop/plain-english/frontend/src/App.jsx` |
+| `App.jsx` | Frontend — state, handlers, API calls, layout | `~/Desktop/plain-english/frontend/src/App.jsx` |
+| `FormExplainResult.jsx` | Visual — document explainer result display (safe to restyle) | `~/Desktop/plain-english/frontend/src/` |
+| `SimplifyResult.jsx` | Visual — simplify result display (safe to restyle) | `~/Desktop/plain-english/frontend/src/` |
+| `TranslateResult.jsx` | Visual — translate result display (safe to restyle) | `~/Desktop/plain-english/frontend/src/` |
+| `ListenControls.jsx` | Visual — shared TTS play/pause/speed controls | `~/Desktop/plain-english/frontend/src/` |
+| `prompts/domains/*.md` | 10 sector domain files with legislation + rules | `~/Desktop/plain-english/prompts/domains/` |
+| `core/non_negotiables.md` | 15 non-negotiable rules loaded into every prompt | `~/Desktop/plain-english/core/` |
 | `.env` | API key (never share, never commit to GitHub) | `~/Desktop/plain-english/.env` |
 
 **At the end of every session, say to Claude:**

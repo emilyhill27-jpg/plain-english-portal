@@ -1,6 +1,45 @@
 # Plainly — Project Handover
 > Full detail file. For the quick-reference, use CLAUDE.md.
-> Last updated: 3 June 2026
+> Last updated: 4 June 2026
+
+---
+
+## SESSION LOG — 4 June 2026
+
+Major session covering performance, architecture, rulebook, and full site copy alignment to B2B model.
+
+### Performance fix
+1. **Form explainer parallelised** — was processing pages sequentially (12 pages = 12 back-to-back API calls, ~10 minutes). Now fires all pages in parallel with `Promise.all`. Total time drops to the speed of the slowest single page (~60-90s). Page order preserved. Commit `9f96619`.
+
+### Component split
+2. **App.jsx split into presentational components** — extracted `FormExplainResult.jsx`, `TranslateResult.jsx`, `SimplifyResult.jsx`, `ListenControls.jsx`. App.jsx keeps all state, handlers, API calls, and TTS logic. New files are safe to restyle without risking processing behaviour. App.jsx went from 2,792 → 2,406 lines.
+
+### Rulebook gap fixes (all 6 done)
+3. **Gap 1: Form explainer now loads domain rules** — `get_form_explain_prompt()` changed from appending a one-line label to loading the full domain file + client docs via `build_prompt()`. MSD forms now get MSD-specific rules, exclusions, and style notes.
+4. **Gap 2: Plain Language Act 2022** added to `general_govt.md` as governing standard.
+5. **Gap 3: Legislation references** added to all 7 existing domain files (Social Security Act 2018, Health and Disability Commissioner Act 1994, Senior Courts Act 2016, Income Tax Act 2007, CCCFA 2003, Residential Tenancies Act 1986, Plain Language Act 2022).
+6. **Gap 4: Three new sector files** created — `criminal_law.md` (Bill of Rights Act 1990, Crimes Act 1961), `hs_safety.md` (HSWA 2015), `employment_hr.md` (ERA 2000, Holidays Act 2003). Classifier and app.py updated to 11 categories.
+7. **Gap 5: Validator connected to UI** — "Check quality" button in both form explainer and simplify result panels. Calls `/api/v1/validate`, displays pass/fail with missing info, added info, order and language issues.
+8. **Gap 6: Page-anchored output** — prompt now requires `section_heading` and `original_text` fields. Frontend displays section heading as purple label and original form text as italic quote.
+
+### B2B site copy overhaul (all pages updated)
+9. **Homepage** — hero: "Documents you can actually understand." Cards: Approved document sets, Clearer customer support, Safer rollout, Reading support built in. CTA: "Clearer communication builds confidence." Footer updated. Commit `ea5756a`.
+10. **Organisations page** — hero: "Make your documents easier to understand." Removed: origin story, Plain Language Act editorial, pricing section. Added: Simple rollout section (Plainly-branded by default, You control the document set, We handle support). Step 1 changed from "choose your branding" to "You choose the documents". Commits `5a82e30`, `85f975a`.
+11. **Technology page** — full rewrite. New sections: Approved documents, Reading support, Privacy and trust, Rollout. Removed: neuroinclusive advocacy section, open-tool CTA. Commit `1cba5f8`.
+12. **Trust pages (terms, privacy, security, pilot)** — Terms: replaced "free for individuals" with "end-user access through organisations". Privacy/Terms: "organisation licence" replaces "white-label". Security: softened absolute storage/tracking claims. Pilot: removed unsupported 80% claim, "Plainly-branded" replaces "white-label". All four: nav CTA → "Book a demo", footer updated. Commit `4cb1bff`.
+13. **Language consistency** — all UI labels changed from "Explain this form" → "Explain this document". "Form explained" → "Document explained". "Every field explained" → "Every section explained". Commit `a37f9f3`.
+
+### Key product decisions made this session
+- **B2B model confirmed** — Plainly is organisation-led, not a public tool
+- **Plainly-branded by default** — not white-label. Optional co-branding available
+- **Plainly handles support** — orgs don't field software questions
+- **Approved document sets** — orgs select from supported types, not upload files
+- **No pricing on site** — premature before first paying customer
+- **11 sector categories** — all with domain files, legislation, and guardrails
+- **"Documents" not "forms"** — broader language to cover letters, agreements, notices
+
+### Status
+All changes committed and pushed. Live on Render.
 
 ---
 
