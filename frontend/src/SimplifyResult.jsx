@@ -8,6 +8,7 @@ export default function SimplifyResult({
   showTranslatePanel, setShowTranslatePanel,
   translateLangs, targetLang, setTargetLang,
   handleTranslate,
+  handleValidate, validating, validationResult,
 }) {
   const [showPrompts, setShowPrompts] = useState(false);
   const [checkedItems, setCheckedItems] = useState({});
@@ -105,12 +106,17 @@ export default function SimplifyResult({
         </div>
       )}
 
-      {/* Print */}
+      {/* Print + Validate */}
       <div className="bottom-actions no-print">
         <button className="action-btn" onClick={() => window.print()}>
           <span className="action-btn-icon">🖨️</span> Print side by side — form + explanation
         </button>
+        <button className="action-btn" onClick={handleValidate} disabled={validating} style={{ marginTop: 8 }}>
+          <span className="action-btn-icon">✅</span> {validating ? "Checking…" : "Check quality"}
+        </button>
       </div>
+
+      {validationResult && <ValidationDisplay result={validationResult} />}
 
       {/* Other tools */}
       <div className="other-tools no-print" style={{ marginTop: 16, padding: '16px 0', borderTop: '1px solid var(--border)' }}>
@@ -136,6 +142,54 @@ export default function SimplifyResult({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function ValidationDisplay({ result }) {
+  const pass = result.pass;
+  return (
+    <div className="result-section no-print" style={{
+      padding: '16px 18px', margin: '0 0 8px',
+      background: pass ? '#F0FDF4' : '#FEF2F2',
+      border: `1.5px solid ${pass ? '#BBF7D0' : '#FECACA'}`,
+      borderRadius: 10,
+    }}>
+      <h2 className="r-h" style={{ color: pass ? '#166534' : '#991B1B' }}>
+        {pass ? 'Quality check passed' : 'Quality check — issues found'}
+      </h2>
+      {result.missing_information?.length > 0 && (
+        <div style={{ marginTop: 8 }}>
+          <strong style={{ fontSize: 13, color: '#991B1B' }}>Missing information:</strong>
+          <ul style={{ margin: '4px 0 0', paddingLeft: 20, fontSize: 14, lineHeight: 1.6 }}>
+            {result.missing_information.map((item, i) => <li key={i}>{item}</li>)}
+          </ul>
+        </div>
+      )}
+      {result.added_information?.length > 0 && (
+        <div style={{ marginTop: 8 }}>
+          <strong style={{ fontSize: 13, color: '#991B1B' }}>Added information (should be removed):</strong>
+          <ul style={{ margin: '4px 0 0', paddingLeft: 20, fontSize: 14, lineHeight: 1.6 }}>
+            {result.added_information.map((item, i) => <li key={i}>{item}</li>)}
+          </ul>
+        </div>
+      )}
+      {result.order_problems?.length > 0 && (
+        <div style={{ marginTop: 8 }}>
+          <strong style={{ fontSize: 13, color: '#92400E' }}>Order or structure issues:</strong>
+          <ul style={{ margin: '4px 0 0', paddingLeft: 20, fontSize: 14, lineHeight: 1.6 }}>
+            {result.order_problems.map((item, i) => <li key={i}>{item}</li>)}
+          </ul>
+        </div>
+      )}
+      {result.language_problems?.length > 0 && (
+        <div style={{ marginTop: 8 }}>
+          <strong style={{ fontSize: 13, color: '#92400E' }}>Language or accessibility issues:</strong>
+          <ul style={{ margin: '4px 0 0', paddingLeft: 20, fontSize: 14, lineHeight: 1.6 }}>
+            {result.language_problems.map((item, i) => <li key={i}>{item}</li>)}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

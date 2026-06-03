@@ -8,6 +8,7 @@ export default function FormExplainResult({
   showTranslatePanel, setShowTranslatePanel,
   translateLangs, targetLang, setTargetLang,
   handleTranslate, loading,
+  handleValidate, validating, validationResult,
 }) {
   return (
     <div className="result-outer-box">
@@ -51,12 +52,18 @@ export default function FormExplainResult({
               borderRadius: 10,
               opacity: field.type === 'office_only' ? 0.7 : 1,
             }}>
+              {field.section_heading && (
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8c52ff', marginBottom: 4 }}>{field.section_heading}</div>
+              )}
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
                 <span style={{ fontSize: 14, opacity: 0.6 }}>
                   <FieldIcon type={field.type} />
                 </span>
                 <strong style={{ fontSize: 14, color: 'var(--text)' }}>{field.label}</strong>
               </div>
+              {field.original_text && field.original_text !== field.label && (
+                <p style={{ margin: '0 0 4px', fontSize: 12, color: 'var(--muted)', fontStyle: 'italic', lineHeight: 1.5, borderLeft: '2px solid #E5E7EB', paddingLeft: 8 }}>"{field.original_text}"</p>
+              )}
               <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--text-mid)', lineHeight: 1.6 }}>{renderClickableText(field.explanation)}</p>
               {field.tip && (
                 <p style={{ margin: '6px 0 0', fontSize: 13, color: '#8c52ff', lineHeight: 1.5 }}>
@@ -81,12 +88,17 @@ export default function FormExplainResult({
         </div>
       )}
 
-      {/* Print */}
+      {/* Print + Validate */}
       <div className="bottom-actions no-print">
         <button className="action-btn" onClick={() => window.print()}>
           <span className="action-btn-icon">🖨️</span> Print side by side — form + explanation
         </button>
+        <button className="action-btn" onClick={handleValidate} disabled={validating} style={{ marginTop: 8 }}>
+          <span className="action-btn-icon">✅</span> {validating ? "Checking…" : "Check quality"}
+        </button>
       </div>
+
+      {validationResult && <ValidationDisplay result={validationResult} />}
 
       {/* Other tools */}
       <div className="other-tools no-print" style={{ marginTop: 16, padding: '16px 0', borderTop: '1px solid var(--border)' }}>
@@ -141,6 +153,54 @@ function FieldIcon({ type }) {
   if (type === 'instruction') return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>;
   if (type === 'office_only') return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="9" y1="6" x2="15" y2="6"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="15" y2="14"/><line x1="9" y1="18" x2="15" y2="18"/></svg>;
   return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
+}
+
+function ValidationDisplay({ result }) {
+  const pass = result.pass;
+  return (
+    <div className="result-section no-print" style={{
+      padding: '16px 18px', margin: '0 0 8px',
+      background: pass ? '#F0FDF4' : '#FEF2F2',
+      border: `1.5px solid ${pass ? '#BBF7D0' : '#FECACA'}`,
+      borderRadius: 10,
+    }}>
+      <h2 className="r-h" style={{ color: pass ? '#166534' : '#991B1B' }}>
+        {pass ? 'Quality check passed' : 'Quality check — issues found'}
+      </h2>
+      {result.missing_information?.length > 0 && (
+        <div style={{ marginTop: 8 }}>
+          <strong style={{ fontSize: 13, color: '#991B1B' }}>Missing information:</strong>
+          <ul style={{ margin: '4px 0 0', paddingLeft: 20, fontSize: 14, lineHeight: 1.6 }}>
+            {result.missing_information.map((item, i) => <li key={i}>{item}</li>)}
+          </ul>
+        </div>
+      )}
+      {result.added_information?.length > 0 && (
+        <div style={{ marginTop: 8 }}>
+          <strong style={{ fontSize: 13, color: '#991B1B' }}>Added information (should be removed):</strong>
+          <ul style={{ margin: '4px 0 0', paddingLeft: 20, fontSize: 14, lineHeight: 1.6 }}>
+            {result.added_information.map((item, i) => <li key={i}>{item}</li>)}
+          </ul>
+        </div>
+      )}
+      {result.order_problems?.length > 0 && (
+        <div style={{ marginTop: 8 }}>
+          <strong style={{ fontSize: 13, color: '#92400E' }}>Order or structure issues:</strong>
+          <ul style={{ margin: '4px 0 0', paddingLeft: 20, fontSize: 14, lineHeight: 1.6 }}>
+            {result.order_problems.map((item, i) => <li key={i}>{item}</li>)}
+          </ul>
+        </div>
+      )}
+      {result.language_problems?.length > 0 && (
+        <div style={{ marginTop: 8 }}>
+          <strong style={{ fontSize: 13, color: '#92400E' }}>Language or accessibility issues:</strong>
+          <ul style={{ margin: '4px 0 0', paddingLeft: 20, fontSize: 14, lineHeight: 1.6 }}>
+            {result.language_problems.map((item, i) => <li key={i}>{item}</li>)}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function TranslatePicker({ translateLangs, targetLang, setTargetLang, handleTranslate, loading }) {

@@ -163,6 +163,9 @@ DOMAIN_FILES = {
     "MSD/BENEFITS":       "msd_benefits",
     "HEALTH/PATIENT":     "health_patient",
     "LEGAL/TRIBUNAL":     "legal_tribunal",
+    "CRIMINAL/LAW":       "criminal_law",
+    "HS/SAFETY":          "hs_safety",
+    "EMPLOYMENT/HR":      "employment_hr",
     "IRD/TAX":            "ird_tax",
     "INSURANCE/FINANCIAL": "insurance_financial",
     "PROPERTY/TENANCY":   "property_tenancy",
@@ -175,6 +178,9 @@ CATEGORY_LABELS = {
     "MSD/BENEFITS": "Work & Income / Benefits",
     "HEALTH/PATIENT": "Health / Medical",
     "LEGAL/TRIBUNAL": "Legal / Tribunal",
+    "CRIMINAL/LAW": "Criminal Law",
+    "HS/SAFETY": "Health & Safety",
+    "EMPLOYMENT/HR": "Employment / HR",
     "IRD/TAX": "IRD / Tax",
     "INSURANCE/FINANCIAL": "Insurance / Financial",
     "PROPERTY/TENANCY": "Property / Tenancy",
@@ -191,11 +197,22 @@ def get_skill_prompt(category: str) -> str:
     return GENERAL_PROMPT
 
 
+CLIENT_DOCS = {
+    "MSD/BENEFITS": "msd",
+}
+
+
 def get_form_explain_prompt(category: str) -> str:
-    """Return a form explainer prompt, adding category context if detected."""
-    if category and category != "OTHER":
-        label = CATEGORY_LABELS.get(category, category)
-        return FORM_EXPLAINER_FULL_PROMPT + f"\n\nThis document has been identified as: {label}. Apply any relevant domain knowledge for this type of document."
+    """Return a form explainer prompt with domain rules and client docs if available."""
+    domain = DOMAIN_FILES.get(category) if category and category != "OTHER" else None
+    client = CLIENT_DOCS.get(category) if category else None
+    if domain or client:
+        return build_prompt(
+            task="form_explainer",
+            format_name="form_explainer_output.json",
+            domain=domain,
+            client_name=client,
+        )
     return FORM_EXPLAINER_FULL_PROMPT
 
 

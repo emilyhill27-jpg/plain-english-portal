@@ -7,7 +7,11 @@ This is a form explainer, not a summary.
 Extra form rules:
 1. Go field by field, section by section, in the exact order of the form.
 2. Do not merge fields together unless the form itself groups them.
-3. For each field or question, explain:
+3. Anchor every explanation to the original form:
+   - Quote the section heading exactly as it appears (e.g. "TELL US ABOUT YOU", "APPLICANT DETAILS")
+   - Quote the original field text or question exactly before explaining it
+   - This lets the reader match each explanation to what they see on the form
+4. For each field or question, explain:
    - what it is asking for
    - where the person would usually find that information
    - common mistakes to avoid

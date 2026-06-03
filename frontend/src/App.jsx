@@ -563,25 +563,25 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
               <div className="pl-feature-card-icon" style={{ background: T.purplePale }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
               <h3>Approved document sets</h3>
               <p>Organisations choose the forms, letters and document types Plainly supports.</p>
-              <a href="#" className="pl-feature-card-link">Learn more →</a>
+              <a href="/organisations.html" className="pl-feature-card-link">Learn more →</a>
             </div>
             <div className="pl-feature-card">
               <div className="pl-feature-card-icon" style={{ background: T.pinkPale }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EC4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"/></svg></div>
               <h3>Clearer customer support</h3>
               <p>Help people understand what a document says and what they may need to do next.</p>
-              <a href="#" className="pl-feature-card-link">Learn more →</a>
+              <a href="/organisations.html" className="pl-feature-card-link">Learn more →</a>
             </div>
             <div className="pl-feature-card">
               <div className="pl-feature-card-icon" style={{ background: T.bluePale }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
               <h3>Safer rollout</h3>
               <p>Keep the experience focused on approved content instead of every possible document type.</p>
-              <a href="#" className="pl-feature-card-link">Learn more →</a>
+              <a href="/organisations.html" className="pl-feature-card-link">Learn more →</a>
             </div>
             <div className="pl-feature-card">
               <div className="pl-feature-card-icon" style={{ background: T.pinkPale }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EC4899" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
               <h3>Reading support built in</h3>
               <p>Make supported documents easier to work through with plain-English explanations and reading tools.</p>
-              <a href="#" className="pl-feature-card-link">Learn more →</a>
+              <a href="/organisations.html" className="pl-feature-card-link">Learn more →</a>
             </div>
           </div>
         </section>
@@ -657,6 +657,10 @@ export default function App() {
 
   // form explainer
   const [formExplainResult, setFormExplainResult] = useState(null);
+
+  // validator
+  const [validationResult, setValidationResult] = useState(null);
+  const [validating, setValidating] = useState(false);
 
   // controls
   const [zoom, setZoom]             = useState(1.0);
@@ -874,6 +878,7 @@ export default function App() {
     setCropPreviewUrl(null);
     setTranslateResult(null);
     setFormExplainResult(null);
+    setValidationResult(null);
     setDocCategory(""); setDocCategoryLabel(""); setCategoryOptions([]);
     if (keepAliveRef.current) clearInterval(keepAliveRef.current);
   }
@@ -1046,7 +1051,7 @@ export default function App() {
     if (!file) { setError("Upload a file first."); return; }
     window.speechSynthesis?.cancel();
     setIsPlaying(false); setCurrentCharRange(null);
-    setLoading(true); setLoadingMsg(""); setError(""); setResult(null); setTranslateResult(null); setFormExplainResult(null);
+    setLoading(true); setLoadingMsg(""); setError(""); setResult(null); setTranslateResult(null); setFormExplainResult(null); setValidationResult(null);
     setSelection(null); setScreenSel(null); setExplainPageIdx(0);
 
     const totalPages = isPdf ? pages.length : 1;
@@ -1129,6 +1134,34 @@ export default function App() {
       setResult(await res.json());
     } catch (e) { setError(e.message); }
     finally { setLoading(false); setLoadingMsg(""); }
+  }
+
+  // validate output quality
+  async function handleValidate() {
+    if (!result && !formExplainResult) return;
+    setValidating(true); setValidationResult(null);
+    try {
+      let originalText, draftOutput, isForm;
+      if (formExplainResult) {
+        isForm = true;
+        originalText = formExplainResult.title + "\n" +
+          (formExplainResult.gather_first || []).join("\n") + "\n" +
+          (formExplainResult.fields || []).map(f => f.label).join("\n");
+        draftOutput = JSON.stringify(formExplainResult);
+      } else {
+        isForm = false;
+        originalText = result.original_text || "";
+        draftOutput = result.simplified_text || "";
+      }
+      const res = await fetch(`${API_BASE}/api/v1/validate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ original_text: originalText, draft_output: draftOutput, is_form: isForm }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || `Error ${res.status}`);
+      setValidationResult(await res.json());
+    } catch (e) { setError("Validation failed: " + e.message); }
+    finally { setValidating(false); }
   }
 
   // Scroll the left panel to match the page being read on the right
@@ -2292,6 +2325,7 @@ export default function App() {
                     showTranslatePanel={showTranslatePanel} setShowTranslatePanel={setShowTranslatePanel}
                     translateLangs={translateLangs} targetLang={targetLang} setTargetLang={setTargetLang}
                     handleTranslate={handleTranslate} loading={loading}
+                    handleValidate={handleValidate} validating={validating} validationResult={validationResult}
                   />
                 ) : result ? (
                   <SimplifyResult
@@ -2302,6 +2336,7 @@ export default function App() {
                     showTranslatePanel={showTranslatePanel} setShowTranslatePanel={setShowTranslatePanel}
                     translateLangs={translateLangs} targetLang={targetLang} setTargetLang={setTargetLang}
                     handleTranslate={handleTranslate}
+                    handleValidate={handleValidate} validating={validating} validationResult={validationResult}
                   />
                 ) : !file ? (
                   <div className="empty-result">

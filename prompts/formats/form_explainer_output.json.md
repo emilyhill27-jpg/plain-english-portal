@@ -6,7 +6,9 @@ Return ONLY this JSON (no markdown, no preamble):
   "fields": [
     {
       "type": "field|checkbox|section|instruction|office_only",
+      "section_heading": "The section heading this field falls under, quoted exactly from the form (e.g. 'TELL US ABOUT YOU') — or null if no section heading is visible",
       "label": "The exact label or text from the form",
+      "original_text": "The verbatim question or instruction from the form, quoted exactly as written",
       "explanation": "What this is asking for in plain English — 1-2 sentences",
       "tip": "Where to find the answer, or a common mistake to avoid (or null if obvious)",
       "number": null
