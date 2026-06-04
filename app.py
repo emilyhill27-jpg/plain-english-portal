@@ -774,13 +774,20 @@ class ValidateRequest(BaseModel):
     original_text: str
     draft_output: str
     is_form: bool = False
+    category: str = ""
 
 
 @app.post("/api/v1/validate")
 async def validate_output(req: ValidateRequest):
     """Run the Plainly validator: check draft output against original for accuracy."""
     form_note = " This was a form explainer — check that it goes field by field in order." if req.is_form else ""
-    prompt = NON_NEGOTIABLES + "\n\n" + load_text("prompts/tasks/validator.md") + f"""
+    sector_rules = ""
+    if req.category == "MSD_BENEFITS":
+        sector_rules = "\n\n" + load_text("prompts/tasks/validator_msd.md")
+        ctx = build_client_context("msd")
+        if ctx:
+            sector_rules = "\n\n" + ctx + sector_rules
+    prompt = NON_NEGOTIABLES + "\n\n" + load_text("prompts/tasks/validator.md") + sector_rules + f"""
 Now validate this output.{form_note}
 
 ORIGINAL DOCUMENT:

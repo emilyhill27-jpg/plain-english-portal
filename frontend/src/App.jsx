@@ -1156,7 +1156,7 @@ export default function App() {
       const res = await fetch(`${API_BASE}/api/v1/validate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ original_text: originalText, draft_output: draftOutput, is_form: isForm }),
+        body: JSON.stringify({ original_text: originalText, draft_output: draftOutput, is_form: isForm, category: docCategory || "" }),
       });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || `Error ${res.status}`);
       setValidationResult(await res.json());
