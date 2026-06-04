@@ -443,7 +443,7 @@ function LandingPage({ onGetStarted, onFileUpload, readerStyles, readerTextSize,
             <a href="#how">How it works</a>
             <a href="/organisations.html">For organisations</a>
             <a href="/technology.html">Technology</a>
-            <a href="#about">About us</a>
+            <a href="/about.html">About us</a>
           </div>
           <div className="pl-nav-right">
             <button className={`pl-reader-btn${showReaderSettings ? ' active' : ''}`}
