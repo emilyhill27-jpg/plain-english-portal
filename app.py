@@ -924,33 +924,7 @@ def serve_demo():
     return FileResponse(BASE_DIR / "dyslexia-button-demo.html")
 
 
-SITE_LIVE = os.getenv("SITE_LIVE", "false").lower() == "true"
-
-COMING_SOON_HTML = """<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plainly</title>
-<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&display=swap" rel="stylesheet">
-<style>
-  body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #FAFAFA; font-family: Lexend, sans-serif; color: #1F2937; }
-  .wrap { text-align: center; padding: 40px 24px; }
-  h1 { font-size: 2rem; font-weight: 600; margin-bottom: 12px; }
-  p { font-size: 1.1rem; color: #4B5563; margin-top: 0; }
-  a { color: #7c3aed; text-decoration: none; }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <h1>Plainly</h1>
-  <p>We're getting ready. Check back soon.</p>
-  <p style="margin-top: 24px; font-size: 0.95rem;"><a href="mailto:hello@tryplainly.co.nz">hello@tryplainly.co.nz</a></p>
-</div>
-</body>
-</html>"""
-
-if SITE_LIVE and FRONTEND_DIST.exists():
+if FRONTEND_DIST.exists():
     assets_dir = FRONTEND_DIST / "assets"
     if assets_dir.exists():
         app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
@@ -963,14 +937,6 @@ if SITE_LIVE and FRONTEND_DIST.exists():
         if candidate.is_file():
             return FileResponse(candidate)
         return FileResponse(FRONTEND_DIST / "index.html")
-else:
-    from fastapi.responses import HTMLResponse
-
-    @app.get("/{full_path:path}")
-    def serve_coming_soon(full_path: str):
-        if full_path.startswith("api/"):
-            raise HTTPException(status_code=404, detail="API route not found")
-        return HTMLResponse(COMING_SOON_HTML)
 
 
 if __name__ == "__main__":
