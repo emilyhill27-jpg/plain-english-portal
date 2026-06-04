@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plainly — ROI Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --purple:       #8c52ff;
+  --purple-hover: #7a3ef0;
+  --purple-light: #EDE9FE;
+  --purple-pale:  #F5F3FF;
+  --green:        #00bf63;
+  --green-light:  #D1FAE5;
+  --text:         #1F2937;
+  --text-mid:     #4B5563;
+  --text-soft:    #6B7280;
+  --border:       #E5E7EB;
+  --border-light: #F3F4F6;
+  --bg:           #FAFAFA;
+  --bg-off:       #F9F8FF;
+  --white:        #FFFFFF;
+  --shadow:       0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:    0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.03);
+  --radius:       12px;
+  --radius-sm:    8px;
+  --radius-lg:    20px;
+  --font:         'Lexend', 'Open Sans', Arial, sans-serif;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+body.size-standard { font-size: 18px; }
+body.size-medium { font-size: 20px; }
+body.size-large { font-size: 22px; }
+body.size-extra-large { font-size: 24px; }
+
+/* ── NAV ── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1.5px solid #DDD5F0;
+  padding: 0 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 58px;
+}
+.nav-logo { display: flex; align-items: center; text-decoration: none; }
+.nav-links { display: flex; gap: 28px; align-items: center; }
+.nav-links a {
+  font-size: 14px; color: var(--text-soft);
+  text-decoration: none; font-weight: 500;
+  transition: color 0.15s;
+}
+.nav-links a:hover { color: var(--purple); }
+.nav-links a.active { color: var(--purple); font-weight: 600; }
+.nav-right { display: flex; gap: 12px; align-items: center; }
+.nav-cta {
+  background: var(--purple); color: white;
+  padding: 10px 22px; border-radius: var(--radius-lg);
+  font-size: 14px; font-weight: 600;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: background 0.2s; font-family: var(--font);
+}
+.nav-cta:hover { background: var(--purple-hover); }
+
+/* ── READER SUPPORT BAR ── */
+.reader-bar {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 12px 48px;
+  background: var(--purple-pale);
+  border-bottom: 1.5px solid #DDD5F0;
+}
+.reader-bar.hidden { display: none; }
+.rs-label {
+  font-size: 0.75em; font-weight: 600; color: var(--text-soft);
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.rs-options { display: flex; gap: 4px; }
+.rs-option {
+  padding: 6px 12px; border-radius: 20px; border: 1.5px solid var(--border);
+  background: white; color: var(--text); font-size: 0.8em; font-weight: 500;
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.rs-option:hover { border-color: var(--purple); color: var(--purple); }
+.rs-option.active { background: var(--purple); color: white; border-color: var(--purple); }
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(135deg, #EDE9FE 0%, #FDF2F8 50%, #FEF3C7 100%);
+  padding: 72px 48px 80px;
+}
+.hero-inner { max-width: 1100px; margin: 0 auto; }
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--purple);
+  background: var(--purple-pale);
+  padding: 6px 14px; border-radius: 20px;
+  margin-bottom: 36px;
+}
+.hero h1 {
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 700; line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 24px;
+  max-width: 700px;
+}
+.hero h1 em { font-style: normal; color: var(--purple); }
+.hero-sub {
+  font-size: 1.1em; font-weight: 400;
+  color: var(--text-mid);
+  line-height: 1.7;
+  max-width: 620px;
+  margin-bottom: 0;
+}
+
+/* ── SECTIONS ── */
+.section { padding: 72px 48px; }
+.section-inner { max-width: 1100px; margin: 0 auto; }
+.section-off { background: var(--bg-off); }
+.tag {
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--purple);
+  margin-bottom: 16px;
+}
+h2.display {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 700; line-height: 1.12;
+  letter-spacing: -0.025em;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+h2.display em { font-style: normal; color: var(--purple); }
+.lead {
+  font-size: 1.05em; color: var(--text-mid);
+  line-height: 1.7; max-width: 620px;
+  margin-bottom: 44px;
+}
+
+/* ── CALCULATOR ── */
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  align-items: start;
+}
+.calc-panel {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px 32px;
+  box-shadow: var(--shadow);
+}
+.calc-panel h3 {
+  font-size: 1.15em; font-weight: 600;
+  color: var(--text); margin-bottom: 28px;
+}
+.field { margin-bottom: 24px; }
+.field:last-of-type { margin-bottom: 0; }
+.field label {
+  display: block; font-size: 0.9em; font-weight: 600;
+  color: var(--text); margin-bottom: 4px;
+}
+.field-hint {
+  display: block; font-size: 0.8em; font-weight: 400;
+  color: var(--text-soft); margin-bottom: 8px; line-height: 1.5;
+}
+.input-wrap {
+  display: flex; align-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: white;
+  transition: border-color 0.15s;
+  overflow: hidden;
+}
+.input-wrap:focus-within { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(140,82,255,0.1); }
+.input-prefix, .input-suffix {
+  font-size: 0.9em; font-weight: 500; color: var(--text-soft);
+  padding: 0 12px; flex-shrink: 0; user-select: none;
+}
+.input-wrap input {
+  flex: 1; border: none; background: transparent;
+  font-size: 1em; padding: 12px;
+  color: var(--text); font-family: var(--font);
+  outline: none; min-width: 0;
+}
+.input-wrap input::placeholder { color: var(--text-soft); opacity: 0.5; }
+
+/* Results */
+.results-grid { display: grid; gap: 14px; }
+.result-card {
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  border: 1.5px solid var(--border);
+  background: white;
+}
+.result-card .label {
+  font-size: 0.85em; font-weight: 500;
+  color: var(--text-mid); margin-bottom: 4px;
+}
+.result-card .value {
+  font-size: 1.6em; font-weight: 700;
+  color: var(--text); letter-spacing: -0.02em;
+}
+.result-card.primary {
+  background: var(--purple); border-color: var(--purple);
+}
+.result-card.primary .label { color: rgba(255,255,255,0.7); }
+.result-card.primary .value { color: white; font-size: 1.8em; }
+.result-card.highlight {
+  background: var(--green-light); border-color: transparent;
+}
+.result-card.highlight .value { color: var(--green); }
+.results-note {
+  font-size: 0.82em; color: var(--text-soft);
+  margin-top: 16px; line-height: 1.5;
+  font-style: italic;
+}
+
+/* ── EXPLAINER ── */
+.explainer-list {
+  list-style: none; padding: 0;
+  display: flex; flex-direction: column; gap: 12px;
+  max-width: 700px;
+}
+.explainer-list li {
+  display: flex; gap: 12px; align-items: flex-start;
+  font-size: 1em; color: var(--text-mid); line-height: 1.65;
+}
+.explainer-list li::before {
+  content: '✓'; color: var(--green); font-weight: 700;
+  flex-shrink: 0; margin-top: 1px;
+}
+
+/* ── BENCHMARKS ── */
+.bench-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.bench-card {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  box-shadow: var(--shadow);
+}
+.bench-card h3 {
+  font-size: 1em; font-weight: 600;
+  color: var(--text); margin-bottom: 8px;
+}
+.bench-range {
+  font-size: 1.4em; font-weight: 700;
+  color: var(--purple); margin-bottom: 10px;
+  letter-spacing: -0.02em;
+}
+.bench-card p {
+  font-size: 0.9em; color: var(--text-mid); line-height: 1.6;
+}
+.bench-source {
+  font-size: 0.8em; color: var(--text-soft);
+  margin-top: 12px; font-style: italic; line-height: 1.5;
+}
+
+/* ── CTA ── */
+.cta-section {
+  padding: 80px 48px;
+  text-align: center;
+  background: linear-gradient(135deg, #EDE9FE 0%, #FDF2F8 100%);
+}
+.cta-section h2 {
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 700; line-height: 1.12;
+  letter-spacing: -0.025em;
+  color: var(--text); margin-bottom: 20px;
+}
+.cta-section h2 em { font-style: normal; color: var(--purple); }
+.cta-section p {
+  font-size: 1.05em; color: var(--text-mid);
+  margin-bottom: 44px; line-height: 1.7;
+  max-width: 560px; margin-left: auto; margin-right: auto;
+}
+.btn-primary {
+  background: var(--purple); color: white;
+  padding: 15px 34px; border-radius: var(--radius-lg);
+  font-size: 1em; font-weight: 600;
+  text-decoration: none; border: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: background 0.2s; font-family: var(--font);
+  box-shadow: 0 4px 14px rgba(140,82,255,0.3);
+}
+.btn-primary:hover { background: var(--purple-hover); }
+
+/* ── FOOTER ── */
+footer {
+  background: #1F2937;
+  color: rgba(255,255,255,0.7);
+  padding: 40px 48px 24px;
+}
+.footer-inner { max-width: 1100px; margin: 0 auto; }
+.footer-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  flex-wrap: wrap; gap: 24px;
+  padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.footer-brand p { font-size: 13px; margin-top: 10px; line-height: 1.5; color: rgba(255,255,255,0.5); }
+.footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+.footer-links a {
+  font-size: 14px; color: rgba(255,255,255,0.7); text-decoration: none;
+  font-weight: 500; transition: color 0.15s;
+}
+.footer-links a:hover { color: white; }
+.footer-bottom {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px;
+  padding-top: 16px; font-size: 13px; color: rgba(255,255,255,0.4);
+}
+footer p { font-size: 0.85em; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  nav { padding: 0 20px; }
+  .reader-bar { padding: 12px 20px; }
+  .hero { padding: 56px 20px 64px; }
+  .section { padding: 56px 20px; }
+  .calc-grid { grid-template-columns: 1fr; }
+  .bench-grid { grid-template-columns: 1fr; }
+  .cta-section { padding: 56px 20px; }
+  footer { padding: 36px 20px; }
+}
+@media (max-width: 600px) {
+  .nav-links { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo"><img src="/logo-plainly.png" alt="Plainly" style="height: 44px; display: block;"></a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/#how">How it works</a>
+    <a href="/organisations.html">For organisations</a>
+    <a href="/technology.html">Technology</a>
+    <a href="/#about">About us</a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-cta" onclick="document.getElementById('reader-bar').classList.toggle('hidden')" style="background:transparent; color:var(--text-soft); border:1.5px solid var(--border);">Reader support</button>
+    <a href="/organisations.html#contact" class="nav-cta">Book a demo</a>
+  </div>
+</nav>
+
+<!-- READER SUPPORT BAR -->
+<div id="reader-bar" class="reader-bar hidden">
+  <span class="rs-label">Text size</span>
+  <div class="rs-options">
+    <button class="rs-option active" onclick="setSize('standard')">Aa</button>
+    <button class="rs-option" onclick="setSize('medium')">Aa</button>
+    <button class="rs-option" onclick="setSize('large')">Aa</button>
+    <button class="rs-option" onclick="setSize('extra-large')">Aa</button>
+  </div>
+  <span class="rs-label">Font</span>
+  <div class="rs-options">
+    <button class="rs-option active" onclick="setFont('lexend')">Lexend</button>
+    <button class="rs-option" onclick="setFont('opensans')" style="font-family:'Open Sans',sans-serif">Open Sans</button>
+    <button class="rs-option" onclick="setFont('comic')" style="font-family:'Comic Sans MS',cursive">Comic Sans</button>
+  </div>
+  <span class="rs-label">Spacing</span>
+  <div class="rs-options">
+    <button class="rs-option active" onclick="setSpacing('normal')">1x</button>
+    <button class="rs-option" onclick="setSpacing('relaxed')">1.5x</button>
+    <button class="rs-option" onclick="setSpacing('loose')">2x</button>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">ROI calculator</div>
+    <h1>Documents that <em>pay for themselves.</em></h1>
+    <p class="hero-sub">Estimate the calls avoided, staff hours freed, and money saved when your documents are easier to understand.</p>
+  </div>
+</section>
+
+<!-- INTRO + CALCULATOR -->
+<section class="section">
+  <div class="section-inner">
+    <p class="lead" style="margin-bottom: 20px;">When people understand a document the first time, they do not need to call for help. That means fewer follow-up calls, shorter queues, and less time spent explaining things that could have been clear from the start.</p>
+    <p class="lead" style="margin-bottom: 48px;">Enter your own numbers below. Nothing is stored — this runs entirely in your browser.</p>
+
+    <div class="calc-grid">
+
+      <!-- Inputs -->
+      <div class="calc-panel">
+        <h3>Your numbers</h3>
+
+        <div class="field">
+          <label for="totalCalls">Total calls per month about your documents</label>
+          <span class="field-hint">Use last month's data if you have it. If not, a rough estimate is fine.</span>
+          <div class="input-wrap">
+            <input type="number" id="totalCalls" placeholder="e.g. 2,000" min="0" inputmode="numeric">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="confusionPct">Percent of those calls caused by confusion</label>
+          <span class="field-hint">If you are not sure, start with 30%.</span>
+          <div class="input-wrap">
+            <input type="number" id="confusionPct" placeholder="e.g. 30" min="0" max="100" step="any" inputmode="decimal">
+            <span class="input-suffix" aria-hidden="true">%</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="costPerCall">Average staff cost per call (NZD)</label>
+          <span class="field-hint">Include wages, on-costs, and overheads per call.</span>
+          <div class="input-wrap">
+            <span class="input-prefix" aria-hidden="true">$</span>
+            <input type="number" id="costPerCall" placeholder="e.g. 15" min="0" step="any" inputmode="decimal">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="deflectionPct">Percent of confusing calls Plainly could prevent</label>
+          <span class="field-hint">Start with a safe number, like 25%–40%.</span>
+          <div class="input-wrap">
+            <input type="number" id="deflectionPct" placeholder="e.g. 25" min="0" max="100" step="any" inputmode="decimal">
+            <span class="input-suffix" aria-hidden="true">%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="calc-panel">
+        <h3>Potential impact</h3>
+        <div class="results-grid" aria-live="polite" aria-atomic="true">
+          <div class="result-card primary">
+            <div class="label">Annual savings (NZD)</div>
+            <div class="value" id="resAnnualSaving">&mdash;</div>
+          </div>
+          <div class="result-card highlight">
+            <div class="label">Monthly savings (NZD)</div>
+            <div class="value" id="resMonthlySaving">&mdash;</div>
+          </div>
+          <div class="result-card">
+            <div class="label">Calls avoided each month</div>
+            <div class="value" id="resCallsAvoided">&mdash;</div>
+          </div>
+          <div class="result-card">
+            <div class="label">Staff hours freed each month</div>
+            <div class="value" id="resAgentHours">&mdash;</div>
+          </div>
+        </div>
+        <p class="results-note">These numbers are a rough guide based on the figures you entered, not a guarantee of specific savings.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- WHAT THESE NUMBERS MEAN -->
+<section class="section section-off">
+  <div class="section-inner">
+    <div class="tag">Context</div>
+    <h2 class="display">What these numbers <em>mean.</em></h2>
+    <p class="lead">Clearer documents reduce the volume of calls that exist only because the original was hard to understand.</p>
+    <ul class="explainer-list">
+      <li>People who understand a letter or form the first time do not need to call to ask what it means.</li>
+      <li>Fewer confusion calls means shorter queues and faster service for people with genuine queries.</li>
+      <li>Staff spend less time repeating the same explanations and more time on work that matters.</li>
+      <li>Organisations that track call reasons can measure the change directly.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- BENCHMARKS -->
+<section class="section">
+  <div class="section-inner">
+    <div class="tag">Reference data</div>
+    <h2 class="display">Where our default numbers <em>come from.</em></h2>
+    <p class="lead">If you do not have exact figures for your organisation, these benchmarks can help you estimate.</p>
+
+    <div class="bench-grid">
+      <div class="bench-card">
+        <h3>Cost per call</h3>
+        <div class="bench-range">$12 – $18</div>
+        <p>NZ government contact centre cost per inbound call, including staffing, technology, and overheads.</p>
+        <p class="bench-source">Source: Ringa Hora — Contact Centres Industry Action Plan 2024</p>
+      </div>
+      <div class="bench-card">
+        <h3>Confusion-driven call share</h3>
+        <div class="bench-range">20 – 40%</div>
+        <p>Share of inbound calls driven by people not understanding forms, letters, or notices they have received.</p>
+        <p class="bench-source">Note: MSD does not currently track this at a form level. Range based on international contact centre studies.</p>
+      </div>
+      <div class="bench-card">
+        <h3>Plain-language deflection rate</h3>
+        <div class="bench-range">10 – 35%</div>
+        <p>10–15% is conservative for minor wording improvements. 20–35% is typical when templates are fully redesigned for plain language.</p>
+        <p class="bench-source">Sources: PlainLanguage.gov, Anthro-Tech usability studies</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Want to see what <em>Plainly could save?</em></h2>
+  <p>We can walk through the numbers with your real data. Book a 20-minute conversation — no commitment, no sales pitch.</p>
+  <a href="mailto:hello@tryplainly.co.nz" class="btn-primary">Book a demo →</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="/logo-plainly.png" alt="Plainly" style="height: 28px; display: block; filter: brightness(0) invert(1);">
+        <p>Plain-English document support,<br>built in Aotearoa New Zealand.</p>
+      </div>
+      <div class="footer-links">
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/security.html">Security</a>
+        <a href="/pilot.html">Pilot programme</a>
+        <a href="mailto:hello@tryplainly.co.nz">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 Plainly. All rights reserved.</span>
+      <span>hello@tryplainly.co.nz</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var elTotalCalls = document.getElementById('totalCalls');
+  var elConfusionPct = document.getElementById('confusionPct');
+  var elCostPerCall = document.getElementById('costPerCall');
+  var elDeflectionPct = document.getElementById('deflectionPct');
+
+  var elMonthlySaving = document.getElementById('resMonthlySaving');
+  var elAnnualSaving = document.getElementById('resAnnualSaving');
+  var elCallsAvoided = document.getElementById('resCallsAvoided');
+  var elAgentHours = document.getElementById('resAgentHours');
+
+  var dash = '—';
+
+  function getVal(el){
+    var v = parseFloat(el.value);
+    return isNaN(v) || v < 0 ? null : v;
+  }
+
+  function fmtCurrency(n){
+    if(n === null) return dash;
+    if(n >= 1000000) return '$' + (n / 1000000).toFixed(2) + 'M';
+    if(n >= 1000) return '$' + Math.round(n).toLocaleString('en-NZ');
+    return '$' + n.toFixed(0);
+  }
+
+  function fmtNumber(n){
+    if(n === null) return dash;
+    if(n >= 1000000) return (n / 1000000).toFixed(2) + 'M';
+    if(n >= 1000) return Math.round(n).toLocaleString('en-NZ');
+    return n.toFixed(0);
+  }
+
+  function calculate(){
+    var totalCalls = getVal(elTotalCalls);
+    var confusionPct = getVal(elConfusionPct);
+    var costPerCall = getVal(elCostPerCall);
+    var deflectionPct = getVal(elDeflectionPct);
+
+    var confusionCalls = null;
+    if(totalCalls !== null && confusionPct !== null){
+      confusionCalls = totalCalls * (confusionPct / 100);
+    }
+
+    var callsAvoided = null;
+    if(confusionCalls !== null && deflectionPct !== null){
+      callsAvoided = confusionCalls * (deflectionPct / 100);
+    }
+
+    var monthlySaving = null;
+    if(callsAvoided !== null && costPerCall !== null){
+      monthlySaving = callsAvoided * costPerCall;
+    }
+
+    var annualSaving = monthlySaving !== null ? monthlySaving * 12 : null;
+    var agentHours = callsAvoided !== null ? callsAvoided * 6 / 60 : null;
+
+    elCallsAvoided.textContent = fmtNumber(callsAvoided);
+    elMonthlySaving.textContent = fmtCurrency(monthlySaving);
+    elAnnualSaving.textContent = fmtCurrency(annualSaving);
+    elAgentHours.textContent = agentHours !== null ? fmtNumber(agentHours) + ' hrs' : dash;
+  }
+
+  [elTotalCalls, elConfusionPct, elCostPerCall, elDeflectionPct].forEach(function(el){
+    el.addEventListener('input', calculate);
+  });
+
+  calculate();
+})();
+
+function setSize(size) {
+  document.body.className = document.body.className.replace(/size-\S+/g, '');
+  document.body.classList.add('size-' + size);
+  var bar = document.getElementById('reader-bar');
+  var btns = bar.querySelectorAll('.rs-options')[0].querySelectorAll('.rs-option');
+  var idx = ['standard','medium','large','extra-large'].indexOf(size);
+  btns.forEach(function(b, i) { b.classList.toggle('active', i === idx); });
+}
+function setFont(font) {
+  var fonts = { lexend: "'Lexend','Open Sans',sans-serif", opensans: "'Open Sans',sans-serif", comic: "'Comic Sans MS',cursive,sans-serif" };
+  document.body.style.fontFamily = fonts[font] || fonts.lexend;
+  var bar = document.getElementById('reader-bar');
+  var btns = bar.querySelectorAll('.rs-options')[1].querySelectorAll('.rs-option');
+  var idx = ['lexend','opensans','comic'].indexOf(font);
+  btns.forEach(function(b, i) { b.classList.toggle('active', i === idx); });
+}
+function setSpacing(spacing) {
+  var vals = { normal: '1.7', relaxed: '2.2', loose: '2.8' };
+  document.body.style.lineHeight = vals[spacing] || vals.normal;
+  var bar = document.getElementById('reader-bar');
+  var btns = bar.querySelectorAll('.rs-options')[2].querySelectorAll('.rs-option');
+  var idx = ['normal','relaxed','loose'].indexOf(spacing);
+  btns.forEach(function(b, i) { b.classList.toggle('active', i === idx); });
+}
+</script>
+</body>
+</html>
