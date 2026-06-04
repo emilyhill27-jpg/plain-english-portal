@@ -209,7 +209,10 @@ Built from lived experience — Emily's entire family struggles with complex pap
 ## Business Model — Confirmed
 
 - **Free for end users** — always. No premium tier, no upsell.
-- **White-label B2B** — organisations pay a licence fee to put their name on it. Plainly runs the backend. **Pricing: TBD — not confirmed yet.**
+- **B2B organisation licences** — organisations pay a licence fee. Pricing TBD — not confirmed yet.
+- **Plainly-branded by default** — not white-label. Optional co-branding available where appropriate.
+- **Plainly handles support** — organisations do not field software/product questions.
+- **Approved document sets** — each organisation selects the document types Plainly supports for their users. Users pick from a dropdown of approved documents, not upload anything they like. This keeps the experience focused, safer, and more relevant.
 - **Target customers:** Schools, community law centres, Citizens Advice Bureau, insurance brokers, immigration advisers, GP practices, small councils — organisations that deal with complex documents daily and can make a buying decision without a committee.
 - **Do NOT lead with WINZ/IRD/big govt** — they have IT teams, procurement red tape, 12–18 month buying cycles. Approach them only after you have proven traction with smaller orgs.
 
@@ -254,27 +257,19 @@ Purple / lavender palette with rounded corners:
 ### Organisations page (`frontend/public/organisations.html`)
 - Standalone HTML page, full purple/Lexend design with reader support toolbar
 - **Sections in order:**
-  1. Hero: "Because everyone deserves to understand what they're reading"
-  2. Plain language built in Aotearoa (standards bar + proof bar with NZ stats)
-  3. Plain Language Act (legislation block with repeal notice)
-  4. Who it's built for (6 cards: govt, schools, health, community, legal, HR)
-  5. What we solve (3 value props: reduce calls, meet standards, include everyone)
-  6. How it works (3 steps: branding, deploy, users get plain language)
-  7. White-label (split layout with demo mockup)
-  8. Pricing ($299/$699/custom)
-  9. CTA + Footer
+  1. Hero: "Make your documents easier to understand"
+  2. Who it's built for (6 cards: govt, schools, health, community, legal, HR)
+  3. Simple rollout section: Plainly-branded by default, You choose the documents, We handle support
+  4. How it works (3 steps: choose documents, deploy, users get plain language)
+  5. CTA: "Book a demo" + Footer
+- **Removed in 4 June overhaul:** origin story, Plain Language Act editorial, pricing section, white-label branding references
 
 ### Technology page (`frontend/public/technology.html`)
 - Standalone HTML page, full purple/Lexend design with reader support toolbar
 - Hero: "Built for real accessibility. Not just compliance."
-- Features section with cards:
-  - Text to speech (featured full-width card with visual demo of play/stop/speed/highlighting)
-  - Side-by-side translation (featured full-width card with split-pane mockup)
-  - Personalised reading level
-  - WCAG and neuroinclusive reading toolbar
-- Neuroinclusive design section (dark background): TTS, visual comfort, structure/spacing
-- Anthropic AI badge
-- CTA + Footer
+- Sections: Approved documents, Reading support, Privacy and trust, Rollout
+- CTA: "Book a demo" + Footer
+- **Removed in 4 June overhaul:** neuroinclusive advocacy section, open-tool CTA
 
 ### App page (the two-panel tool) — CRITICAL: NO MODE TOGGLE
 
@@ -300,8 +295,7 @@ Purple / lavender palette with rounded corners:
 - **Independent panel scrolling** — left document panel and right result panel each scroll on their own. Nav stays fixed at top. `<main>` element styled with `flex: 1; overflow: hidden;` to prevent page-level scrolling.
 
 ### B2B landing page (`frontend/public/b2b.html`)
-- Old terracotta design — NOT current design. Needs updating or removing.
-- Pricing: Starter $299/mo, Organisation $699/mo, Enterprise custom
+- **OUTDATED** — old terracotta design. Fully replaced by organisations.html. Should be removed.
 
 ---
 
@@ -357,25 +351,37 @@ Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 
 ## Pending Tasks — IN ORDER, ONE AT A TIME
 
-1. **Commit and push** — all 31 May + 3 June changes built locally. NOT yet pushed to GitHub/Render.
-2. **First paying customer** — approach one school, community org, or adviser. Pilot page is ready to send. Don't wait for it to be perfect.
-3. **Usage tracking/analytics** — log metadata per org (doc count, reading level, timestamp). No document content stored. Shows which docs get simplified most. Feedback loop for customers. This is what makes the product sticky.
-4. **Additional tools** — contract red-flagger, worksheet leveller, policy checker, parent letter writer. All use same Claude backend.
-5. **About us page** — nav link exists (`#about`) but no page built yet.
-6. **Update or remove b2b.html** — still has old terracotta design. organisations.html now covers this.
-7. **Logo swap** ✅ Done (26 May 2026)
-8. **Domain** ✅ Done (26 May 2026)
-9. **P0 site fixes** ✅ Done (31 May 2026) — nav, footer, emojis, pilot page, privacy/terms/security
-10. **AI prompt overhaul** ✅ Done (31 May 2026) — neuroinclusive + accuracy rules on all prompts
-11. **Form explainer multi-page** ✅ Done (31 May 2026) — processes all pages, highlights, word definitions
-12. **Explain/Translate/scrolling bugs** ✅ Done (3 June 2026) — tool button layout, independent scrolling, translate auto-trigger
+1. **First paying customer** — approach one school, community org, or adviser. Pilot page is ready to send. Don't wait for it to be perfect.
+2. **Fix frontend timeout** — parallel requests can hit 90s timeout on long documents. Options: increase timeout, batch pages in groups of 3-4, or both.
+3. **Usage tracking/analytics** — log metadata per org (doc count, reading level, timestamp). No document content stored. Shows which docs get simplified most. Feedback loop for customers.
+4. **Write sector-specific compliance checks** — Layer 4 validator is generic. Needs per-sector rules for each of the 11 categories.
+5. **About us page** — nav link exists but no page built yet.
+6. **Remove b2b.html** — old terracotta design, fully replaced by organisations.html.
+7. **Additional tools** — contract red-flagger, worksheet leveller, policy checker, parent letter writer. All use same Claude backend.
+
+### Done
+- ✅ Logo swap (26 May 2026)
+- ✅ Domain (26 May 2026)
+- ✅ P0 site fixes (31 May 2026) — nav, footer, emojis, pilot page, privacy/terms/security
+- ✅ AI prompt overhaul (31 May 2026) — neuroinclusive + accuracy rules on all prompts
+- ✅ Form explainer multi-page + word definitions (31 May 2026)
+- ✅ Explain/Translate/scrolling bugs (3 June 2026)
+- ✅ Parallel form explainer (4 June 2026)
+- ✅ Component split (4 June 2026) — App.jsx split into presentational components
+- ✅ Rulebook gaps 1-6 (4 June 2026) — domain rules, legislation, 3 new sectors, validator UI, page-anchored output
+- ✅ B2B site copy overhaul (4 June 2026) — all pages aligned to Plainly-branded B2B model
+- ✅ Trust pages alignment (4 June 2026)
+- ✅ Language consistency (4 June 2026) — "forms" → "documents" throughout
 
 ---
 
 ## Key Decisions Already Made — DO NOT RE-DEBATE
 
 - Product name is **Plainly** (not Plainform)
-- Business model is **white-label B2B** — always free to end users, organisations pay licence
+- Business model is **B2B organisation licences** — always free to end users, organisations pay licence
+- **Plainly-branded by default** — not white-label. Optional co-branding available
+- **Plainly handles support** — orgs don't field software questions
+- **Approved document sets** — orgs pre-approve document types, users pick from a dropdown (not upload anything)
 - Do not sell to big government first — start with small orgs who can decide fast
 - Get paying customers before approaching investors
 - Apply for Callaghan Innovation grant as non-dilutive first funding
@@ -383,12 +389,14 @@ Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 - Client-side canvas crop (not server-side — coordinate bugs)
 - No guiding questions — removed
 - **ONE universal prompt — NO MODES** (no Business Plan mode, no School mode, no mode toggle)
-- Three tool BUTTONS: Simplify, Explain this form, Translate — these are actions, not modes
+- Three tool BUTTONS: Simplify, Explain this document, Translate — these are actions, not modes
 - Reading level slider adjusts complexity (not separate prompts)
-- Print shows both panels side by side (original form + explanation)
-- Start small orgs, not big government
+- Print shows both panels side by side (original document + explanation)
 - TTS uses browser-native speechSynthesis (zero API cost)
 - Nav tabs: Home, How it works, For organisations, Technology, About us (NO Pricing or Resources)
+- **"Documents" not "forms"** — broader language to cover letters, agreements, notices
+- **No pricing on site** — premature before first paying customer
+- **11 sector categories** — all with domain files, legislation, and guardrails
 
 ---
 
@@ -400,7 +408,7 @@ Do NOT add `frontend/dist/` — it's in .gitignore. Render rebuilds from source.
 
 2. **"It's a plaster — you're not fixing the root cause"** → Build a feedback loop: track which documents get simplified most. Show the org which docs are failing. That's not a plaster — it's a diagnostic tool.
 
-3. **"Why not just use ChatGPT?"** → ChatGPT doesn't give: neuroinclusive reading environment, TTS, reader support toolbar, white-label branding, usage dashboard, feedback loop, WCAG compliance, or a tool the whole team can use.
+3. **"Why not just use ChatGPT?"** → ChatGPT doesn't give: neuroinclusive reading environment, TTS, reader support toolbar, organisation branding, usage dashboard, feedback loop, WCAG compliance, or a tool the whole team can use.
 
 **Feature expansion ideas (all same Claude backend):**
 - Contract red-flagger, worksheet leveller, policy compliance checker, form explainer (done), parent letter writer, translate (done)
