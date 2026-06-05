@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { ReaderProvider } from "./components/ReaderSupport";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import HowItWorks from "./pages/HowItWorks";
@@ -24,6 +25,7 @@ function ScrollToTop() {
 
 export default function MarketingSite() {
   return (
+    <ReaderProvider>
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
@@ -41,5 +43,6 @@ export default function MarketingSite() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </ReaderProvider>
   );
 }

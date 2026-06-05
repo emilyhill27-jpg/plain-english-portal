@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { ReaderToggle } from "@/components/ReaderSupport";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +24,7 @@ export default function Nav() {
         </Link>
 
         {/* Desktop links */}
-        <div className="hidden items-center gap-8 md:flex">
+        <div className="hidden items-center gap-6 md:flex">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.to}
@@ -38,6 +39,7 @@ export default function Nav() {
               {link.label}
             </Link>
           ))}
+          <ReaderToggle />
           <Button size="sm" asChild>
             <Link to="/request-pilot">Request a pilot</Link>
           </Button>
@@ -74,6 +76,9 @@ export default function Nav() {
                 {link.label}
               </Link>
             ))}
+            <div className="mt-2 px-3">
+              <ReaderToggle />
+            </div>
             <Button className="mt-3" asChild>
               <Link to="/request-pilot" onClick={() => setMobileOpen(false)}>
                 Request a pilot
