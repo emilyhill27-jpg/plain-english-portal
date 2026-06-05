@@ -16,8 +16,11 @@ function PageContent() {
         backgroundColor: styles.backgroundColor,
       }}
     >
-      <Nav />
-      <ReaderBar />
+      {/* Sticky wrapper — both nav and reader bar stay pinned */}
+      <div className="sticky top-0 z-50">
+        <Nav />
+        <ReaderBar />
+      </div>
       <main className="flex-1">
         <Outlet />
       </main>

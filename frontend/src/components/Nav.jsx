@@ -16,7 +16,7 @@ export default function Nav() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-frame bg-white/95 backdrop-blur-sm shadow-nav">
+    <header className="border-b border-frame bg-white/95 backdrop-blur-sm shadow-nav">
       <nav className="page-container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 no-underline">
