@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+/* ─── Plainly design tokens ─── */
+@theme {
+  /* Ink — primary text colour */
+  --color-ink: #1a2332;
+  --color-ink-mid: #3d4f63;
+  --color-ink-soft: #6b7a8d;
+  --color-ink-faint: #94a3b8;
+
+  /* Frame — borders, cards, backgrounds */
+  --color-frame: #e2e6ec;
+  --color-frame-light: #f0f2f5;
+  --color-frame-bg: #f7f8fa;
+  --color-frame-white: #ffffff;
+
+  /* Accent — CTAs, links, active states */
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-accent-light: #eff6ff;
+  --color-accent-ring: #93c5fd;
+
+  /* Status */
+  --color-safe: #16a34a;
+  --color-safe-light: #f0fdf4;
+  --color-warn: #d97706;
+  --color-warn-light: #fffbeb;
+
+  /* Typography */
+  --font-body: 'Lexend', 'Open Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', monospace;
+
+  /* Spacing scale */
+  --spacing-section: 5rem;
+  --spacing-page-x: 1.5rem;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px rgba(26, 35, 50, 0.06), 0 1px 2px rgba(26, 35, 50, 0.04);
+  --shadow-elevated: 0 4px 12px rgba(26, 35, 50, 0.08), 0 2px 4px rgba(26, 35, 50, 0.04);
+  --shadow-nav: 0 1px 2px rgba(26, 35, 50, 0.05);
+}
+
+/* ─── Base ─── */
+@layer base {
+  html {
+    font-family: var(--font-body);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-frame-white);
+    line-height: 1.6;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  h1, h2, h3, h4 {
+    line-height: 1.25;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+}
+
+/* ─── Component utilities ─── */
+@layer components {
+  .page-container {
+    @apply mx-auto w-full max-w-6xl px-6;
+  }
+
+  .section-spacing {
+    @apply py-20;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           rounded-lg bg-accent px-6 py-3
+           text-sm font-semibold text-white
+           transition-colors duration-150
+           hover:bg-accent-hover
+           focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2
+           rounded-lg border border-frame bg-frame-white px-6 py-3
+           text-sm font-semibold text-ink
+           transition-colors duration-150
+           hover:bg-frame-light
+           focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
+  }
+
+  .card {
+    @apply rounded-lg border border-frame bg-frame-white p-6 shadow-card;
+  }
+}
