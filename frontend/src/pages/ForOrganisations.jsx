@@ -2,38 +2,17 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
+import { CATEGORIES } from "@/lib/categories";
+import { CategoryChip } from "@/components/CategoryChip";
 
-const SECTORS = [
-  {
-    name: "Schools",
-    audience: "Students, parents, caregivers",
-    docs: "Enrolment forms, consent forms, school reports, NCEA notices, behaviour agreements",
-  },
-  {
-    name: "Community law centres",
-    audience: "Community members seeking legal help",
-    docs: "Legal summaries, rights notices, process guides, tribunal documents",
-  },
-  {
-    name: "Citizens Advice Bureau",
-    audience: "People navigating government and services",
-    docs: "Benefit letters, tenancy agreements, complaints forms, entitlement guides",
-  },
-  {
-    name: "Insurance brokers",
-    audience: "Policyholders and claimants",
-    docs: "Policy documents, claim forms, disclosure statements, renewal notices",
-  },
-  {
-    name: "GP practices",
-    audience: "Patients and their families",
-    docs: "Patient letters, consent forms, referral notices, treatment plans",
-  },
-  {
-    name: "Councils",
-    audience: "Ratepayers and residents",
-    docs: "Rate notices, resource consent applications, bylaw summaries, consultation documents",
-  },
+// Extended sector info for this page (audience + fuller doc lists)
+const SECTOR_DETAIL = [
+  { key: "schools",         audience: "Students, parents, caregivers",            docs: "Enrolment forms, consent forms, school reports, NCEA notices, behaviour agreements" },
+  { key: "community_law",   audience: "Community members seeking legal help",     docs: "Legal summaries, rights notices, process guides, tribunal documents" },
+  { key: "citizens_advice",  audience: "People navigating government and services", docs: "Benefit letters, tenancy agreements, complaints forms, entitlement guides" },
+  { key: "insurance",       audience: "Policyholders and claimants",              docs: "Policy documents, claim forms, disclosure statements, renewal notices" },
+  { key: "gp_practices",    audience: "Patients and their families",              docs: "Patient letters, consent forms, referral notices, treatment plans" },
+  { key: "councils",        audience: "Ratepayers and residents",                 docs: "Rate notices, resource consent applications, bylaw summaries, consultation documents" },
 ];
 
 export default function ForOrganisations() {
@@ -109,19 +88,20 @@ export default function ForOrganisations() {
           </div>
 
           <div className="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {SECTORS.map((sector) => (
-              <Card key={sector.name} className="p-5">
-                <h3 className="text-base font-semibold text-ink">
-                  {sector.name}
-                </h3>
-                <p className="mt-1 text-xs font-medium text-ink-faint uppercase tracking-wide">
-                  {sector.audience}
-                </p>
-                <p className="mt-3 text-sm leading-relaxed text-ink-mid">
-                  {sector.docs}
-                </p>
-              </Card>
-            ))}
+            {SECTOR_DETAIL.map((sector) => {
+              const cat = CATEGORIES.find(c => c.key === sector.key);
+              return (
+                <Card key={sector.key} className="p-5">
+                  <CategoryChip category={cat} />
+                  <p className="mt-2 text-xs font-medium text-ink-faint uppercase tracking-wide">
+                    {sector.audience}
+                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-ink-mid">
+                    {sector.docs}
+                  </p>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>

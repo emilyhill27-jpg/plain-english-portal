@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileCheck, Building2, Layers, Shield, ArrowRight } from "lucide-react";
+import { CATEGORIES } from "@/lib/categories";
+import { CategoryChip } from "@/components/CategoryChip";
 
 const STEPS = [
   {
@@ -54,14 +56,7 @@ const RULEBOOK = [
   },
 ];
 
-const SECTORS = [
-  { name: "Schools", docs: "Enrolment forms, consent forms, school reports" },
-  { name: "Community law", docs: "Legal summaries, rights notices, process guides" },
-  { name: "Citizens Advice", docs: "Benefit letters, tenancy agreements, complaints forms" },
-  { name: "Insurance brokers", docs: "Policy documents, claim forms, disclosure statements" },
-  { name: "GP practices", docs: "Patient letters, consent forms, referral notices" },
-  { name: "Councils", docs: "Rate notices, consent applications, bylaw summaries" },
-];
+// Sectors now come from the shared CATEGORIES definition
 
 export default function Home() {
   return (
@@ -196,13 +191,11 @@ export default function Home() {
           </div>
 
           <div className="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {SECTORS.map((sector) => (
-              <Card key={sector.name} className="p-5">
-                <h3 className="text-sm font-semibold text-ink">
-                  {sector.name}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-mid">
-                  {sector.docs}
+            {CATEGORIES.map((cat) => (
+              <Card key={cat.key} className="p-5">
+                <CategoryChip category={cat} />
+                <p className="mt-3 text-sm leading-relaxed text-ink-mid">
+                  {cat.docs}
                 </p>
               </Card>
             ))}

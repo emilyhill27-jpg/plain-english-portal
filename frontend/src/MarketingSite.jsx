@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ReaderProvider } from "./components/ReaderSupport";
 import Layout from "./components/Layout";
+import PortalApp from "./portal/PortalApp";
 import Home from "./pages/Home";
 import HowItWorks from "./pages/HowItWorks";
 import ForOrganisations from "./pages/ForOrganisations";
@@ -41,6 +42,7 @@ export default function MarketingSite() {
           <Route path="privacy" element={<Privacy />} />
           <Route path="terms" element={<Terms />} />
         </Route>
+          <Route path="portal/*" element={<PortalApp />} />
       </Routes>
     </BrowserRouter>
     </ReaderProvider>

@@ -38,12 +38,12 @@ export default function Footer() {
               </Link>
             ))}
             <span className="text-frame">|</span>
-            <a
-              href="/admin"
+            <Link
+              to="/portal/sign-in"
               className="text-sm text-ink-faint no-underline transition-colors hover:text-ink-soft"
             >
               Admin sign in
-            </a>
+            </Link>
           </div>
         </div>
 
