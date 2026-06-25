@@ -6,6 +6,7 @@ import base64
 import json
 import os
 import uuid
+import resend
 from pathlib import Path
 from typing import Literal, Optional
 
@@ -20,6 +21,9 @@ from pydantic import BaseModel, Field
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(dotenv_path=BASE_DIR / ".env", override=True)
+resend.api_key = os.environ.get("RESEND_API_KEY", "")
+NOTIFY_TO = os.environ.get("NOTIFY_TO", "")
+NOTIFY_FROM = os.environ.get("NOTIFY_FROM", "")
 
 API_KEY = os.getenv("ANTHROPIC_API_KEY")
 if not API_KEY:
@@ -28,7 +32,6 @@ if not API_KEY:
 client = Anthropic(api_key=API_KEY)
 MODEL = "claude-sonnet-4-6"
 FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
-SITE_LIVE = os.getenv("SITE_LIVE", "false").lower() == "true"
 
 ACTIVE_SESSIONS: dict = {}
 MAX_SESSIONS = 50
@@ -37,12 +40,12 @@ ContextType = Literal["ACADEMIC", "GOVERNMENT"]
 
 app = FastAPI(title="Plain English Portal v2", version="2.0.0")
 
-_S = "http"
-_C = "://"
-_DH = "127.0.0.1"
-_DN = "localhost"
-_DP = "5173"
-ALLOWED_ORIGINS = [_S + _C + _DN + ":" + _DP, _S + _C + _DH + ":" + _DP]
+_CORS_ORIGINS = os.getenv("CORS_ORIGINS", "")
+ALLOWED_ORIGINS = (
+    [o.strip() for o in _CORS_ORIGINS.split(",") if o.strip()]
+    if _CORS_ORIGINS
+    else ["http://localhost:5173", "http://127.0.0.1:5173"]
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -360,6 +363,35 @@ def health():
         "frontend_built": FRONTEND_DIST.exists(),
     }
 
+class ContactRequest(BaseModel):
+    name: str = Field(..., min_length=1)
+    email: str = Field(..., min_length=3)
+    message: str = Field(..., min_length=1)
+
+
+def _send_demo_notification(name: str, email: str, message: str) -> None:
+    if not resend.api_key or not NOTIFY_TO or not NOTIFY_FROM:
+        return
+
+    resend.Emails.send({
+        "from": NOTIFY_FROM,
+        "to": [NOTIFY_TO],
+        "subject": f"New demo request from {name}",
+        "reply_to": email,
+        "html": (
+            f"<h2>New demo request</h2>"
+            f"<ul>"
+            f"<li><strong>Name:</strong> {name}</li>"
+            f"<li><strong>Email:</strong> {email}</li>"
+            f"<li><strong>Message:</strong> {message}</li>"
+            f"</ul>"
+        ),
+    })
+
+@app.post("/api/v1/contact")
+async def contact(req: ContactRequest):
+    _send_demo_notification(req.name, req.email, req.message)
+    return {"ok": True}
 
 @app.post("/api/v1/upload", response_model=UploadResponse)
 async def upload_document(file: UploadFile = File(...), context_type: ContextType = Form(...)):
@@ -925,63 +957,6 @@ def serve_demo():
     return FileResponse(BASE_DIR / "dyslexia-button-demo.html")
 
 
-COMING_SOON_HTML = """<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Plainly | Coming Soon</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&display=swap" rel="stylesheet" />
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: 'Lexend', sans-serif;
-    background: #f7f8fa;
-    color: #1a2332;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 2rem;
-  }
-  .container {
-    text-align: center;
-    max-width: 480px;
-  }
-  .logo {
-    font-size: 2.5rem;
-    font-weight: 600;
-    margin-bottom: 2rem;
-  }
-  .logo span { color: #2563eb; }
-  h1 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-  }
-  p {
-    font-size: 1rem;
-    line-height: 1.7;
-    color: #4b5563;
-    margin-bottom: 1.5rem;
-  }
-  a {
-    color: #2563eb;
-    text-decoration: none;
-  }
-  a:hover { text-decoration: underline; }
-</style>
-</head>
-<body>
-<div class="container">
-  <div class="logo">Plain<span>ly</span></div>
-  <h1>Coming soon</h1>
-  <p>We're building something new. Plainly helps organisations explain complex documents in plain language.</p>
-  <p>Questions? <a href="mailto:hello@tryplainly.co.nz">hello@tryplainly.co.nz</a></p>
-</div>
-</body>
-</html>"""
 
 if FRONTEND_DIST.exists():
     assets_dir = FRONTEND_DIST / "assets"
@@ -992,10 +967,6 @@ if FRONTEND_DIST.exists():
     def serve_spa(full_path: str):
         if full_path.startswith("api/"):
             raise HTTPException(status_code=404, detail="API route not found")
-        # Coming soon gate — show placeholder unless SITE_LIVE=true
-        if not SITE_LIVE and not full_path.startswith("portal"):
-            from fastapi.responses import HTMLResponse
-            return HTMLResponse(COMING_SOON_HTML)
         candidate = FRONTEND_DIST / full_path
         if candidate.is_file():
             return FileResponse(candidate)
